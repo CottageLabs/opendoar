@@ -2,6 +2,135 @@
 
 {% block content %}
 
-Welcome to OpenDOAR
+<div id="facetview"></div>
+
+{% endblock %}
+
+{% block extra_js_bottom %}
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+
+    var record_url = 'http://localhost:5001/query?';
+    var record_datatype = 'JSONP';
+    var record_resdisplay = []
+    
+    var record_facets = [
+        {'field': 'admin.opendoar.in_opendoar.exact', 'display': 'In OpenDOAR?'},
+        {'field': 'register.api.api_type.exact', 'display': 'Supported APIs'},
+        {'field': 'register.organisation.details.name.exact', 'display': 'Host Organisation'},
+        {'field': 'register.operational_status.exact', 'display': 'Operational Status'},
+        {'field': 'register.policy.policy_grade.exact', 'display': 'Policy Grades'},
+        {'field': 'register.policy.policy_type.exact', 'display': 'Policy Types'},
+        {'field': 'register.metadata.record.language.exact', 'display': 'Language of Content'},
+        {'field': 'register.metadata.record.content_type.exact', 'display': 'Content Types'},
+        {'field': 'register.metadata.record.repository_type.exact', 'display': 'Repository Type'},
+        {'field': 'register.metadata.record.subject.term.exact', 'display': 'Subject'},
+        {'field': 'register.software.name.exact', 'display': 'Software'},
+        {'field': 'register.metadata.record.country.exact', 'display': 'Country'}
+    ];
+    
+    var sortby = [
+        {'display':'Date added to OARR','field':'created_date'},
+        {'display':'Last updated','field':'last_updated'},
+        {'display':'Repository Name','field':'register.metadata.record.name.exact'},
+        {'display':'Organisation','field':'register.organisation.details.name.exact'}
+    ]
+    
+    var searchfield = [
+        {'display':'Repository Name','field':'register.metadata.record.name'},
+        {'display':'Organisation','field':'register.organisation.details.name'}
+    ]
+
+    function discoveryRecordView(index) {
+        var options = $("#facetview").facetview.options
+        var record = options.data['records'][index];
+        var result = options.resultwrap_start;
+        
+        // get all of the bits out of the object that we want to display
+        var metadata = record.register.metadata[0]
+        if (!metadata) {
+            metadata = {}
+        }
+        
+        var repo_name = metadata.record.name
+        var repo_url = metadata.record.url
+        var repo_desc = metadata.record.description
+        var repo_langs = metadata.record.language ? metadata.record.language.join(", ") : ""
+        var repo_content_types = metadata.record.content_type ? metadata.record.content_type.join(", ") : ""
+        var repo_type = metadata.record.repository_type ? metadata.record.repository_type.join(", ") : ""
+        
+        var operational_status = record.register.operational_status
+        var software = record.register.software ? record.register.software[0].name : ""
+        
+        var apis = []
+        if (record.register.api) {
+            for (var i = 0; i < record.register.api.length; i++) {
+                apis.push(record.register.api[i].api_type)
+            }
+        }
+        apis = apis.join(", ")
+        
+        var orgs = []
+        if (record.register.organisation) {
+            for (var i = 0; i < record.register.organisation.length; i++) {
+                orgs.push(record.register.organisation[i].details.name)
+            }
+        }
+        orgs = orgs.join(", ")
+        
+        var policies = []
+        if (record.register.policy) {
+            for (var i = 0; i < record.register.policy.length; i++) {
+                policies.push(record.register.policy[i].policy_type)
+            }
+        }
+        policies = policies.join(", ")
+        
+        result += "<strong>" + repo_name + "</strong><br>"
+        result += "<a href='" + repo_url + "'>" + repo_url + "</a> (" + operational_status + ")<br>"
+        result += "Hosted by <em>" + orgs + "</em> based on <em>" + software + "</em><br>"
+        result += "Repository Type: " + repo_type + "<br>"
+        result += repo_desc + "<br>"
+        if (repo_langs) {
+            result += "Language of Content: " + repo_langs + "<br>"
+        }
+        if (repo_content_types) {
+            result += "Content Types: " + repo_content_types + "<br>"
+        }
+        if (policies) {
+            result += "Policies Defined: " + policies + "<br>"
+        }
+        if (apis) {
+            result += "APIs Supported: " + apis
+        }
+        
+        result += options.resultwrap_end;
+        return result;
+    }
+    
+    var opts = {
+        search_url: record_url,
+        datatype: record_datatype,
+        facets: record_facets,
+        searchbox_shade: "#fff",
+        result_display: record_resdisplay,
+        sharesave_link: false,
+        paging: {
+            size: 25
+        },
+        display_images: false,
+        pager_on_top: true,
+        // post_search_callback: postSearch,
+        buildrecord: discoveryRecordView,
+        search_sortby: sortby,
+        searchbox_fieldselect: searchfield
+    };
+
+    $('#facetview').facetview(opts);
+
+});
+
+</script>
 
 {% endblock %}

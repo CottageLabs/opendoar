@@ -516,7 +516,8 @@ is missing.
             "default_operator": "OR",
             "default_freetext_fuzzify": false,
             "hide_inactive_facets": false,
-            "results_render_callbacks:": {}
+            "results_render_callbacks:": {},
+            "buildrecord" : false
         };
 
 
@@ -916,9 +917,16 @@ is missing.
                 dosearch();
             }
         };
-
+        
         // given a result record, build how it should look on the page
         var buildrecord = function(index) {
+            if (typeof options.buildrecord == 'function') {
+                return options.buildrecord(index);
+            } else {
+                return buildrecord_default(index)
+            }
+        }
+        var buildrecord_default = function(index) {
             var record = options.data['records'][index];
             var result = options.resultwrap_start;
             // add first image where available
@@ -1514,7 +1522,7 @@ is missing.
             };
             thefacetview += '</select>';
         } else {
-            thefacetview += '</div>';
+            // thefacetview += '</div>';
         };
         if ( options.searchbox_fieldselect.length > 0 ) {
             thefacetview += '<select class="facetview_searchfield" style="border-radius:5px 0px 0px 5px; \
