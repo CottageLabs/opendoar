@@ -5,6 +5,9 @@
 {% set metadata = repo.get_metadata("en") %}
 {% set reg = repo.register %}
 
+<div class="row-fluid">
+    <div class="span9">
+    
 <h1>{{metadata.name}}</h1>
 <div class="row-fluid" style="margin-bottom: 20px">
 
@@ -44,6 +47,33 @@
     {% endfor %}
 </div>
 
+    </div>
+    
+    <div class="span3">
+        <div class="well">
+            <strong>search for similar repositories</strong>
+            <ul>
+            {% for s in reg.software %}
+                <li>using <a href="{{searchurl.software(s.name)}}">{{s.name}}</a></li>
+            {% endfor %}
+            {% for t in metadata.repository_type %}
+                <li><a href="{{searchurl.repository_type(t)}}">{{t}}</a> repository type</li>
+            {% endfor %}
+            {% for api in reg.api %}
+                <li>supports <a href="{{searchurl.api_type(api.api_type)}}">{{api.api_type}}</a></li>
+            {% endfor %}
+            {% for t in metadata.content_type %}
+                <li>contains <a href="{{searchurl.content_type(t)}}">{{t}}</a></li>
+            {% endfor %}
+            {% for s in metadata.subject %}
+                <li>covers <a href="{{searchurl.subject(s.term)}}">{{s.term}}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+</div>
+
 <h3>Details</h3>
 
 <div class="row-fluid" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
@@ -55,6 +85,9 @@
             <li>{{api.api_type}} - <a href="{{api.base_url}}">{{api.base_url}}</a></li>
             {% endfor %}
         </ul>
+        {% if reg.api|length == 0 %}
+            This repository has not registered support for any APIs
+        {% endif %}
         </div>
     </div>
     
@@ -109,12 +142,26 @@
     
     {% if loop.index % 2 != 0 %}
         </div>
+        {% if loop.last %}
+        </div>
+        {% endif %}
     {% else %}
         </div></div>
     {% endif %}
     
 {% endfor %}
 
+{% if reg.policy|length == 0 %}
+    <div class="row-fluid" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
+        This repository has no policies registered
+    </div>
+{% endif %}
+
+<div class="row-fluid">
+    <div class="span12">
+        Record created on <em>{{repo.get_created_date("%Y-%m-%d at %H:%M")}}</em> and last updated on <em>{{repo.get_last_updated("%Y-%m-%d at %H:%M")}}</em>
+    </div>
+</div>
 
 {% endblock %}
 

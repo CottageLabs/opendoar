@@ -4,7 +4,7 @@ from flask.ext.login import login_user, current_user
 
 import portality.models as models
 from portality.core import app#, login_manager
-from portality import settings
+from portality import settings, searchurl
 from portality.oarr import OARRClient
 
 '''
@@ -50,7 +50,7 @@ def repository(repo_id):
         abort(500)
     client = OARRClient(base)
     record = client.get_record(repo_id)
-    return render_template("repository.html", repo=record)
+    return render_template("repository.html", repo=record, searchurl=searchurl)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=app.config['PORT'])

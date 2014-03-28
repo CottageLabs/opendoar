@@ -1,5 +1,6 @@
 import requests
 from copy import deepcopy
+from datetime import datetime
 
 class OARRClient(object):
     def __init__(self, base_url):
@@ -18,6 +19,20 @@ class Register(object):
     @property
     def register(self):
         return self.raw.get("register", {})
+    
+    @property
+    def created_date(self):
+        return self.raw.get("created_date")
+    
+    def get_created_date(self, form):
+        return datetime.strftime(datetime.strptime(self.created_date, "%Y-%m-%dT%H:%M:%SZ"), form)
+    
+    @property
+    def last_updated(self):
+        return self.raw.get("last_updated")
+    
+    def get_last_updated(self, form):
+        return datetime.strftime(datetime.strptime(self.last_updated, "%Y-%m-%dT%H:%M:%SZ"), form)
     
     def get_metadata(self, lang):
         # FIXME: full implementation will be required for full multi-lingual support
