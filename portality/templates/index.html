@@ -87,7 +87,7 @@ jQuery(document).ready(function($) {
         }
         policies = policies.join(", ")
         
-        result += "<strong>" + repo_name + "</strong><br>"
+        result += "<strong><a href='/repository/" + record.id + "'>" + repo_name + "</a></strong><br>"
         result += "<a href='" + repo_url + "'>" + repo_url + "</a> (" + operational_status + ")<br>"
         result += "Hosted by <em>" + orgs + "</em> based on <em>" + software + "</em><br>"
         result += "Repository Type: " + repo_type + "<br>"

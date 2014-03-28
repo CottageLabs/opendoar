@@ -146,5 +146,8 @@ DELETE_REMOVES_EP = False # MUST BE THE ETHERPAD API-KEY OR DELETES WILL FAIL
 # disqus account shortname if available for page comments
 COMMENTS = ''
 
+# ==============================
+# OARR Config
 
+OARR_API_BASE_URL = "http://localhost:5001"
 

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set metadata = repo.get_metadata("en") %}
+{% set reg = repo.register %}
+
+<h1>{{metadata.name}}</h1>
+<div class="row-fluid" style="margin-bottom: 20px">
+
+    <div class="span12">
+        <a href="{{metadata.url}}">{{metadata.url}}</a> ({{reg.operational_status}})<br>
+        {% for s in reg.software %}
+            <em>{{s.name}}</em>{% if not loop.first %}, {% endif %}
+        {% endfor %}
+        <br>
+        Repository Type: 
+        {% for t in metadata.repository_type %}
+            {{t}}{% if not loop.first %}, {% endif %}
+        {% endfor %}
+        <br><br>
+        <p>{{metadata.description}}</p>
+    </div>
+
+</div>
+
+<h3>Organisations responsible for this repository</h3>
+<div class="row-fluid" style="margin-bottom: 30px">
+    {% for org in reg.organisation %}
+    <div class="span4">
+        <strong>{{org.details.name}} ({{org.details.acronym}})</strong><br>
+        <a href="{{org.details.url}}">{{org.details.url}}</a>
+    </div>
+    {% endfor %}
+</div>
+
+<h3>Contacts for this repository</h3>
+<div class="row-fluid" style="margin-bottom: 30px">
+    {% for con in reg.contact %}
+        <div class="span4">
+            <strong>{{con.details.name}} ({{con.details.job_title}})</strong><br>
+            <a href="mailto:{{con.details.email}}">{{con.details.email}}</a>
+        </div>
+    {% endfor %}
+</div>
+
+<h3>Details</h3>
+
+<div class="row-fluid" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
+    <div class="span4">
+        <div style="padding: 10px">
+        <strong>Supported APIs</strong>
+        <ul>
+            {% for api in reg.api %}
+            <li>{{api.api_type}} - <a href="{{api.base_url}}">{{api.base_url}}</a></li>
+            {% endfor %}
+        </ul>
+        </div>
+    </div>
+    
+    <div class="span4">
+        <div style="padding: 10px">
+        <strong>Repository content types</strong>
+        <ul>
+            {% for t in metadata.content_type %}
+            <li>{{t}}</li>
+            {% endfor %}
+        </ul>
+        </div>
+    </div>
+    
+    <div class="span4">
+        <div style="padding: 10px">
+        <strong>Subject classifications</strong>
+        <ul>
+            {% for s in metadata.subject %}
+            <li>{{s.term}} ({{s.code}})</li>
+            {% endfor %}
+        </ul>
+        </div>
+    </div>
+</div>
+
+<h3>Policies</h3>
+
+{% for p in reg.policy %}
+    {% if loop.index % 2 != 0 %}
+        {% if loop.first %}
+            <div class="row-fluid" style="border-top: 1px solid #cccccc">
+        {% elif loop.last %}
+            <div class="row-fluid" style="border-top: 1px dashed #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
+        {% else %}
+            <div class="row-fluid" style="border-top: 1px dashed #cccccc">
+        {% endif %}
+        <div class="span6">
+    {% else %}
+        <div class="span6">
+    {% endif %}
+    
+    <div style="padding: 10px">
+    <strong>{{p.policy_type}}</strong><br>
+    <em>{{p.policy_grade}}</em><br>
+    <ul>
+        {% for t in p.terms %}
+        <li>{{t}}</li>
+        {% endfor %}
+    </ul>
+    </div>
+    
+    {% if loop.index % 2 != 0 %}
+        </div>
+    {% else %}
+        </div></div>
+    {% endif %}
+    
+{% endfor %}
+
+
+{% endblock %}
+
+{% block extra_js_bottom %}
+
+<script type="text/javascript">
+
+jQuery(document).ready(function($) {
+
+})
+
+</script>
+
+{% endblock %}
