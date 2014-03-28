@@ -1,0 +1,12 @@
+#main-nav-first-menu > li > a {
+    color: #003089;
+}
+
+#main-nav-first-menu > li.active > a {
+    background-color: #cccccc;
+}
+
+#main-nav-first-menu > li > a:hover {
+    background-color: #eeeeee;
+}
+

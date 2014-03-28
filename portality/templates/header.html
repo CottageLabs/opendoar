@@ -2,12 +2,18 @@
 
     <div class="content">
 
-        <div class="row-fluid">
-            <div class="span12" style="border-bottom: 5px solid #003089">
-                <img src="/static/opendoar/images/OpenDOAR.png">
+        <div class="row-fluid" style="border-bottom: 5px solid #003089">
+            <div class="span12">
+                <a href="/"><img src="/static/opendoar/images/OpenDOAR.png"></a>
             </div>
         </div>
-    
-    </div>
+        
+        <div class="navbar" id="main-nav">
+            <div class="navbar-inner">
+                <ul class="nav pull-right" id="main-nav-first-menu" style="margin-bottom: 10px">
+                    <li{% if request.path == '/' %} class="active"{% endif %}><a href="{{ url_for('root') }}">Search OpenDOAR</a></li>
+                </ul>
+            </div>    
+        </div>
 
 </div>
