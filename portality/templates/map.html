@@ -28,7 +28,7 @@
       stroke-width: 1px;
     }
     .text{
-      font-size:10px;
+      font-size:1px;
       text-transform:capitalize;
     }
     #map {
@@ -89,8 +89,6 @@ var height = width / 2;
 
 var topo,projection,path,svg,g;
 
-var graticule = d3.geo.graticule();
-
 var tooltip = d3.select("#map").append("div").attr("class", "tooltip hidden");
 
 setup(width,height);
@@ -122,7 +120,7 @@ d3.json("/static/map/world-topo-min.json", function(error, world) {
 
 });
 
-function draw(topo) {
+function draw(topo,data) {
 
 
   var country = g.selectAll(".country").data(topo);
@@ -153,15 +151,16 @@ function draw(topo) {
         tooltip.classed("hidden", true);
       }); 
 
-
-  //EXAMPLE: adding some capitals from external CSV file
-  d3.csv("/static/map/country-capitals.csv", function(err, capitals) {
-
-    capitals.forEach(function(i){
-      addpoint(i.CapitalLongitude, i.CapitalLatitude, i.CapitalName );
-    });
-
-  });
+  //add points
+  if ( data ) {
+      data.hits.hits.forEach(function(i){
+          addpoint(
+            i.fields["register.organisation.details.lon"],
+            i.fields["register.organisation.details.lat"],
+            i.fields["register.organisation.details.name"] 
+          );
+      });
+  }
 
 }
 
@@ -230,19 +229,50 @@ function addpoint(lat,lon,text) {
         .attr("cx", x)
         .attr("cy", y)
         .attr("class","point")
-        .attr("r", 1.5);
+        .attr("r", 0.3);
 
   //conditional in case a point has no associated text
   if(text.length>0){
 
     gpoint.append("text")
-          .attr("x", x+2)
-          .attr("y", y+2)
+          .attr("x", x+0.5)
+          .attr("y", y+0.5)
           .attr("class","text")
           .text(text);
   }
 
 }
+</script>
+
+
+
+<script>
+jQuery(document).ready(function($) {
+
+    var onmap = function(data) {
+        draw(topo,data)
+    }
+
+    var query = {
+        "query": {
+            "match_all": {}
+        },
+        "size":3000,
+        "fields": [
+            "register.organisation.details.lat",
+            "register.organisation.details.lon",
+            "register.organisation.details.name"
+        ]
+    }
+
+    $.ajax({
+        type: 'GET',
+        url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(query),
+        dataType: 'JSONP',
+        success: onmap
+    });
+
+});
 </script>
 
 </body>
