@@ -43,6 +43,10 @@ def page_not_found(e):
 def root():
     return render_template("index.html", api_base_url=app.config.get("OARR_API_BASE_URL", "http://localhost:5001/"))
 
+@app.route("/map")
+def mapp():
+    return render_template("map.html")
+
 @app.route("/repository/<repo_id>")
 def repository(repo_id):
     base = app.config.get("OARR_API_BASE_URL")
