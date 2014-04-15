@@ -25,7 +25,7 @@
     <style>
     .country:hover{
       stroke: #333;
-      stroke-width: 1px;
+      stroke-width: 0.8px;
     }
     .text{
       font-size:1px;
@@ -154,10 +154,22 @@ function draw(topo,data) {
   //add points
   if ( data ) {
       data.hits.hits.forEach(function(i){
+          var nm = i.fields["register.organisation.details.name"];
+          if ( typeof nm != "string" ) {
+            nm = nm[0];
+          }
+          nm = nm.toLowerCase().replace('university ','');
+          nm = nm.replace(' university','');
+          nm = nm.replace('college ','');
+          nm = nm.replace('of ','');
+          nm = nm.replace('the ','');
+          if ( nm.length > 26 ) {
+              nm = nm.substring(0,26) + '...';
+          }
           addpoint(
             i.fields["register.organisation.details.lon"],
             i.fields["register.organisation.details.lat"],
-            i.fields["register.organisation.details.name"] 
+            nm
           );
       });
   }
