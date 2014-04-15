@@ -1,4 +1,4 @@
-import requests
+import requests, json
 from copy import deepcopy
 from datetime import datetime
 
@@ -15,6 +15,10 @@ class OARRClient(object):
 class Register(object):
     def __init__(self, raw):
         self.raw = raw
+    
+    @property
+    def json(self):
+        return json.dumps(self.raw)
     
     @property
     def register(self):

@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, render_template, redirect
+from flask import Flask, request, abort, render_template, redirect, make_response
 from flask.views import View
 from flask.ext.login import login_user, current_user
 
@@ -49,8 +49,16 @@ def repository(repo_id):
     if base is None:
         abort(500)
     client = OARRClient(base)
-    record = client.get_record(repo_id)
-    return render_template("repository.html", repo=record, searchurl=searchurl)
+    if repo_id.endswith('.json'):
+        repo_id = repo_id.replace('.json','')
+        record = client.get_record(repo_id)
+        resp = make_response( record.json )
+        resp.mimetype = "application/json"
+        return resp        
+    else:
+        record = client.get_record(repo_id)
+        return render_template("repository.html", repo=record, searchurl=searchurl)
+        
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=app.config['PORT'])

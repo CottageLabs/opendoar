@@ -149,5 +149,5 @@ COMMENTS = ''
 # ==============================
 # OARR Config
 
-OARR_API_BASE_URL = "http://localhost:5001"
+OARR_API_BASE_URL = "http://oarr.ooz.cottagelabs.com"
 
