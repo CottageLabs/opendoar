@@ -7,6 +7,8 @@ from portality.core import app#, login_manager
 from portality import settings, searchurl
 from portality.oarr import OARRClient
 
+from portality.view.admin import blueprint as admin
+
 '''
 @login_manager.user_loader
 def load_account_for_login_manager(userid):
@@ -38,6 +40,8 @@ def page_not_found(e):
 def page_not_found(e):
     return render_template('401.html'), 401
 '''
+
+app.register_blueprint(admin, url_prefix='/admin')
 
 @app.route("/")
 def root():
