@@ -7,16 +7,57 @@
                 <a href="/"><img src="/static/opendoar/images/OpenDOAR.png"></a>
             </div>
         </div>
-        
+
         <div class="navbar" id="main-nav">
             <div class="navbar-inner">
+                {% if not current_user.is_anonymous() %}
+                <ul class="nav pull" id="main-nav-admin-menu" style="margin-bottom: 10px">
+                    <li{% if request.path == url_for('account.username', username=current_user.id) %} class="active"{% endif %}><a href="{{url_for('account.username', username=current_user.id)}}">{{current_user.id}}</a></li>
+                    {% if current_user.has_role("list_users") %}
+                        <li{% if request.path == url_for('account.index') %} class="active"{% endif %}><a href="{{ url_for('account.index') }}">users</a></li>
+                    {% endif %}
+                    <li><a href="{{url_for('account.logout')}}">logout</a></li>
+                </ul>
+                {% endif %}
+
                 <ul class="nav pull-right" id="main-nav-first-menu" style="margin-bottom: 10px">
                     <li{% if request.path == url_for('root') %} class="active"{% endif %}><a href="{{ url_for('root') }}">Search OpenDOAR</a></li>
                     <li><a href="{{ url_for('mapp') }}">Explore by map</a></li>
                     <li{% if request.path == url_for('about') %} class="active"{% endif %}><a href="{{ url_for('about') }}">About OpenDOAR</a></li>
                     <li{% if request.path == url_for('contribute') %} class="active"{% endif %}><a href="{{ url_for('contribute') }}">Contribute</a></li>
                 </ul>
-            </div>    
+            </div>
         </div>
 
-</div>
+        <div class="container">
+
+            <div class="alert-messages">
+
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                    {% if messages %}
+                        {% set category_url_indicator = '+contains-url' %}
+
+                        {% for category, message in messages %}
+                            {% set message_has_url = False %}
+                            {% if category.endswith(category_url_indicator) %}
+                                {% set category = category[:category.rfind(category_url_indicator)] %}
+                                {% set message_has_url = True %}
+                            {% endif %}
+
+                            <div class="alert alert-{{category}} fade in" data-alert="alert">
+                                {# FIXME: something funny is going on with the close class.  probably a stylesheet missing somewhere; patched with a margin-right, but needs proper fix #}
+                                <a class="close" data-dismiss="alert" href="#" style="margin-right: -120px">&times;</a>
+                                {% if message_has_url %}
+                                    {{ message | safe }}
+                                {% else %}
+                                    {{ message }}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+        </div>
+
+    </div>
