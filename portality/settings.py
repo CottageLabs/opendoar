@@ -21,7 +21,7 @@ SERVICE_TAGLINE = ""
 HOST = "0.0.0.0"
 DEBUG = True
 PORT = 5010
-SSL = True
+SSL = False
 
 # elasticsearch settings
 ELASTIC_SEARCH_HOST = "http://localhost:9200" # remember the http:// or https://
@@ -38,6 +38,10 @@ PUBLIC_ACCESSIBLE_JSON = True
 SMTP_SERVER = "smtp.mandrillapp.com"
 
 SMTP_PORT = 587
+
+# override these in your app.cfg, and don't put them in version control
+SMTP_USER = None
+SMTP_PASS = None
 
 # ========================
 # user login settings
@@ -65,8 +69,8 @@ SUPER_USER_ROLE = "admin"
 # and identifier for how non-analyzed fields for faceting are differentiated in the mappings
 FACET_FIELD = ".exact"
 MAPPINGS = {
-    "journal" : {
-        "journal" : {
+    "account" : {
+        "account" : {
             "dynamic_templates" : [
                 {
                     "default" : {
@@ -85,12 +89,7 @@ MAPPINGS = {
         }
     }
 }
-MAPPINGS['account'] = {'account':MAPPINGS['journal']['journal']}
-MAPPINGS['article'] = {'article':MAPPINGS['journal']['journal']}
-MAPPINGS['suggestion'] = {'suggestion':MAPPINGS['journal']['journal']}
-MAPPINGS['upload'] = {'upload':MAPPINGS['journal']['journal']}
-MAPPINGS['cache'] = {'cache':MAPPINGS['journal']['journal']}
-MAPPINGS['toc'] = {'toc':MAPPINGS['journal']['journal']}
+# MAPPINGS['something'] = {'account':MAPPINGS['account']['account']}
 
 
 # ========================

@@ -10,3 +10,15 @@
     background-color: #eeeeee;
 }
 
+#main-nav-admin-menu > li > a {
+    color: #003089;
+}
+
+#main-nav-admin-menu > li.active > a {
+    background-color: #cccccc;
+}
+
+#main-nav-admin-menu > li > a:hover {
+    background-color: #eeeeee;
+}
+

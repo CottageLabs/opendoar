@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+{% if current_user.has_role("create_user") %}<p><a href="/account/register">create new user</a></p>{% endif %}
+
+<table id="userlist">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Account Created</th>
+            <th>&nbsp;</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+    <tr>
+        <td>{{user.id}}</td>
+        <td><a href="mailto:{{user.email}}">{{user.email}}</a></td>
+        <td>{{user.role|join(", ")}}</td>
+        <td>{{user.created_date}}</td>
+        <td>
+            {% if current_user.has_role("edit_user") %}
+                <a href="{{url_for('account.username', username=user.id)}}">edit</a>
+            {% else %}
+                &nbsp;
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block extra_js_bottom %}
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        $("#userlist").tablesorter(
+            {
+                headers: {
+                    0 : {sorter : true},
+                    1 : {sorter : true},
+                    2 : {sorter : true},
+                    3 : {sorter : true},
+                    4 : {sorter : false},
+                }
+            }
+        )
+    })
+
+</script>
+{% endblock extra_js_bottom %}

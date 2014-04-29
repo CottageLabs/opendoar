@@ -3,15 +3,16 @@ from flask import Flask
 from functools import wraps
 
 from portality import settings
-#from flask.ext.login import LoginManager, current_user
-#login_manager = LoginManager()
+from flask.ext.login import LoginManager, current_user
+login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
     configure_app(app)
     if app.config.get('INITIALISE_INDEX',False): initialise_index(app)
+    setup_jinja(app)
     setup_error_email(app)
-    #login_manager.setup_app(app)
+    login_manager.setup_app(app)
     return app
 
 def configure_app(app):
@@ -43,6 +44,19 @@ def setup_error_email(app):
                                    ADMINS, 'error')
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
+
+def setup_jinja(app):
+    '''Add jinja extensions and other init-time config as needed.'''
+
+    app.jinja_env.add_extension('jinja2.ext.do')
+    app.jinja_env.add_extension('jinja2.ext.loopcontrols')
+    app.jinja_env.globals['getattr'] = getattr
+
+    # a jinja filter that prints to the Flask log
+    def jinja_debug(text):
+        print text
+        return ''
+    app.jinja_env.filters['debug']=jinja_debug
 
 app = create_app()
 
