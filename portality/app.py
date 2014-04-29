@@ -7,6 +7,9 @@ from portality.core import app, login_manager
 from portality import settings, searchurl
 from portality.oarr import OARRClient
 
+from portality.view.stream import blueprint as stream
+from portality.view.stream import stream as rawstream
+
 from portality.view.admin import blueprint as admin
 from portality.view.account import blueprint as account
 
@@ -35,6 +38,8 @@ def standard_authentication():
 app.register_blueprint(admin, url_prefix='/admin')
 app.register_blueprint(account, url_prefix='/account')
 
+app.register_blueprint(stream, url_prefix='/stream')
+
 @app.route("/")
 def root():
     return render_template("index.html", api_base_url=app.config.get("OARR_API_BASE_URL", "http://localhost:5001/"))
@@ -46,7 +51,22 @@ def mapp():
 
 @app.route("/contribute")
 def contribute():
-    return render_template("contribute.html")
+
+    autos = {
+        "org.name": rawstream(key="register.organisation.details.name",raw=True),
+        "api.type": rawstream(key="register.api.api_type",raw=True),
+        "policy.terms": rawstream(key="register.policy.policy_terms",raw=True)
+    }
+    dropdowns = {
+        "ops": rawstream(key="register.operational_status",raw=True),
+        "contents": rawstream(key="register.metadata.record.content_type",raw=True,size=10000),
+        "subjects": rawstream(key="register.metadata.record.subject.term",raw=True,size=10000),
+        "types": rawstream(key="register.metadata.record.repository_type",raw=True),
+        "softwares": rawstream(key="register.software.name",raw=True),
+        "policytypes": rawstream(key="register.policy.policy_type",raw=True),
+        "policygrades": rawstream(key="register.policy.policy_grade",raw=True)
+    }
+    return render_template("contribute.html",autos=autos,dropdowns=dropdowns)
 
 
 @app.route("/about")
@@ -93,11 +113,11 @@ def organisation(org):
         except:
             abort(404)
     else:
-        #try:
-        record = client.get_org(org)
-        return render_template("organisation.html", org=record.record)
-        #except:
-        #    abort(404)
+        try:
+            record = client.get_org(org)
+            return render_template("organisation.html", org=record.record)
+        except:
+            abort(404)
 
 
 if __name__ == "__main__":

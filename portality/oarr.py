@@ -30,6 +30,17 @@ class OARRClient(object):
         except:
             return None
 
+    def query(self, qry={
+        'query':{'match_all':{}},
+        'size': 0,
+        'facets':{}
+    }):
+        try:
+            resp = requests.get(self.base_url + "/query?source=" + json.dumps(qry) )
+            return resp
+        except:
+            return {}
+
 
 class Register(object):
     def __init__(self, raw):

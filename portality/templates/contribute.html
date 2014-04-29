@@ -2,10 +2,168 @@
 
 {% block content %}
 
-<div class="hero-unit">
-<h1>Suggestion form to go here.</h1>
-</div>    
+<style>
+label{
+    width:200px;
+    display:inline-block;
+}
+</style>
 
+
+<div class="hero-unit">
+    <h1>Tell us about a repository to add to OpenDOAR</h1>
+</div>
+
+<div class="row-fluid">
+
+    <div class="span6">
+
+        <p><label for="org.name">Organisation name</label>
+        <input type="text" name="org.name" class="auto"></p>
+
+        <p><label for="org.url">Organisation URL</label>
+        <input type="text" name="org.url"></p>
+
+        <p><label for="org.unit">Organisational unit</label>
+        <input type="text" name="org.unit"></p>
+
+        <p><label for="org.lat">Organisation latitude</label>
+        <input type="text" name="org.lon"></p>
+
+        <p><label for="">Organisation longitude</label>
+        <input type="text" name=""></p>
+
+        <hr></hr>
+
+
+    </div>
+
+    <div class="span6">
+        <div class="thumbnail multi">
+
+            <p><label for="contact.email">Contact email</label>
+            <input type="text" name="contact.email"></p>
+
+            <p><label for="contact.phone">Contact phone</label>
+            <input type="text" name="contact.phone"></p>
+
+            <p><label for="contact.job">Contact job title</label>
+            <input type="text" name="contact.job"></p>
+
+            <p><label for="contact.address">Contact address</label>
+            <textarea name="contact.address"></textarea></p>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="row-fluid">
+
+    <div class="span6">
+
+        <p><label for="repo.name">Repository name</label>
+        <input type="text" name="repo.name"></p>
+
+        <p><label for="repo.acronym">Repository acronym</label>
+        <input type="text" name="repo.acronym"></p>
+
+        <p><label for="repo.est">Repository established date</label>
+        <input type="text" name="repo.est" class="datepicker"></p>
+
+        <p><label for="repo.url"></label>
+        <input type="text" name="repo.url" class="datepicker"></p>
+
+        <p><label for="op.status">Repository status</label>
+        <select name="op.status">
+            <option></option>
+            {% for op in dropdowns.ops %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="repo.lang">Repository language</label>
+        <input type="text" name="repo.lang"></p>
+
+        <p><label for="repo.content">Repository contents</label>
+        <select name="repo.content" class="select2">
+            <option></option>
+            {% for op in dropdowns.contents %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="repo.subject">Repository subjects</label>
+        <select name="repo.subject" class="select2">
+            <option></option>
+            {% for op in dropdowns.subjects %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="repo.type">Repository type</label>
+        <select name="repo.type">
+            <option></option>
+            {% for op in dropdowns.types %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="repo.desc">Repository description</label>
+        <input type="text" name="repo.desc"></p>
+
+        <p><label for="repo.software.name">Repository software name</label>
+        <select name="repo.software.name">
+            <option></option>
+            {% for op in dropdowns.softwares %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="repo.software.type">Repository software version</label>
+        <input type="text" name="repo.software.type"></p>
+
+        <hr></hr>
+
+        <p><label for="submit">&nbsp;</label>
+        <input type="submit" name="submit" value="Submit this repository" class="btn btn-default" style="width:220px;"></p>
+
+    </div>
+    
+    <div class="span6">
+
+        <div class="thumbnail multi">
+        <p><label for="api.type">Repository API type</label>
+        <input type="text" name="api.type" class="auto"></p>
+
+        <p><label for="api.url">Repository API URL</label>
+        <input type="text" name="api.url"></p>
+        </div>
+
+        <div style="height:20px;"></div>
+
+        <div class="thumbnail multi">
+        <p><label for="policy.type">Repository policy type</label>
+        <select name="policy.type">
+            <option></option>
+            {% for op in dropdowns.policytypes %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="policy.grade">Repository policy grade</label>
+        <select name="policy.grade">
+            <option></option>
+            {% for op in dropdowns.policygrades %}
+            <option>{{op}}</option>
+            {% endfor %}
+        </select></p>
+
+        <p><label for="policy.terms">Repository policy terms</label>
+        <input type="text" name="policy.terms" class="auto"></p>
+        </div>
+    </div>
+</div>
 
 
 {% endblock %}
@@ -16,6 +174,13 @@
 
 jQuery(document).ready(function($) {
 
+    var autos = {{ autos|tojson|safe }};
+
+    $('.auto').each(function(i) {
+    });
+    
+    //$('.datepicker')
+    
 })
 
 </script>
