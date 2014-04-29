@@ -7,37 +7,6 @@ from portality.core import app#, login_manager
 from portality import settings, searchurl
 from portality.oarr import OARRClient
 
-'''
-@login_manager.user_loader
-def load_account_for_login_manager(userid):
-    out = models.Account.pull(userid)
-    return out
-
-@app.before_request
-def standard_authentication():
-    """Check remote_user on a per-request basis."""
-    remote_user = request.headers.get('REMOTE_USER', '')
-    if remote_user:
-        user = models.Account.pull(remote_user)
-        if user:
-            login_user(user, remember=False)
-    # add a check for provision of api key
-    elif 'api_key' in request.values:
-        res = models.Account.query(q='api_key:"' + request.values['api_key'] + '"')['hits']['hits']
-        if len(res) == 1:
-            user = models.Account.pull(res[0]['_source']['id'])
-            if user:
-                login_user(user, remember=False)
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
-@app.errorhandler(401)
-def page_not_found(e):
-    return render_template('401.html'), 401
-'''
 
 @app.route("/")
 def root():
@@ -47,6 +16,17 @@ def root():
 def mapp():
     return render_template("map.html")
 
+
+@app.route("/contribute")
+def contribute():
+    return render_template("contribute.html")
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
 @app.route("/repository/<repo_id>")
 def repository(repo_id):
     base = app.config.get("OARR_API_BASE_URL")
@@ -55,14 +35,43 @@ def repository(repo_id):
     client = OARRClient(base)
     if repo_id.endswith('.json'):
         repo_id = repo_id.replace('.json','')
-        record = client.get_record(repo_id)
-        resp = make_response( record.json )
-        resp.mimetype = "application/json"
-        return resp        
+        try:
+            record = client.get_record(repo_id)
+            resp = make_response( record.json )
+            resp.mimetype = "application/json"
+            return resp        
+        except:
+            abort(404)
     else:
-        record = client.get_record(repo_id)
-        return render_template("repository.html", repo=record, searchurl=searchurl)
-        
+        try:
+            record = client.get_record(repo_id)
+            return render_template("repository.html", repo=record, searchurl=searchurl)
+        except:
+            abort(404)
+
+
+@app.route("/organisation/<org>")
+def organisation(org):
+    base = app.config.get("OARR_API_BASE_URL")
+    if base is None:
+        abort(500)
+    client = OARRClient(base)
+    if org.endswith('.json'):
+        org = org.replace('.json','')
+        try:
+            record = client.get_org(org)
+            resp = make_response( record.json )
+            resp.mimetype = "application/json"
+            return resp        
+        except:
+            abort(404)
+    else:
+        #try:
+        record = client.get_org(org)
+        return render_template("organisation.html", org=record.record)
+        #except:
+        #    abort(404)
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=app.config['PORT'])

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    
+
+<div class="row-fluid" style="margin-bottom: 20px">
+
+    <div class="span4">
+        <h1>{{org.name}}</h1>
+
+        <p><a href="{{org.url}}">{{org.url}}</a></p>
+        <p>{{org.lat}}, {{org.lon}}</p>
+        
+        <h2>Organisational units</h2>
+        {% for u in org.units %}
+            <p>{{u}}</p>
+        {% endfor %}
+    </div>
+
+    <div class="span8">
+        <h2>Repositories</h2>
+        {% for repo in org.repos %}
+            <p>
+                <a href="/repository/{{repo.id}}">{{repo.record.name}}</a> 
+                {{repo.record.description}} 
+                (<a href="{{repo.record.url}}">{{repo.record.url}}</a>)
+            </p>
+            <hr></hr>
+        {% endfor %}
+    
+    </div>
+
+</div>
+
+
+{% endblock %}
+
+{% block extra_js_bottom %}
+
+<script type="text/javascript">
+
+jQuery(document).ready(function($) {
+
+})
+
+</script>
+
+{% endblock %}

@@ -17,12 +17,20 @@
     <![endif]-->
 
     <!-- this is where we can incorporate any css files -->
-    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/bootstrap/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap-3.1.1/css/bootstrap.min.css')}}">
     
     <!-- get the select2 css -->
     <link rel="stylesheet" type="text/css" href="/static/portality/vendor/select2-release-3.2/select2.css">
 
     <style>
+    .point{
+      cursor: pointer;
+    }
+    .country{
+      stroke: #fff;
+      stroke-width: 0.8px;
+      cursor:pointer;
+    }
     .country:hover{
       stroke: #333;
       stroke-width: 0.8px;
@@ -51,6 +59,136 @@
       opacity: 0.9; 
       position: absolute;
     }
+    #counter{
+        position:absolute;
+        top:9px;
+        right:41%;
+        font-size:0.9em;
+        color:#999;
+    }
+    #searches{
+        position:absolute;
+        top:-1px;
+        right:0;
+        width:40%;
+        z-index:1000;
+    }
+    #searchbox{
+        -webkit-border-radius: 0 0 0 5px;
+        -moz-border-radius: 0 0 0 5px;
+        border-radius: 0 0 0 5px;
+        background:transparent;
+    }
+    #selections{
+        position:absolute;
+        top:40px;
+        right:0;
+        min-width:40%;
+        padding-right:10px;
+        overflow:hidden;
+        z-index:1000;
+    }
+    #suggestions{
+        position:absolute;
+        top:0;
+        right:0;
+        width:100%;
+        padding-top:80px;
+        padding-right:10px;
+        overflow:hidden;
+        display:none;
+        max-height:98%;
+    }
+
+    #register_policy_policy_grade_exact{
+        float:right;
+        width:20%;
+        padding:0;
+        margin-right:5px;
+        border-right:1px solid #ccc;
+    }
+    #register_software_name_exact{
+        float:right;
+        width:9%;
+        padding:0;
+        margin-right:5px;
+        border-right:1px solid #ccc;
+    }
+    #register_metadata_record_language_exact{
+        float:right;
+        width:3%;
+        padding:0;
+        margin-right:5px;
+        border-right:1px solid #ccc;
+    }
+    #suggest_operational_content_type{
+        float:right;
+        width:10%;
+        padding:0;
+        margin-right:5px;
+        border-right:1px solid #ccc;
+    }
+    #register_metadata_record_subject_term_exact{
+        float:right;
+        width:13%;
+        padding:0;
+        margin-right:5px;
+        border-right:1px solid #ccc;
+    }
+    
+    #suggest_repo{
+        float:right;
+        width:39%;
+        padding:0;
+    }
+    .suggestion{
+        font-size:0.9em;
+        padding:2px;
+        margin:0;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        display:block;
+    }
+    .suggestion:hover{
+        background:#ddd;
+    }
+    #selections{
+    }
+    #welcome{
+        position:absolute;
+        top:80px;
+        right:10%;
+        width:30%;
+    }
+    #orgpanel{
+        position:absolute;
+        top:80px;
+        right:10%;
+        width:30%;
+    }
+    #repopanel{
+        position:absolute;
+        top:80px;
+        right:10%;
+        width:30%;
+    }
+    #options{
+        position:absolute;
+        top:80px;
+        right:10%;
+        width:30%;
+    }
+    #graphs{
+        position:absolute;
+        bottom:0;
+        left:0;
+        width:100%;
+        height:20px;
+        overflow:hidden;
+        border-top:1px solid #ccc;
+        display:none;
+    }
     </style>
 
 </head>
@@ -61,11 +199,147 @@
 
 
 
+
+<div id="counter">
+loading
+</div>
+
+
+
+
+<div class="input-group" id="searches">
+    <input type="text" class="form-control" id="searchbox" placeholder="openDOAR - search here">
+    <div class="input-group-btn">
+        <button class="btn btn-default" id="showoptions" alt="show/hide search options" title="show/hide search options"><i class="glyphicon glyphicon-cog"></i></button>
+    </div>
+</div>
+
+
+
+<div id="selections">
+</div>
+
+
+<div id="suggestions">
+
+    <div id="suggest_repo">
+    </div>
+
+    <div class="extrasuggest" id="register_metadata_record_subject_term_exact">
+    </div>
+
+    <div class="extrasuggest" id="suggest_operational_content_type">
+        <div class="extrasuggest" id="register_operational_status_exact">
+        </div>
+        <div class="extrasuggest" id="register_metadata_record_content_type_exact" style="border-top:1px solid #ccc;margin-top:5px;">
+        </div>
+        <div class="extrasuggest" id="register_metadata_record_repository_type_exact" style="border-top:1px solid #ccc;margin-top:5px;">
+        </div>
+    </div>
+
+    <div class="extrasuggest" id="register_metadata_record_language_exact">
+    </div>
+
+    <div class="extrasuggest" id="register_software_name_exact">
+    </div>
+
+    <div class="extrasuggest" id="register_policy_policy_grade_exact">
+    </div>
+
+</div>
+
+
+
+<div class="panel panel-default" id="options" style="display:none;">
+    <div class="panel-heading">
+        <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
+        <h2 style="text-align:center;">Options</h2>
+    </div>
+    <div class="panel-body">
+        <p>
+        <input class="facetrequest" type="checkbox" name="register.operational_status.exact"> suggest operational status when text searching<br>
+        <input class="facetrequest" type="checkbox" name="register.policy.policy_grade.exact"> suggest policy grades when text searching<br>
+        <input class="facetrequest" type="checkbox" name="register.metadata.record.language.exact"> suggest repository languages  when text searching<br>
+        <input class="facetrequest" type="checkbox" name="register.metadata.record.content_type.exact"> suggest content types when text searching<br>
+        <input class="facetrequest" type="checkbox" name="register.metadata.record.repository_type.exact"> suggest repository types when text searching<br>
+        <input class="facetrequest" type="checkbox" name="register.metadata.record.subject.term.exact"> suggest repository subjects when text searching<br>
+        <input class="facetrequest" type="checkbox" name="register.software.name.exact"> suggest repository software when text searching
+        </p>
+
+        <hr></hr>
+
+        <!--
+        <p>
+        <input type="checkbox" name="graphs"> show related graphs with the map<br>
+        <input type="radio" name="map" value="mercator" checked="checked"> meractor or 
+        <input type="radio" name="map" value="ortho"> orthographic map
+        </p>
+
+        <hr></hr>-->
+
+        <p><a href="{{ url_for('root') }}">Switch to faceted browse text search page</a></p>
+        <p><a href="{{ url_for('contribute') }}">Tell us about another repository to include</a></p>
+        <p><a href="{{ url_for('about') }}">Learn more about the openDOAR service</a></p>
+    </div>
+</div>
+
+
+
+<div class="panel panel-default" id="welcome" style="display:none;">
+    <div class="panel-heading">
+        <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
+        <h2 style="text-align:center;">Welcome to openDOAR</h2>
+    </div>
+    <div class="panel-body">
+        <p>LOGO HERE, branded colours on borders, map etc.</p>
+        <p>Scroll or double-click to zoom, click-and-drag to pan</p>
+        <p>Click a country or organisation to focus on it</p>
+        <p>Use the text search box above to find organisations</p>
+        <p>Click the <span class="glyphicon glyphicon-cog"></span> settings icon at top right for options</p>
+    </div>
+</div>
+
+
+
+
+<div class="panel panel-default" id="orgpanel" style="display:none;">
+    <div class="panel-heading">
+        <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
+        <h4></h4>
+    </div>
+    <div class="panel-body">
+    </div>
+</div>
+
+
+
+
+<div class="panel panel-default" id="repopanel" style="display:none;">
+    <div class="panel-heading">
+        <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
+        <h4></h4>
+    </div>
+    <div class="panel-body">
+    </div>
+</div>
+
+
+
+
+
+<div id="graphs">
+
+<p>graphs in here</p>
+
+</div>
+
+
+
 <!-- get jquery js -->
 <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/jquery-1.7.1.min.js')}}"></script>
 
 <!-- get bootstrap js -->
-<script type="text/javascript" src="{{url_for('static', filename='portality/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
+<script type="text/javascript" src="{{url_for('static', filename='bootstrap-3.1.1/js/bootstrap.min.js')}}"></script>
 
 <!-- get select2 -->
 <script type="text/javascript" src="/static/portality/vendor/select2-release-3.2/select2.min.js"></script>
@@ -75,17 +349,252 @@
 
 <!-- get topojson -->
 <script src="/static/map/topojson.v1.min.js"></script>
-    
+
+
+
+
+
 <script>
+// first define the bind with delay function from (saves loading it separately) 
+// https://github.com/bgrins/bindWithDelay/blob/master/bindWithDelay.js
+(function($) {
+    $.fn.bindWithDelay = function( type, data, fn, timeout, throttle ) {
+        var wait = null;
+        var that = this;
+
+        if ( $.isFunction( data ) ) {
+            throttle = timeout;
+            timeout = fn;
+            fn = data;
+            data = undefined;
+        }
+
+        function cb() {
+            var e = $.extend(true, { }, arguments[0]);
+            var throttler = function() {
+                wait = null;
+                fn.apply(that, [e]);
+            };
+
+            if (!throttle) { clearTimeout(wait); }
+            if (!throttle || !wait) { wait = setTimeout(throttler, timeout); }
+        }
+
+        return this.bind(type, data, cb);
+    };
+})(jQuery);
+
+
+
+// page init
+$('#searchbox').focus();
+if ( !$('#searchbox').val().length ) {
+    $('#welcome').fadeIn(2000);
+    setTimeout(function() {
+        $('#welcome').fadeOut(500);
+    }, 10000);
+}
+$('#showoptions').bind('click', function(event) {
+    event.preventDefault();
+    $('#orgpanel').is(':visible') ? $('#orgpanel').hide() : false;
+    $('#repopanel').is(':visible') ? $('#repopanel').hide() : false;
+    $('#welcome').is(':visible') ? $('#welcome').hide() : false;
+    $('#options').toggle();
+});
+
+
+// the default query
+var query = {
+    "query": {
+        "match_all": {}
+    },
+    "size":3000,
+    "fields": [
+        "register.organisation.details.lat",
+        "register.organisation.details.lon",
+        "register.organisation.details.name",
+        "register.metadata.record.name",
+        "id"
+    ],
+    "facets":{
+    }
+}
+
+// and a place to store the query responses
+queryresponse = undefined;
+
+// define what to do when response received
+var first = true;
+var handleresults = function(data) {
+    queryresponse = data;
+    $('#counter').html(data.hits.total);
+    // remove old stuff
+    $('.point').remove();
+    $('.suggestion').remove();
+    $('.extrasuggest').hide();
+    if ( first ) {
+        first = false;
+    } else {
+        $('#welcome').is(':visible') ? $('#welcome').hide() : false;
+        $('#options').is(':visible') ? $('#options').hide() : false;
+        $('#orgpanel').is(':visible') ? $('#orgpanel').hide() : false;
+        $('#repopanel').is(':visible') ? $('#repopanel').hide() : false;
+    }
+    if ( !query.query.match_all ) {
+        $('#suggestions').show();
+    } else {
+        $('#suggestions').hide();        
+    }
+    draw(topo);
+    // TODO: ensure selections from query are showing as boxes on the page
+    // TODO: show repo result options on page list
+}
+
+// and the function that executes queries
+var executequery = function() {
+    // TODO: update the query by reading boxes from the page
+    $('#counter').html('loading');
+    var qry = "";
+    if ( $('#searchbox').val().length || $('.chosen').length ) {
+        query.query = {"bool": {"must": []}};
+        if ( $('#searchbox').val().length ) {
+            qry = '*' + $('#searchbox').val() + '*';
+            query.query.bool.must.push( {"query_string":{"query":qry}} );
+        }
+        if ( $('.chosen').length ) {
+            $('.chosen').each(function() {
+                var field = $(this).attr('data-field');
+                var val = $(this).attr('data-value');
+                // TODO: country field should become available in index, but for now do a text search for it
+                if ( field == "countrydemo" ) {
+                    query.query.bool.must.push( {"query_string":{"query":val}} );
+                } else {
+                    query.query.bool.must.push( {"term": {}} );
+                    query.query.bool.must[query.query.bool.must.length-1]['term'][field] = val;
+                }
+            });
+        }
+    } else {
+        query.query = {"match_all": {}};
+    }
+    // add facet requests to the query if tickboxes selected
+    query.facets = {};
+    $('.facetrequest').each(function(i) {
+        if ( $(this).is(':checked') ) {
+            var nm = $(this).attr('name');
+            query.facets[nm] = {
+                "terms": {
+                    "field":nm,
+                    "size":100
+                }
+            };
+            /*if ( qry.length ) {
+                query.facets[nm].facet_filter = {
+                    "query": {"query_string":{"query":qry, "default_field": nm.replace('.exact','')}}
+                }
+            }*/
+        }
+    });
+    $.ajax({
+        type: 'GET',
+        url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(query),
+        dataType: 'JSONP',
+        success: handleresults
+    });
+}
+executequery(); // run once at page load to populate all points on map
+
+// bind the search box to the query executor and suggestion displays
+$('#searchbox').bindWithDelay('input',executequery,400);
+$('#searchbox').bindWithDelay('focus',function() { if ( $('#searchbox').val().length ) { $('#suggestions').show(); }; }, 100);
+$('#searchbox').bindWithDelay('blur',function() { $('#suggestions').hide(); }, 100);
+
+// unchoose a chosen term from the searches
+var unchoose = function(event) {
+    event.preventDefault();
+    $(this).remove();
+    executequery();
+}
+
+// show a panel about the clicked org
+var showorgpanel = function(data) {
+    $('#welcome').hide();
+    $('#options').hide();
+    $('#repopanel').hide();
+    //$('#suggestions').hide();
+    var details = '<p>' + data.lat + ', ' + data.lon + '</p>';
+    details += '<p><a href="/organisation/' + data.name + '">View organisation record</a></p>';
+    details += '<p>or view a repository record:<br>';
+    for ( var i = 0; i < data.repos.length; i++ ) {
+        var repo = data.repos[i];
+        details += '<a href="/repository/' + repo.id + '">' + repo.record.name + '</a><br>';
+    }
+    details += '</p>';
+    $('#orgpanel > .panel-heading > h4').html(data.name);    
+    $('#orgpanel > .panel-body').html(details);    
+    $('#orgpanel').show();
+    // TODO: should zoom and pan the map to the clicked org too
+    // and particularly check that the dot is moved beyond 40% right
+}
+
+// show a panel about the clicked repo
+var showrepopanel = function(data) {
+    $('#welcome').hide();
+    $('#options').hide();
+    $('#orgpanel').hide();
+    //$('#suggestions').hide();
+    var details = '<p><a href="/repository/' + data.id + '">View repository record</a> for more information.</p>';
+    details += '<p>' + data.register.metadata[0].record.description + '</p>';
+    $('#repopanel > .panel-heading > h4').html(data.register.metadata[0].record.name);    
+    $('#repopanel > .panel-body').html(details);    
+    $('#repopanel').show();
+    // TODO: should zoom and pan the map to the orgs of the clicked repo too
+    // maybe filter the dots too? or just change the colour of the relevant ones?
+    // and particularly check that the dot is moved beyond 40% right
+}
+
+// get the repo data when a suggested repo is clicked
+var getrepodata = function(event) {
+    event.preventDefault();
+    var repo = $(this).attr('href');
+    $.ajax({
+        type: 'GET',
+        url: '/repository/' + repo + '.json',
+        dataType: 'JSON',
+        success: showrepopanel
+    });
+}
+
+var addchoice = function(event) {
+    event.preventDefault();
+        var field = $(this).attr('data-field');
+        var val = $(this).attr('data-value');
+        if ( !$('.chosen[data-field="' + field + '"]').length ) {
+            $('#selections').append('<a href="#" class="btn btn-default chosen" data-field="' + field + '" data-value="' + val + '"><span class="glyphicon glyphicon-remove"></span> ' + val + '</a>');
+            $('#selections').children().last().bind('click',unchoose);
+            executequery();
+        }
+
+}
+
+// a close button trigger
+var closer = function(event) {
+    event.preventDefault();
+    $(this).closest( '.' + $(this).attr('data-dismiss') ).toggle();
+};
+$('.close').bind('click',closer);
+
+
+// stuff for the map
 d3.select(window).on("resize", throttle);
 
 var zoom = d3.behavior.zoom()
-    .scaleExtent([1, 9])
+    .scaleExtent([1, 800])
     .on("zoom", move);
 
 
 var width = document.getElementById('map').offsetWidth;
-var height = width / 2;
+var height = $(document).height() - 5;//width / 2;
 
 var topo,projection,path,svg,g;
 
@@ -94,9 +603,11 @@ var tooltip = d3.select("#map").append("div").attr("class", "tooltip hidden");
 setup(width,height);
 
 function setup(width,height){
+  //projection = d3.geo.orthographic()
   projection = d3.geo.mercator()
     .translate([(width/2), (height/2)])
-    .scale( width / 2 / Math.PI);
+    .scale( width / 2 / Math.PI)
+    .center([0, 30 ]);
 
   path = d3.geo.path().projection(projection);
 
@@ -109,6 +620,20 @@ function setup(width,height){
 
   g = svg.append("g");
 
+/*  var λ = d3.scale.linear()
+    .domain([0, width])
+    .range([-180, 180]);
+
+  var φ = d3.scale.linear()
+    .domain([0, height])
+    .range([90, -90]);
+    
+  svg.on("mousemove", function() {
+      var p = d3.mouse(this);
+      projection.rotate([λ(p[0]), φ(p[1])]);
+      svg.selectAll("path").attr("d", path);
+  });*/
+
 }
 
 d3.json("/static/map/world-topo-min.json", function(error, world) {
@@ -120,7 +645,7 @@ d3.json("/static/map/world-topo-min.json", function(error, world) {
 
 });
 
-function draw(topo,data) {
+function draw(topo) {
 
 
   var country = g.selectAll(".country").data(topo);
@@ -149,29 +674,48 @@ function draw(topo,data) {
       })
       .on("mouseout",  function(d,i) {
         tooltip.classed("hidden", true);
-      }); 
+      })
+      .on("click", function(d,i) {
+        if ( ( $('#chosencountry').length && $('#chosencountry').attr('data-value') != d.properties.name ) || !$('#chosencountry').length ) {
+            $('#chosencountry').remove();
+            $('#selections').append('<a href="#" class="btn btn-default chosen" id="chosencountry" data-field="countrydemo" data-value="' + d.properties.name + '"><span class="glyphicon glyphicon-remove"></span> ' + d.properties.name + '</a>');
+            $('#chosencountry').bind('click',unchoose);
+            executequery();
+        }
+      });
 
-  //add points
-  if ( data ) {
-      data.hits.hits.forEach(function(i){
+  //add points and repo suggestions
+  if ( queryresponse ) {
+      queryresponse.hits.hits.forEach(function(i){
           var nm = i.fields["register.organisation.details.name"];
-          if ( typeof nm != "string" ) {
-            nm = nm[0];
-          }
-          nm = nm.toLowerCase().replace('university ','');
-          nm = nm.replace(' university','');
-          nm = nm.replace('college ','');
-          nm = nm.replace('of ','');
-          nm = nm.replace('the ','');
-          if ( nm.length > 26 ) {
-              nm = nm.substring(0,26) + '...';
-          }
+          typeof nm != "string" ? nm = nm[0] : nm = nm;
           addpoint(
             i.fields["register.organisation.details.lon"],
             i.fields["register.organisation.details.lat"],
             nm
           );
+          if ( !query.query.match_all ) {
+              var sg = '<a class="suggestion getrepo" href="' + i.fields["id"] + '">';
+              sg += i.fields["register.metadata.record.name"] + '</a>';
+              $('#suggest_repo').append(sg);
+          }
       });
+      $('.getrepo').bind('click',getrepodata);
+      // check for facets and add them to relevant suggest_divs
+      // NOTE: this may require prototyping "in" for IE
+      if ( 'facets' in queryresponse ) {
+          $.each(queryresponse.facets, function(k,v) {
+              $.each(v.terms, function(kk,vv) {
+                  var div = '#' + k.replace(/\./g,'_');
+                  var val = vv.term;
+                  if ( div == '#register_operational_status_exact' || div == '#register_metadata_record_content_type_exact' || div == '#register_metadata_record_repository_type_exact' ) {
+                      $(div).parent().show();
+                  }
+                  $(div).show().append('<a class="suggestion addchoice" href="#" data-field="' + k + '" data-value="' + val + '">' + val + '</a>');
+              });
+          });
+      }
+      $('.addchoice').bind('click',addchoice);
   }
 
 }
@@ -207,8 +751,11 @@ function move() {
   zoom.translate(t);
   g.attr("transform", "translate(" + t + ")scale(" + s + ")");
 
-  //adjust the country hover stroke width based on zoom level
+  //adjust the country hover stroke width and point size based on zoom level
   d3.selectAll(".country").style("stroke-width", 1 / s);
+  var sz = 1 / (s/2);
+  sz > 1 ? sz = 1 : sz = sz;
+  d3.selectAll(".point").attr("r", sz);
 
 }
 
@@ -241,50 +788,34 @@ function addpoint(lat,lon,text) {
         .attr("cx", x)
         .attr("cy", y)
         .attr("class","point")
-        .attr("r", 0.3);
+        .attr("r", 1)
+      .on("click", function(d,i) {
+          $.ajax({
+            type: 'GET',
+            url: '/organisation/' + text + '.json',
+            dataType: 'JSON',
+            success: showorgpanel
+          });
+
+      });
 
   //conditional in case a point has no associated text
   if(text.length>0){
 
-    gpoint.append("text")
+    /*gpoint.append("text")
           .attr("x", x+0.5)
           .attr("y", y+0.5)
           .attr("class","text")
+          .text(text);*/
+
+    gpoint.append("svg:title")
           .text(text);
   }
 
 }
-</script>
+// end of stuff for map ////////////////////////////////////////////////////////
 
 
-
-<script>
-jQuery(document).ready(function($) {
-
-    var onmap = function(data) {
-        draw(topo,data)
-    }
-
-    var query = {
-        "query": {
-            "match_all": {}
-        },
-        "size":3000,
-        "fields": [
-            "register.organisation.details.lat",
-            "register.organisation.details.lon",
-            "register.organisation.details.name"
-        ]
-    }
-
-    $.ajax({
-        type: 'GET',
-        url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(query),
-        dataType: 'JSONP',
-        success: onmap
-    });
-
-});
 </script>
 
 </body>

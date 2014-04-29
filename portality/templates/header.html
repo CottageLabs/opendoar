@@ -11,7 +11,10 @@
         <div class="navbar" id="main-nav">
             <div class="navbar-inner">
                 <ul class="nav pull-right" id="main-nav-first-menu" style="margin-bottom: 10px">
-                    <li{% if request.path == '/' %} class="active"{% endif %}><a href="{{ url_for('root') }}">Search OpenDOAR</a></li>
+                    <li{% if request.path == url_for('root') %} class="active"{% endif %}><a href="{{ url_for('root') }}">Search OpenDOAR</a></li>
+                    <li><a href="{{ url_for('mapp') }}">Explore by map</a></li>
+                    <li{% if request.path == url_for('about') %} class="active"{% endif %}><a href="{{ url_for('about') }}">About OpenDOAR</a></li>
+                    <li{% if request.path == url_for('contribute') %} class="active"{% endif %}><a href="{{ url_for('contribute') }}">Contribute</a></li>
                 </ul>
             </div>    
         </div>
