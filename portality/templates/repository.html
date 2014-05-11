@@ -99,8 +99,8 @@
         <div class="row-fluid" style="margin-bottom: 30px">
             {% for con in reg.contact %}
                 <div class="span4">
-                    <strong>{{con.details.name}} {% if con.role %} - {{con.role|join(", ")}} {% endif %}</strong><br>
-                    {% if con.details.job_title %}Job Title: {{con.details.job_title}} {% endif %}
+                    <strong>{% if con.details.name %}{{con.details.name}}{% else %}name unknown{% endif %} {% if con.role %} - {{con.role|join(", ")}} {% endif %}</strong><br>
+                    {% if con.details.job_title %}Job Title: {{con.details.job_title}}<br> {% endif %}
                     {% if con.details.email %}<a href="mailto:{{con.details.email}}">{{con.details.email}}</a><br>{% endif %}
                     {% if con.details.address %}{{con.details.address}}<br>{% endif %}
                     {% if con.details.phone %}tel: <a href="tel:{{con.details.phone}}">{{con.details.phone}}</a><br>{% endif %}
