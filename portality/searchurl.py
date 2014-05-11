@@ -38,6 +38,18 @@ def subject(t):
     query["query"]["filtered"]["filter"]["bool"]["must"].append(st)
     return _search_url(query)
 
+def country(c):
+    query = deepcopy(_filter_query)
+    st = {"term" : {"register.metadata.record.country.exact" : c}}
+    query["query"]["filtered"]["filter"]["bool"]["must"].append(st)
+    return _search_url(query)
+
+def continent(c):
+    query = deepcopy(_filter_query)
+    st = {"term" : {"register.metadata.record.continent.exact" : c}}
+    query["query"]["filtered"]["filter"]["bool"]["must"].append(st)
+    return _search_url(query)
+
 def _search_url(query):
     return "/?source=" + json.dumps(query)
     

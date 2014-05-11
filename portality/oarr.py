@@ -77,6 +77,11 @@ class Register(object):
             if md.get("default", False):
                 default = md
         return deepcopy(default) # if we couldn't find the language you were looking for, return the default
+
+    def id_part(self, info_uri):
+        if info_uri.startswith("info:oarr:"):
+            return info_uri[10:]
+        return info_uri
         
         
 class Org(object):
