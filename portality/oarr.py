@@ -57,13 +57,29 @@ class Register(object):
     def register(self):
         return self.raw.get("register", {})
 
+    def ensure_register(self):
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+
     @property
     def repo_url(self):
-        self.get_metadata_value("url")
+        return self.get_metadata_value("url")
 
     @repo_url.setter
     def repo_url(self, url):
         self.set_metadata_value("url", url, "en")
+
+    @property
+    def operational_status(self):
+        return self.register.get("operational_status")
+
+    @operational_status.setter
+    def operational_status(self, val):
+        if val not in ["Operational", "Trial", "Broken", "Closed"]:
+            # raise OARRClientException("Operational satus must be one of Operational, Trial, Broken or Closed")
+            print "WARNING: Operational satus should be one of Operational, Trial, Broken or Closed"
+        self.ensure_register()
+        self.register["operational_status"] = val
 
     @property
     def created_date(self):
