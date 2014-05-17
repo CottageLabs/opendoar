@@ -2,6 +2,9 @@ import requests, json
 from copy import deepcopy
 from datetime import datetime
 
+class OARRClientException(Exception):
+    pass
+
 class OARRClient(object):
     def __init__(self, base_url):
         self.base_url = base_url
@@ -43,8 +46,8 @@ class OARRClient(object):
 
 
 class Register(object):
-    def __init__(self, raw):
-        self.raw = raw
+    def __init__(self, raw=None):
+        self.raw = raw if raw is not None else {}
     
     @property
     def json(self):
@@ -53,7 +56,15 @@ class Register(object):
     @property
     def register(self):
         return self.raw.get("register", {})
-    
+
+    @property
+    def repo_url(self):
+        self.get_metadata_value("url")
+
+    @repo_url.setter
+    def repo_url(self, url):
+        self.set_metadata_value("url", url, "en")
+
     @property
     def created_date(self):
         return self.raw.get("created_date")
@@ -77,6 +88,98 @@ class Register(object):
             if md.get("default", False):
                 default = md
         return deepcopy(default) # if we couldn't find the language you were looking for, return the default
+
+    def get_metadata_value(self, key, lang=None):
+        default_val = None
+
+        # go through all the metadata records
+        for md in self.raw.get("register", {}).get("metadata", []):
+
+            # first get the value we are interested in
+            rec = md.get("record")
+            val = rec.get(key)
+
+            # if we haven't been asked for a specific language, there is a value available, and this is the default
+            # record, then return it
+            if lang is None and md.get("default", False) and val is not None:
+                return val
+
+            # if we have been asked for a specific language, and this is it, and there is a value available,
+            # then return it
+            if lang is not None and lang == md.get("lang"):
+                return val
+
+            # finally, if we get here then we are after a value from a specific language, and this isn't the one
+            # so just remember the default value in case we need to fall back on it later
+            if md.get("default", False):
+                default_val = val
+
+        # by now we should either have returned, or picked up the default value.  If we are here, then just return
+        # the default
+        return default_val
+
+    def set_metadata_value(self, key, value, lang=None):
+        if lang is None:
+            mdr = self.get_default_metadata()
+        else:
+            mdr = self.make_metadata(lang)
+        mdr["record"][key] = value
+
+    def get_default_metadata(self):
+        for md in self.raw.get("register", {}).get("metadata", []):
+            if md.get("default", False):
+                return md
+        return None
+
+    def make_metadata(self, lang, default=False):
+        # ensure the register and metadata locations exist
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+        if "metadata" not in self.raw.get("register"):
+            self.raw["register"]["metadata"] = []
+
+        # if this is the first metadata record, make it the default
+        if len(self.raw.get("register", {}).get("metadata", [])) == 0:
+            default = True
+
+        # go through all the metadata records to see if we have one for this language
+        for md in self.raw.get("register", {}).get("metadata", []):
+            if md.get("lang") == lang:
+                """
+                FIXME: perhaps this is not the place to modify default status
+
+                # if we do, normalise the default status(es)
+                is_default = md.get("default", False)
+                if is_default and default:
+                    # it is the default, and we want it to be the default, so do nothing
+                    pass
+                elif is_default and not default:
+                    # it is the default, and we want it to not be the default, we can't do it right now
+                    raise OARRClientException("You must always have a default metadata record")
+                elif not is_default and default:
+                    # it isn't the default but we want it to be, so unset the old default and set the new one
+                    current_default = self.get_default_metadata()
+                    del current_default["default"]
+                    md["default"] = True
+                elif not is_default and not default:
+                    # it's not the default and we don't want it to be, so do nothing
+                    pass
+                """
+                return md
+
+        # if we get to here there wasn't one for the requested language, so we make one
+        md = {"lang" : lang, "default" : default, "record" : {}}
+        if default:
+            # unset the default status on the current default if necessary (note that this is ok, because
+            # we are creating a new default, rather than re-assigning the default through this method)
+            current_default = self.get_default_metadata()
+            if current_default is not None:
+                del current_default["default"]
+
+        # store the metadata on the raw data and then return its handle
+        self.raw["register"]["metadata"].append(md)
+        return md
+
 
     def id_part(self, info_uri):
         if info_uri.startswith("info:oarr:"):
