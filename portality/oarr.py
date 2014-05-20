@@ -1,4 +1,4 @@
-import requests, json
+import requests, json, pycountry
 from copy import deepcopy
 from datetime import datetime
 
@@ -80,6 +80,51 @@ class Register(object):
             print "WARNING: Operational satus should be one of Operational, Trial, Broken or Closed"
         self.ensure_register()
         self.register["operational_status"] = val
+
+    @property
+    def country(self):
+        return self.get_metadata_value("country")
+
+    @property
+    def country_code(self):
+        return self.get_metadata_value("country_code")
+
+    def set_country(self, name=None, code=None, lang="en"):
+        if name is None and code is None:
+            return
+        code = code.upper() if code is not None else code
+        if name is None and code is not None:
+            try:
+                c = pycountry.countries.get(alpha2=code)
+                name = c.name
+            except:
+                pass
+        if name is not None and code is None:
+            try:
+                c = pycountry.countries.get(name=name)
+                code = c.alpha2
+            except:
+                pass
+        if name is not None:
+            self.set_metadata_value("country", name, lang)
+        if code is not None:
+            self.set_metadata_value("country_code", code, lang)
+
+    @property
+    def continent(self):
+        return self.get_metadata_value("continent")
+
+    @property
+    def continent_code(self):
+        return self.get_metadata_value("continent_code")
+
+    def set_continent(self, name=None, code=None, lang="en"):
+        if name is None and code is None:
+            return
+        if name is not None:
+            self.set_metadata_value("continent", name, lang)
+        if code is not None:
+            self.set_metadata_value("continent_code", code, lang)
 
     @property
     def created_date(self):

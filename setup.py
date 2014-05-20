@@ -17,6 +17,8 @@ setup(
         "lxml",
         "nose",
         "futures==2.1.6",
+        "pycountry",
+        "incf.countryutils",
         # for deployment
         "gunicorn",
         "newrelic",
