@@ -19,6 +19,7 @@ setup(
         "futures==2.1.6",
         "pycountry",
         "incf.countryutils",
+        "babel",
         # for deployment
         "gunicorn",
         "newrelic",

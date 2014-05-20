@@ -127,6 +127,34 @@ class Register(object):
             self.set_metadata_value("continent_code", code, lang)
 
     @property
+    def language(self):
+        return self.get_metadata_value("language")
+
+    @property
+    def language_code(self):
+        return self.get_metadata_value("language_code")
+
+    def add_language(self, name=None, code=None, lang="en"):
+        if name is None and code is None:
+            return
+        if name is not None:
+            existing = self.get_metadata_value("language", lang)
+            if existing is None:
+                self.set_metadata_value("language", [name], lang)
+            else:
+                if name not in existing:
+                    existing.append(name)
+                    self.set_metadata_value("language", existing, lang)
+        if code is not None:
+            existing = self.get_metadata_value("language_code", lang)
+            if existing is None:
+                self.set_metadata_value("language_code", [code], lang)
+            else:
+                if code not in existing:
+                    existing.append(code)
+                    self.set_metadata_value("language_code", existing, lang)
+
+    @property
     def created_date(self):
         return self.raw.get("created_date")
     
