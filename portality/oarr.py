@@ -155,12 +155,45 @@ class Register(object):
                     self.set_metadata_value("language_code", existing, lang)
 
     @property
+    def repository_type(self):
+        return self.get_metadata_value("repository_type")
+
+    def add_repository_type(self, val, lang="en"):
+        existing = self.get_metadata_value("repository_type", lang)
+        if existing is None:
+            self.set_metadata_value("repository_type", [val], lang)
+        else:
+            if val not in existing:
+                existing.append(val)
+                self.set_metadata_value("repository_type", existing, lang)
+
+    @property
+    def software(self):
+        sw = self.register.get("software", [])
+        l = []
+        for s in sw:
+            l.append((s.get("name"), s.get("version"), s.get("url")))
+        return l
+
+    def add_software(self, name, version, url):
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+        if "software" not in self.raw["register"]:
+            self.raw["register"]["software"] = []
+        obj = {"name" :  name}
+        if version is not None:
+            obj["version"] = version
+        if url is not None:
+            obj["url"] = url
+        self.raw["register"]["software"].append(obj)
+
+    @property
     def created_date(self):
         return self.raw.get("created_date")
     
     def get_created_date(self, form):
         return datetime.strftime(datetime.strptime(self.created_date, "%Y-%m-%dT%H:%M:%SZ"), form)
-    
+
     @property
     def last_updated(self):
         return self.raw.get("last_updated")

@@ -20,6 +20,8 @@ setup(
         "pycountry",
         "incf.countryutils",
         "babel",
+        "beautifulsoup4",
+        "rdflib",
         # for deployment
         "gunicorn",
         "newrelic",

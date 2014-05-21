@@ -3,6 +3,8 @@ from incf.countryutils import transformations
 from urlparse import urlparse
 from babel import Locale
 from lxml import etree
+from bs4 import BeautifulSoup
+import rdflib
 
 
 # FIXME: this should probably come from configuration somewhere
@@ -17,6 +19,41 @@ class Detector(object):
         return False
     def detect(self, register, info):
         pass
+
+def get_repo_page(url, info):
+    timeout = info.get("repo_page_fail", False)
+    if timeout:
+        return None
+    resp = info.get("url_get")
+    if resp is None and url is not None:
+        resp = url_get(url)
+        if resp is not None:
+            info["url_get"] = resp
+        else:
+            info["repo_page_fail"] = True
+    return resp
+
+def get_eprints_rdf(url, info):
+    timeout = info.get("eprints_rdf_page_fail", False)
+    if timeout:
+        return None
+    resp = info.get("eprints_rdf")
+    if resp is None and url is not None:
+        resp = url_get(url)
+        if resp is not None:
+            info["eprints_rdf"] = resp
+        else:
+            info["eprints_rdf_page_fail"] = True
+    return resp
+
+def url_get(url):
+    try:
+        resp = requests.get(url, timeout=5)
+        return resp
+    except requests.exceptions.ConnectionError:
+        return None
+    except requests.exceptions.Timeout:
+        return None
 
 class OperationalStatus(Detector):
     """Attempts to determine if the repository is operational"""
@@ -37,11 +74,9 @@ class OperationalStatus(Detector):
         """
         url = register.repo_url
 
-        try:
-            log.info("Requesting repository home page from " + url)
-            resp = requests.get(url, timeout=5)
-            info["url_get"] = resp
-        except:
+        log.info("Requesting repository home page from " + url)
+        resp = get_repo_page(url, info)
+        if resp is None:
             log.info("Repository did not respond - registering operational_status as Broken")
             register.operational_status = "Broken"
             return
@@ -150,11 +185,10 @@ class Language(Detector):
         return register.repo_url is not None or register.country_code is not None
 
     def detect(self, register, info):
+        # get the repo page (from cache or from the url)
+        resp = get_repo_page(register.repo_url, info)
+
         # first thing is to check the http headers for a content-language
-        resp = info.get("url_get")
-        if resp is None and register.repo_url is not None:
-            resp = requests.get(register.repo_url)
-            info["url_get"] = resp
         if resp is not None:
             lang = resp.headers.get("content-language")
             keep_trying = False
@@ -228,6 +262,269 @@ class Language(Detector):
 
         return list(set(territory_languages))
 
+class RepositoryType(Detector):
+    # Some weak attempts to differentiate between the different types of repo based on their url suffix
+    # At best is indicative.
+    institutional_suffix = [
+        ".ac.uk", ".edu"
+    ]
+    institutional_substring = [
+        ".edu."
+    ]
+
+    governmental_suffix = [
+        ".gov.uk", ".gov"
+    ]
+    governmental_substring = [
+        ".gov."
+    ]
+
+    aggregating_suffix = [
+        ".org", ".com", ".info", ".net"
+    ]
+
+    disciplinary_suffix = [
+        ".org", ".com", ".info", ".net"
+    ]
+
+    def name(self):
+        return "Repository Type"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        url = register.repo_url
+        parsed = urlparse(url)
+        host = parsed.netloc.split(":")[0] # ensure we get rid of the port
+
+        for suffix in self.institutional_suffix:
+            if host.endswith(suffix):
+                register.add_repository_type("Institutional")
+                log.info("Repository URL ends with " + suffix + ", assuming Institutional")
+        for sub in self.institutional_substring:
+            if sub in host:
+                register.add_repository_type("Institutional")
+                log.info("Repository URL contains " + sub + ", assuming Institutional")
+
+        for suffix in self.governmental_suffix:
+            if host.endswith(suffix):
+                register.add_repository_type("Governmental")
+                log.info("Repository URL ends with " + suffix + ", assuming Governmental")
+        for sub in self.governmental_substring:
+            if sub in host:
+                register.add_repository_type("Governmental")
+                log.info("Repository URL contains " + sub + ", assuming Governmental")
+
+        for suffix in self.aggregating_suffix:
+            if host.endswith(suffix):
+                register.add_repository_type("Aggregating")
+                log.info("Repository URL ends with " + suffix + ", assuming Aggregating")
+
+        for suffix in self.disciplinary_suffix:
+            if host.endswith(suffix):
+                register.add_repository_type("Disciplinary")
+                log.info("Repository URL ends with " + suffix + ", assuming Disciplinary")
+
+        if register.repository_type is None or len(register.repository_type) == 0:
+            register.add_repository_type("Institutional")
+            log.info("Unable to guess Repository Type, so falling back to Institutional")
+
+class Software(Detector):
+    immediate_accept_threshold = 0.8
+    acceptable_threshold = 0.5
+
+    def name(self):
+        return "Software"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # define the order we will run our identify function sin
+        stack = [self.is_dspace, self.is_eprints]
+        options = []
+
+        # for each identify function, run it, then check to see if it has identified the software with
+        # sufficient confidence.  If so, record and return.  If not, add it to the list of options, and
+        # carry on
+        for f in stack:
+            software = f(register, info)
+            if software is not None:
+                if software.get("confidence", 0) >= self.immediate_accept_threshold:
+                    self._record(register, info, software)
+                    return
+                else:
+                    options.append(software)
+
+        if len(options) == 0:
+            return
+        if len(options) == 1:
+            if options[0].get("confidence", 0) > self.acceptable_threshold:
+                self._record(register, info, options[0])
+                return
+
+        best = None
+        for o in options:
+            if best is None:
+                best = o
+                continue
+            if o.get("confidence", 0) > best.get("confidence", 0):
+                best = o
+        if best is not None:
+            if best.get("confidence", 0) > self.acceptable_threshold:
+                self._record(register, info, options[0])
+
+
+    def _record(self, register, info, software):
+        register.add_software(software["name"], software["version"], software["url"])
+        v = software.get("version")
+        if v is None:
+            v = "(no version)"
+        log.info("Repository is identified as " + software["name"] + " " + v + " with confidence " + str(software.get("confidence")))
+
+    def is_dspace(self, register, info):
+        # get the repo page (from cache or from the url)
+        resp = get_repo_page(register.repo_url, info)
+
+        # first, let's load the home page up in BeautifulSoup
+        soup = None
+        if resp is not None:
+            soup = BeautifulSoup(resp.text)
+
+        # template object that we will return upon success
+        software = {"name" : "DSpace", "version": None, "url" : "http://dspace.org", "confidence" : 0}
+
+        # may have <meta name="Generator" content="DSpace 3.1" /> in the html headers (has the version back to ~1.8)
+        if soup is not None:
+            for meta in soup.find_all("meta"):
+                if meta.get("name") == "Generator":
+                    content = meta.get("content")
+                    if content is not None and content.strip().startswith("DSpace"):
+                        software["confidence"] = 1.0
+                        parts = content.strip().split(" ")
+                        if len(parts) == 2:
+                            software["version"] = parts[1]
+                        return software
+
+        # embedded opensearch link title may be "DSpace"
+        if soup is not None:
+            for link in soup.find_all("link"):
+                if link.get("type") == "application/opensearchdescription+xml":
+                    if link.get("title") == "DSpace":
+                        software["confidence"] = 1.0
+                        return software
+
+        # may contain <a href="/dspace/help/index.html" target="dspacepopup">Help</a> somewhere
+        if resp is not None:
+            if 'target="dspacepopup">Help' in resp.text:
+                software["confidence"] = 1.0
+                return software
+
+        # may have "dspace" in the URL
+        if "dspace" in register.repo_url.lower():
+            software["confidence"] = 0.9
+            return software
+
+        # may have "jspui" or "xmlui" in the url
+        if "jspui" in register.repo_url.lower():
+            software["confidence"] = 0.9
+            return software
+        if "xmlui" in register.repo_url.lower():
+            software["confidence"] = 0.9
+            return software
+
+        # may contain the phrase "Communities & Collections" on the home page
+        if "Communities & Collections" in soup.get_text():
+            software["confidence"] = 0.8
+            return software
+
+        # May contain the word DSpace in a heading tag somewhere
+        if resp is not None:
+            if "dspace" in resp.text or "DSpace" in resp.text:
+                software["confidence"] = 0.5
+                return software
+
+        return None
+
+    def is_eprints(self, register, info):
+        # get the repo page (from cache or from the url)
+        resp = get_repo_page(register.repo_url, info)
+
+        # first, let's load the home page up in BeautifulSoup
+        soup = None
+        if resp is not None:
+            soup = BeautifulSoup(resp.text)
+
+        # template object that we will return upon success
+        software = {"name" : "EPrints", "version": None, "url" : "http://eprints.org", "confidence" : 0}
+
+        # may have <meta name="Generator" content="EPrints 3.3.11" /> in the html headers
+        if soup is not None:
+            for meta in soup.find_all("meta"):
+                if meta.get("name") == "Generator":
+                    content = meta.get("content")
+                    if content is not None and content.strip().startswith("EPrints"):
+                        software["confidence"] = 1.0
+                        parts = content.strip().split(" ")
+                        if len(parts) == 2:
+                            software["version"] = parts[1]
+                        return software
+
+        # may have repository summary link in RDF which will contain the eprints version in rdfs:comment
+        if soup is not None:
+            for link in soup.find_all("link"):
+                if link.get("title", "").startswith("Repository Summary"):
+                    software["confidence"] = 1.0
+                    log.info("Checking EPrints RDF file at " + link.get("href"))
+                    rdfresp = get_eprints_rdf(link.get("href"), info)
+                    mimetype = link.get("type")
+                    if not mimetype:
+                        mimetype = rdflib.util.guess_format(link.get("href"))
+                    self._eprints_extract_from_rdf(rdfresp, mimetype, software)
+                    return software
+
+        # some or all of the following:
+        # powered by <em><a href="http://eprints.org/software/">EPrints 3</a></em>
+        # which is developed by the <a href="http://www.ecs.soton.ac.uk/">School of Electronics and Computer Science</a>
+        # at the University of Southampton. <a href="http://aquaticcommons.org/eprints/">More information and software credits</a>.
+
+        if resp is not None:
+            if 'powered by <em><a href="http://eprints.org/software/">EPrints 3</a></em>' in resp.text:
+                software["confidence"] = 1.0
+                software["version"] = "3"
+                return software
+            if 'developed by the <a href="http://www.ecs.soton.ac.uk/">School of Electronics and Computer Science</a>' in resp.text:
+                software["confidence"] = 0.8
+                return software
+
+        # may have eprints or e-prints in the url
+        if "eprints" in register.repo_url.lower() or "e-prints" in register.repo_url.lower():
+            software["confidence"] = 0.5
+            return software
+
+        return None
+
+    def _eprints_extract_from_rdf(self, rdfresp, mimetype, software):
+        if mimetype is None:
+            return
+        g = rdflib.Graph()
+        g.parse(format=mimetype, data=rdfresp.text)
+
+        # one of the comments contains some useful info about the eprints version
+        useful = None
+        for s,o,p in g.triples((None, rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#comment"), None)):
+            if p.startswith("This system is running eprints server software"):
+                useful = p
+                break
+
+        if useful is not None:
+            pattern = "\(EPrints (.+?) "
+            m = re.search(pattern, useful)
+            if m is not None:
+                version = m.group(1)
+                software["version"] = version
+
 
 #############################################################
 # List of detectors and the order they should run
@@ -237,5 +534,7 @@ GENERAL = [
     OperationalStatus,
     Country,
     Continent,
-    Language
+    Language,
+    RepositoryType,
+    Software
 ]
