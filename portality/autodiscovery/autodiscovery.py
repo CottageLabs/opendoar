@@ -17,6 +17,7 @@ def discover(url):
 
     # for each general (i.e. non repo-type specific detector) check to see if the register contains
     # enough info for the detector to run, and then run it if so
+    info = detectors.Info()
     for klazz in detectors.GENERAL:
         detector = klazz()
         if detector.detectable(r):

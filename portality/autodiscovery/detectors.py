@@ -48,42 +48,73 @@ class WhoIsWrapper(object):
         return None
 
 
-def get_repo_page(url, info):
-    timeout = info.get("repo_page_fail", False)
-    if timeout:
-        return None
-    resp = info.get("url_get")
-    if resp is None and url is not None:
-        resp = url_get(url)
-        if resp is not None:
-            info["url_get"] = resp
-        else:
-            info["repo_page_fail"] = True
-    return resp
-
-def get_eprints_rdf(url, info):
-    timeout = info.get("eprints_rdf_page_fail", False)
-    if timeout:
-        return None
-    resp = info.get("eprints_rdf")
-    if resp is None and url is not None:
-        resp = url_get(url)
-        if resp is not None:
-            info["eprints_rdf"] = resp
-        else:
-            info["eprints_rdf_page_fail"] = True
-    return resp
-
-def url_get(url):
-    try:
-        resp = requests.get(url, timeout=5)
-        return resp
-    except requests.exceptions.ConnectionError:
-        return None
-    except requests.exceptions.Timeout:
-        return None
-
 ###############################################################
+## Infrastructure classes for detection
+
+class Info(object):
+    def __init__(self):
+        self.cache = {}
+
+    def get(self, cached, default=None):
+        return self.cache.get(cached, default)
+
+    def set(self, key, obj):
+        self.cache[key] = obj
+
+    def url_get(self, url):
+        try:
+            # have we already tried and found the url timed out?
+            if self.get("timeout_" + url, False):
+                return None
+
+            # have we already tried and successfully received a response
+            if self.get(url) is not None:
+                return self.get(url)
+
+            # if not, try, get a response and cache then return
+            resp = requests.get(url, timeout=5)
+            self.set(url, resp)
+            return resp
+
+        except requests.exceptions.ConnectionError:
+            self.set("timeout_" + url, True)
+        except requests.exceptions.Timeout:
+            self.set("timeout_" + url, True)
+
+    def soup(self, url):
+        s = self.get("soup_" + url)
+        if s is not None:
+            return s
+        resp = self.url_get(url)
+        if resp is None:
+            return None
+        s = BeautifulSoup(resp.text)
+        self.set("soup_" + url, s)
+        return s
+
+    def graph(self, url, mimetype=None):
+        g = self.get("graph_" + url)
+        if g is not None:
+            return g
+        if not mimetype:
+            mimetype = rdflib.util.guess_format(url)
+        if mimetype is None:
+            return
+        resp = self.url_get(url)
+        if resp is None:
+            return None
+        g = rdflib.Graph()
+        g.parse(format=mimetype, data=resp.text)
+        self.set("graph_" + url, g)
+        return g
+
+    def whois(self, host):
+        who = self.get("whois_" + host)
+        if who is not None:
+            return who
+        who = WhoIsWrapper(host)
+        self.set("whois_" + host, who)
+        return who
 
 class Detector(object):
     def name(self):
@@ -92,6 +123,9 @@ class Detector(object):
         return False
     def detect(self, register, info):
         pass
+
+################################################################
+## Detector implementations
 
 class OperationalStatus(Detector):
     """Attempts to determine if the repository is operational"""
@@ -113,7 +147,7 @@ class OperationalStatus(Detector):
         url = register.repo_url
 
         log.info("Requesting repository home page from " + url)
-        resp = get_repo_page(url, info)
+        resp = info.url_get(url)
         if resp is None:
             log.info("Repository did not respond - registering operational_status as Broken")
             register.operational_status = "Broken"
@@ -188,7 +222,10 @@ class Country(Detector):
         r = self.hostip_api + "?ip=" + ip
         log.info("GeoLocating IP using: " + r)
 
-        resp = requests.get(r)
+        resp = info.url_get(r)
+        if resp is None:
+            return
+
         j = resp.json()
         code = j.get("country_code")
         try:
@@ -224,7 +261,7 @@ class Language(Detector):
 
     def detect(self, register, info):
         # get the repo page (from cache or from the url)
-        resp = get_repo_page(register.repo_url, info)
+        resp = info.url_get(register.repo_url)
 
         # first thing is to check the http headers for a content-language
         if resp is not None:
@@ -379,7 +416,7 @@ class Software(Detector):
         return register.repo_url is not None
 
     def detect(self, register, info):
-        # define the order we will run our identify function sin
+        # define the order we will run our identify functions in
         stack = [self.is_dspace, self.is_eprints]
         options = []
 
@@ -391,6 +428,7 @@ class Software(Detector):
             if software is not None:
                 if software.get("confidence", 0) >= self.immediate_accept_threshold:
                     self._record(register, info, software)
+                    info.set("software_confidence", software.get("confidence", 0))
                     return
                 else:
                     options.append(software)
@@ -400,6 +438,7 @@ class Software(Detector):
         if len(options) == 1:
             if options[0].get("confidence", 0) > self.acceptable_threshold:
                 self._record(register, info, options[0])
+                info.set("software_confidence", software.get("confidence", 0))
                 return
 
         best = None
@@ -412,6 +451,7 @@ class Software(Detector):
         if best is not None:
             if best.get("confidence", 0) > self.acceptable_threshold:
                 self._record(register, info, options[0])
+                info.set("software_confidence", software.get("confidence", 0))
 
 
     def _record(self, register, info, software):
@@ -423,12 +463,10 @@ class Software(Detector):
 
     def is_dspace(self, register, info):
         # get the repo page (from cache or from the url)
-        resp = get_repo_page(register.repo_url, info)
+        resp = info.url_get(register.repo_url)
 
-        # first, let's load the home page up in BeautifulSoup
-        soup = None
-        if resp is not None:
-            soup = BeautifulSoup(resp.text)
+        # get the beautifulsoup of the home page
+        soup = info.soup(register.repo_url)
 
         # template object that we will return upon success
         software = {"name" : "DSpace", "version": None, "url" : "http://dspace.org", "confidence" : 0}
@@ -487,12 +525,10 @@ class Software(Detector):
 
     def is_eprints(self, register, info):
         # get the repo page (from cache or from the url)
-        resp = get_repo_page(register.repo_url, info)
+        resp = info.url_get(register.repo_url)
 
-        # first, let's load the home page up in BeautifulSoup
-        soup = None
-        if resp is not None:
-            soup = BeautifulSoup(resp.text)
+        # get the beautifulsoup of the home page
+        soup = info.soup(register.repo_url)
 
         # template object that we will return upon success
         software = {"name" : "EPrints", "version": None, "url" : "http://eprints.org", "confidence" : 0}
@@ -515,11 +551,8 @@ class Software(Detector):
                 if link.get("title", "").startswith("Repository Summary"):
                     software["confidence"] = 1.0
                     log.info("Checking EPrints RDF file at " + link.get("href"))
-                    rdfresp = get_eprints_rdf(link.get("href"), info)
-                    mimetype = link.get("type")
-                    if not mimetype:
-                        mimetype = rdflib.util.guess_format(link.get("href"))
-                    self._eprints_extract_from_rdf(rdfresp, mimetype, software)
+                    g = info.graph(link.get("href"), link.get("type"))
+                    self._eprints_extract_from_rdf(g, software)
                     return software
 
         # some or all of the following:
@@ -543,12 +576,7 @@ class Software(Detector):
 
         return None
 
-    def _eprints_extract_from_rdf(self, rdfresp, mimetype, software):
-        if mimetype is None:
-            return
-        g = rdflib.Graph()
-        g.parse(format=mimetype, data=rdfresp.text)
-
+    def _eprints_extract_from_rdf(self, g, software):
         # one of the comments contains some useful info about the eprints version
         useful = None
         for s,o,p in g.triples((None, rdflib.URIRef("http://www.w3.org/2000/01/rdf-schema#comment"), None)):
@@ -578,8 +606,7 @@ class Organisation(Detector):
 
         # do the lookup.  This helpfully recurses up the domain tree until it
         # gets an answer
-        who = WhoIsWrapper(host)
-        info["whois"] = who
+        who = info.whois(host)
 
         # try to extract the org details from the whois record
         address = who.get("org_address")
@@ -604,6 +631,15 @@ class Organisation(Detector):
 
         register.add_organisation_object(org)
 
+class Feed(Detector):
+    def name(self):
+        return "Atom/RSS Feeds"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        pass
 
 #############################################################
 # List of detectors and the order they should run
@@ -616,5 +652,6 @@ GENERAL = [
     Language,
     RepositoryType,
     Software,
-    Organisation
+    Organisation,
+    Feed
 ]
