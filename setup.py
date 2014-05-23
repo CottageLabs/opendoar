@@ -17,11 +17,13 @@ setup(
         "lxml",
         "nose",
         "futures==2.1.6",
+        # various libraries required by the detectors
         "pycountry",
         "incf.countryutils",
         "babel",
         "beautifulsoup4",
         "rdflib",
+        "python-whois",
         # for deployment
         "gunicorn",
         "newrelic",

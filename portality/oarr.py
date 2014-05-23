@@ -187,6 +187,19 @@ class Register(object):
             obj["url"] = url
         self.raw["register"]["software"].append(obj)
 
+    def add_organisation_object(self, org_obj):
+        """
+        org obj needs to conform to the correct structure.  Do we
+        need to extend the api to build the object?  Will do so later
+        if necessary
+        """
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+        if "organisation" not in self.raw["register"]:
+            self.raw["register"]["organisation"] = []
+        self.raw["register"]["organisation"].append(org_obj)
+
+
     @property
     def created_date(self):
         return self.raw.get("created_date")

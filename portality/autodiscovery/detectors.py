@@ -5,6 +5,7 @@ from babel import Locale
 from lxml import etree
 from bs4 import BeautifulSoup
 import rdflib
+import whois
 
 
 # FIXME: this should probably come from configuration somewhere
@@ -12,13 +13,40 @@ LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
-class Detector(object):
-    def name(self):
-        return "Abstract Detector"
-    def detectable(self, register):
-        return False
-    def detect(self, register, info):
-        pass
+################################################################
+## utilities
+
+class WhoIsWrapper(object):
+
+    fields = {
+        "org_name" : ["Registrant Organization", "Admin Organization", "Registered For", "Domain Owner", "Tech Organization", "Registered By"],
+        "domain" : ["Domain", "Domain Name"],
+        "registrant_address" : ["Registrant Address"]
+    }
+
+    long_pattern = ":\n\t(.+?)\n\n"
+    short_pattern = ":(.+?)\n"
+
+    def __init__(self, host):
+        self.who = whois.whois(host)
+        if self.who:
+            self.body = self.who.text
+        else:
+            self.body = ""
+
+    def get(self, field):
+        synonyms = self.fields.get(field, [])
+        for syn in synonyms:
+            p = syn + self.long_pattern
+            m = re.search(p, self.body)
+            if m is not None:
+                return m.group(1)
+            p = syn + self.short_pattern
+            m = re.search(p, self.body)
+            if m is not None:
+                return m.group(1)
+        return None
+
 
 def get_repo_page(url, info):
     timeout = info.get("repo_page_fail", False)
@@ -54,6 +82,16 @@ def url_get(url):
         return None
     except requests.exceptions.Timeout:
         return None
+
+###############################################################
+
+class Detector(object):
+    def name(self):
+        return "Abstract Detector"
+    def detectable(self, register):
+        return False
+    def detect(self, register, info):
+        pass
 
 class OperationalStatus(Detector):
     """Attempts to determine if the repository is operational"""
@@ -525,6 +563,47 @@ class Software(Detector):
                 version = m.group(1)
                 software["version"] = version
 
+class Organisation(Detector):
+    def name(self):
+        return "Organisation"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # extract the host name from the url
+        url = register.repo_url
+        parsed = urlparse(url)
+        host = parsed.netloc.split(":")[0] # ensure we get rid of the port
+
+        # do the lookup.  This helpfully recurses up the domain tree until it
+        # gets an answer
+        who = WhoIsWrapper(host)
+        info["whois"] = who
+
+        # try to extract the org details from the whois record
+        address = who.get("org_address")
+        name = who.get("org_name")
+        domain = who.get("domain")
+
+        # did we get anything we could work with?
+        if address is None and name is None and domain is None:
+            return
+
+        # if so, start building an org object
+        org = {"role" : ["host"], "details" : {}}
+        if name is not None:
+            org["details"]["name"] = name
+            log.info("Detected name " + name + " from whois record")
+        if domain is not None:
+            org["details"]["url"] = "http://" + domain
+            log.info("Detected domain " + domain + " from whois record")
+
+        # FIXME: we have not extracted the address yet or done any geolocation on it
+        # to do this will require quite a bit more work, so priority needs to be chosen
+
+        register.add_organisation_object(org)
+
 
 #############################################################
 # List of detectors and the order they should run
@@ -536,5 +615,6 @@ GENERAL = [
     Continent,
     Language,
     RepositoryType,
-    Software
+    Software,
+    Organisation
 ]
