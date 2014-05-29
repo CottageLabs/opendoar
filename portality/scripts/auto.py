@@ -1,4 +1,5 @@
 from portality.autodiscovery import autodiscovery
+import json
 
 if __name__ == "__main__":
     import argparse
@@ -13,4 +14,4 @@ if __name__ == "__main__":
         exit()
 
     register = autodiscovery.discover(args.url)
-    print register.raw
+    print json.dumps(register.raw)

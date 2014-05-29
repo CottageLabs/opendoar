@@ -199,6 +199,23 @@ class Register(object):
             self.raw["register"]["organisation"] = []
         self.raw["register"]["organisation"].append(org_obj)
 
+    def add_api_object(self, api_obj):
+        """
+        api obj needs to conform to correct structure
+        """
+        # check that the api section of the object exists
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+        if "api" not in self.raw["register"]:
+            self.raw["register"]["api"] = []
+
+        # back out if we already have this url in the list
+        for api in self.raw["register"]["api"]:
+            if api.get("base_url") == api_obj.get("base_url"):
+                return
+
+        # if we get to here this is a new api object so we add it
+        self.raw["register"]["api"].append(api_obj)
 
     @property
     def created_date(self):

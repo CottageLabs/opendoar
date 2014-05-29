@@ -6,6 +6,7 @@ from lxml import etree
 from bs4 import BeautifulSoup
 import rdflib
 import whois
+import feedparser
 
 
 # FIXME: this should probably come from configuration somewhere
@@ -116,6 +117,15 @@ class Info(object):
         self.set("whois_" + host, who)
         return who
 
+    def feed(self, url):
+        f = self.get("feed_" + url)
+        if f is not None:
+            return f
+        resp = self.url_get(url)
+        f = feedparser.parse(resp.text)
+        self.set("feed_" + url, f)
+        return f
+
 class Detector(object):
     def name(self):
         return "Abstract Detector"
@@ -123,6 +133,9 @@ class Detector(object):
         return False
     def detect(self, register, info):
         pass
+
+class DetectorException(Exception):
+    pass
 
 ################################################################
 ## Detector implementations
@@ -632,6 +645,29 @@ class Organisation(Detector):
         register.add_organisation_object(org)
 
 class Feed(Detector):
+
+    type_map = {
+        "application/rss+xml" : "rss",
+        "application/atom+xml" : "atom"
+    }
+
+    version_map = {
+        "rss090" : "0.90",
+        "rss091n" : "Netscape 0.91",
+        "rss091u" : "Userland 0.91",
+        "rss10" : "1.0",
+        "rss092" : "0.92",
+        "rss093" : "0.93",
+        "rss094" : "0.94",
+        "rss20" : "2.0",
+        "rss" : None,
+        "atom01" : "0.1",
+        "atom02" : "0.2",
+        "atom03" : "0.3",
+        "atom10" : "1.0",
+        "atom" : None
+    }
+
     def name(self):
         return "Atom/RSS Feeds"
 
@@ -639,7 +675,78 @@ class Feed(Detector):
         return register.repo_url is not None
 
     def detect(self, register, info):
-        pass
+        soup = info.soup(register.repo_url)
+
+        # look in the link headers in the html
+        # <link type="application/rss+xml" rel="alternate" href="/feed/rss_1.0/site" />
+        # <link type="application/rss+xml" rel="alternate" href="/feed/rss_2.0/site" />
+        # <link type="application/atom+xml" rel="alternate" href="/feed/atom_1.0/site" />
+        alts = []
+        for link in soup.find_all("link"):
+            rels = link.get("rel")
+            if "alternate" in rels:
+                if link.get("type") is not None and link.get("type") in ["application/rss+xml", "application/atom+xml"]:
+                    url = self._expand_url(register.repo_url, link.get("href"))
+                    if url is not None:
+                        alts.append((url, link.get("type")))
+
+        for url, mime in alts:
+            feed = info.feed(url)
+            api = {"api_type" : self.type_map.get(mime), "base_url" :  url}
+
+            if feed.bozo == 0:
+                v = self.version_map.get(feed.version)
+                if v is not None:
+                    api["version"] = v
+
+            log.info(api.get("api_type") + " at " + api.get("base_url") + " detected from link headers")
+            register.add_api_object(api)
+
+        # anchor tags with RSS/Atom in the link body
+        # <a href="/feed/rss_1.0/site" style="background: url(/static/icons/feed.png) no-repeat">RSS 1.0</a>
+        # <a href="/feed/rss_2.0/site" style="background: url(/static/icons/feed.png) no-repeat">RSS 2.0</a>
+        # <a href="/feed/atom_1.0/site" style="background: url(/static/icons/feed.png) no-repeat">Atom</a>
+        possibles = []
+        for a in soup.find_all("a"):
+            norm = " " + a.text.lower().strip() + " "
+            url = self._expand_url(register.repo_url, a.get("href"))
+            if " rss " in norm:
+                possibles.append((url, "rss"))
+            elif " atom " in norm:
+                possibles.append((url, "atom"))
+
+        for url, t in possibles:
+            feed = info.feed(url)
+            if feed.bozo > 0:
+                continue
+            api = {"api_type" : t, "base_url" : url}
+            v = self.version_map.get(feed.version)
+            api["version"] = v
+
+            log.info(api.get("api_type") + " at " + api.get("base_url") + " detected from html body")
+            register.add_api_object(api)
+
+    def _expand_url(self, origin_url, rel):
+        if rel.startswith("http://") or rel.startswith("https://"):
+            return rel
+
+        parsed = urlparse(origin_url)
+
+        if rel.startswith("/"):
+            # absolute to the base of the domain
+            return parsed.scheme + "://" + parsed.netloc + rel
+        else:
+            full = parsed.scheme + "://" + parsed.netloc + parsed.path
+            if full.endswith("/"):
+                return full + rel
+            else:
+                parts = full.split("/")
+                if len(parts) == 3:
+                    return full + "/" + rel
+                elif len(parts) > 3:
+                    return "/".join(full[:-1]) + "/" + rel
+
+        return None
 
 #############################################################
 # List of detectors and the order they should run
