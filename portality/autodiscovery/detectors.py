@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import rdflib
 import whois
 import feedparser
+from io import BytesIO
 
 
 # FIXME: this should probably come from configuration somewhere
@@ -122,9 +123,22 @@ class Info(object):
         if f is not None:
             return f
         resp = self.url_get(url)
+        if resp is None:
+            return None
         f = feedparser.parse(resp.text)
         self.set("feed_" + url, f)
         return f
+
+    def xml(self, url):
+        x = self.get("xml_" + url)
+        if x is not None:
+            return x
+        resp = self.url_get(url)
+        if resp is None:
+            pass
+        x = etree.parse(BytesIO(bytearray(resp.text, "utf-8")))
+        self.set("xml_" + url, x)
+        return x
 
 class Detector(object):
     def name(self):
@@ -133,6 +147,28 @@ class Detector(object):
         return False
     def detect(self, register, info):
         pass
+
+    def _expand_url(self, origin_url, rel):
+        if rel.startswith("http://") or rel.startswith("https://"):
+            return rel
+
+        parsed = urlparse(origin_url)
+
+        if rel.startswith("/"):
+            # absolute to the base of the domain
+            return parsed.scheme + "://" + parsed.netloc + rel
+        else:
+            full = parsed.scheme + "://" + parsed.netloc + parsed.path
+            if full.endswith("/"):
+                return full + rel
+            else:
+                parts = full.split("/")
+                if len(parts) == 3:
+                    return full + "/" + rel
+                elif len(parts) > 3:
+                    return "/".join(full[:-1]) + "/" + rel
+
+        return None
 
 class DetectorException(Exception):
     pass
@@ -726,27 +762,48 @@ class Feed(Detector):
             log.info(api.get("api_type") + " at " + api.get("base_url") + " detected from html body")
             register.add_api_object(api)
 
-    def _expand_url(self, origin_url, rel):
-        if rel.startswith("http://") or rel.startswith("https://"):
-            return rel
+class OAI_PMH(Detector):
+    guesses = [
+        "/oai",
+        "/oaipmh",
+        "/oai-pmh",
+        "/oai/request",
+        "/dspace-oai/request",
+        "/cgi/oai2",
+        "/cgi-bin/oai.exe",
+        "/do/oai/"
+    ]
+    def name(self):
+        return "OAI-PMH"
 
-        parsed = urlparse(origin_url)
+    def detectable(self, register):
+        return register.repo_url is not None
 
-        if rel.startswith("/"):
-            # absolute to the base of the domain
-            return parsed.scheme + "://" + parsed.netloc + rel
-        else:
-            full = parsed.scheme + "://" + parsed.netloc + parsed.path
-            if full.endswith("/"):
-                return full + rel
-            else:
-                parts = full.split("/")
-                if len(parts) == 3:
-                    return full + "/" + rel
-                elif len(parts) > 3:
-                    return "/".join(full[:-1]) + "/" + rel
+    def detect(self, register, info):
+        oai = None
+        for guess in self.guesses:
+            url = self._expand_url(register.repo_url, guess)
+            resp = info.url_get(url + "?verb=Identify")
+            if resp.status_code == requests.codes.ok:
+                oai = url
+                break
 
-        return None
+        if oai is None:
+            return
+
+        log.info("OAI-PMH found by guessing at " + oai)
+        api = {"api_type" : "oai-pmh", "base_url" : oai}
+
+        doc = info.xml(oai + "?verb=Identify")
+        root = doc.getroot()
+        pvs = root.xpath("//*[local-name() = 'protocolVersion']")
+        if len(pvs) > 0:
+            v = pvs[0].text
+            api["version"] = v
+
+        register.add_api_object(api)
+
+
 
 #############################################################
 # List of detectors and the order they should run
@@ -760,5 +817,6 @@ GENERAL = [
     RepositoryType,
     Software,
     Organisation,
-    Feed
+    Feed,
+    OAI_PMH
 ]
