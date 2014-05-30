@@ -791,15 +791,43 @@ class OAI_PMH(Detector):
         if oai is None:
             return
 
+        # we have an oai endpoint
         log.info("OAI-PMH found by guessing at " + oai)
         api = {"api_type" : "oai-pmh", "base_url" : oai}
 
+        # have a go at getting the version
         doc = info.xml(oai + "?verb=Identify")
         root = doc.getroot()
         pvs = root.xpath("//*[local-name() = 'protocolVersion']")
         if len(pvs) > 0:
             v = pvs[0].text
             api["version"] = v
+
+        lmfdoc = info.xml(oai + "?verb=ListMetadataFormats")
+        lmf = lmfdoc.getroot()
+        for element in lmf.xpath("//*[local-name() = 'metadataFormat']"):
+            prefix = None
+            namespace = None
+            schema = None
+            for c in element.getchildren():
+                if c.tag.endswith("metadataPrefix"):
+                    prefix = c.text.strip()
+                if c.tag.endswith("metadataNamespace"):
+                    namespace = c.text.strip()
+                if c.tag.endswith("schema"):
+                    schema = c.text.strip()
+
+            format = {}
+            if prefix is not None:
+                format["prefix"] = prefix
+            if namespace is not None:
+                format["namespace"] = namespace
+            if schema is not None:
+                format["schema"] = schema
+
+            if "metadata_formats" not in api:
+                api["metadata_formats"] = []
+            api["metadata_formats"].append(format)
 
         register.add_api_object(api)
 
