@@ -54,6 +54,8 @@ class WhoIsWrapper(object):
 ## Infrastructure classes for detection
 
 class Info(object):
+    request_timeout = 10
+
     def __init__(self):
         self.cache = {}
 
@@ -74,7 +76,7 @@ class Info(object):
                 return self.get(url)
 
             # if not, try, get a response and cache then return
-            resp = requests.get(url, timeout=5)
+            resp = requests.get(url, timeout=self.request_timeout)
             self.set(url, resp)
             return resp
 

@@ -13,6 +13,8 @@ from portality.view.stream import stream as rawstream
 from portality.view.admin import blueprint as admin
 from portality.view.account import blueprint as account
 
+from portality.autodiscovery import autodiscovery
+
 @login_manager.user_loader
 def load_account_for_login_manager(userid):
     out = models.Account.pull(userid)
@@ -119,6 +121,16 @@ def organisation(org):
         except:
             abort(404)
 
+@app.route("/detect", methods=["GET", "POST"])
+def detect():
+    if request.method == "GET":
+        return render_template("detect.html")
+    if request.method == "POST":
+        url = request.values.get("url")
+        if url is None:
+            return render_template("detect.html")
+        register = autodiscovery.discover(url)
+        return render_template("repository.html", repo=register, searchurl=searchurl)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=app.config['PORT'])

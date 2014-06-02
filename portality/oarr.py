@@ -222,14 +222,24 @@ class Register(object):
         return self.raw.get("created_date")
     
     def get_created_date(self, form):
-        return datetime.strftime(datetime.strptime(self.created_date, "%Y-%m-%dT%H:%M:%SZ"), form)
+        d = self.created_date
+        if d:
+            d = datetime.strptime(d, "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            d = datetime.now()
+        return datetime.strftime(d, form)
 
     @property
     def last_updated(self):
         return self.raw.get("last_updated")
     
     def get_last_updated(self, form):
-        return datetime.strftime(datetime.strptime(self.last_updated, "%Y-%m-%dT%H:%M:%SZ"), form)
+        d = self.last_updated
+        if d:
+            d = datetime.strptime(d, "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            d = datetime.now()
+        return datetime.strftime(d, form)
     
     def get_metadata(self, lang):
         # FIXME: full implementation will be required for full multi-lingual support

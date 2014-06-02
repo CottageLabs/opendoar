@@ -226,7 +226,7 @@
         <div class="row-fluid">
 
             {% for api in reg.api %}
-                <div class="span4">
+                <div class="span4" style="margin-bottom: 20px">
                 {% if api.api_type == "oai-pmh" %}
                     <strong>OAI-PMH</strong><br>
                     <a href="{{api.base_url}}">{{api.base_url}}</a><br>
@@ -249,7 +249,7 @@
                     {% endif %}
                 {% endif %}
                 {% if api.api_type != "oai-pmh" and api.api_type != "sword" %}
-                    <strong>{{api.api_type}}</strong><br>
+                    <strong>{{api.api_type}}{% if api.version %} ({{api.version}}){% endif %}</strong><br>
                     <a href="{{api.base_url}}">{{api.base_url}}</a>
                 {% endif %}
                 </div>
