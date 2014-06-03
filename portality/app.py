@@ -49,25 +49,73 @@ def mapp():
     return render_template("map.html")
 
 
-@app.route("/contribute")
+@app.route("/contribute", methods=['GET','POST'])
 def contribute():
 
-    autos = {
-        "org.name": rawstream(key="register.organisation.details.name",raw=True),
-        "api.type": rawstream(key="register.api.api_type",raw=True),
-        "policy.terms": rawstream(key="register.policy.policy_terms",raw=True)
+    record = {
+        "register" : {
+            "operational_status" : "",
+            "metadata" : [
+                {
+                    "lang" : "en",
+                    "default" : True,
+                    "record" : {
+                        "country" : "",
+                        "country_code" : "",
+                        "continent" : "",
+                        "continent_code" : "",
+                        "twitter" : "",
+                        "acronym" : "",
+                        "description" : "",
+                        "established_date" : "",
+                        "name" : "",
+                        "url" : "",
+                        "language" : [],
+                        "language_code" : [],
+                        "subject" : [],
+                        "repository_type" : [],
+                        "certification" : [],
+                        "content_type" : []
+                    }
+                }
+            ],
+            "software" : [],
+            "contact" : [],
+            "organisation" : [],
+            "policy" : [],
+            "api" : [],
+            "integration": []
+        }
     }
-    dropdowns = {
-        "ops": rawstream(key="register.operational_status",raw=True),
-        "contents": rawstream(key="register.metadata.record.content_type",raw=True,size=10000),
-        "subjects": rawstream(key="register.metadata.record.subject.term",raw=True,size=10000),
-        "types": rawstream(key="register.metadata.record.repository_type",raw=True),
-        "softwares": rawstream(key="register.software.name",raw=True),
-        "policytypes": rawstream(key="register.policy.policy_type",raw=True),
-        "policygrades": rawstream(key="register.policy.policy_grade",raw=True)
-    }
-    return render_template("contribute.html",autos=autos,dropdowns=dropdowns)
 
+    if request.method == 'GET':
+
+        autos = {
+            "org.name": rawstream(key="register.organisation.details.name",raw=True),
+            "api.type": rawstream(key="register.api.api_type",raw=True),
+            "policy.terms": rawstream(key="register.policy.policy_terms",raw=True)
+        }
+        dropdowns = {
+            "ops": rawstream(key="register.operational_status",raw=True),
+            "contents": rawstream(key="register.metadata.record.content_type",raw=True,size=10000),
+            "subjects": rawstream(key="register.metadata.record.subject.term",raw=True,size=10000),
+            "types": rawstream(key="register.metadata.record.repository_type",raw=True),
+            "softwares": rawstream(key="register.software.name",raw=True),
+            "policytypes": rawstream(key="register.policy.policy_type",raw=True),
+            "policygrades": rawstream(key="register.policy.policy_grade",raw=True)
+        }
+
+        return render_template("contribute.html",autos=autos,dropdowns=dropdowns, record=record)
+
+    elif request.method == 'POST':
+    
+        # process the POST
+        # on success flash a success
+        # on fail flash a fail
+        flash('Thanks for your contribution', 'success')
+    
+        return redirect('/')
+    
 
 @app.route("/about")
 def about():

@@ -466,8 +466,8 @@ var executequery = function() {
                 var field = $(this).attr('data-field');
                 var val = $(this).attr('data-value');
                 // TODO: country field should become available in index, but for now do a text search for it
-                if ( field == "countrydemo" ) {
-                    query.query.bool.must.push( {"query_string":{"query":val}} );
+                if ( field == "countrymatch" ) {
+                    query.query.bool.must.push( {"term":{"register.metadata.record.country.exact":val}} );
                 } else {
                     query.query.bool.must.push( {"term": {}} );
                     query.query.bool.must[query.query.bool.must.length-1]['term'][field] = val;
@@ -678,7 +678,7 @@ function draw(topo) {
       .on("click", function(d,i) {
         if ( ( $('#chosencountry').length && $('#chosencountry').attr('data-value') != d.properties.name ) || !$('#chosencountry').length ) {
             $('#chosencountry').remove();
-            $('#selections').append('<a href="#" class="btn btn-default chosen" id="chosencountry" data-field="countrydemo" data-value="' + d.properties.name + '"><span class="glyphicon glyphicon-remove"></span> ' + d.properties.name + '</a>');
+            $('#selections').append('<a href="#" class="btn btn-default chosen" id="chosencountry" data-field="countrymatch" data-value="' + d.properties.name + '"><span class="glyphicon glyphicon-remove"></span> ' + d.properties.name + '</a>');
             $('#chosencountry').bind('click',unchoose);
             executequery();
         }
