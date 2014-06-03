@@ -82,6 +82,20 @@ class Register(object):
         self.register["operational_status"] = val
 
     @property
+    def repo_name(self):
+        self.get_repo_name("en")
+
+    def get_repo_name(self, lang="en"):
+        self.get_metadata_value("name", lang)
+
+    @repo_name.setter
+    def repo_name(self, val):
+        self.set_repo_name(val, "en")
+
+    def set_repo_name(self, val, lang="en"):
+        self.set_metadata_value("name", val, lang)
+
+    @property
     def country(self):
         return self.get_metadata_value("country")
 
@@ -199,20 +213,57 @@ class Register(object):
             self.raw["register"]["organisation"] = []
         self.raw["register"]["organisation"].append(org_obj)
 
+    def add_api_object(self, api_obj):
+        """
+        api obj needs to conform to correct structure
+        """
+        # check that the api section of the object exists
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+        if "api" not in self.raw["register"]:
+            self.raw["register"]["api"] = []
+
+        # back out if we already have this url in the list
+        for api in self.raw["register"]["api"]:
+            if api.get("base_url") == api_obj.get("base_url"):
+                return
+
+        # if we get to here this is a new api object so we add it
+        self.raw["register"]["api"].append(api_obj)
+
+    def get_api(self, type=None):
+        matches = []
+        for api in self.raw.get("register", {}).get("api", []):
+            if type is None:
+                matches.append(api)
+            else:
+                if api.get("type") == type:
+                    matches.append(api)
+        return matches
 
     @property
     def created_date(self):
         return self.raw.get("created_date")
     
     def get_created_date(self, form):
-        return datetime.strftime(datetime.strptime(self.created_date, "%Y-%m-%dT%H:%M:%SZ"), form)
+        d = self.created_date
+        if d:
+            d = datetime.strptime(d, "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            d = datetime.now()
+        return datetime.strftime(d, form)
 
     @property
     def last_updated(self):
         return self.raw.get("last_updated")
     
     def get_last_updated(self, form):
-        return datetime.strftime(datetime.strptime(self.last_updated, "%Y-%m-%dT%H:%M:%SZ"), form)
+        d = self.last_updated
+        if d:
+            d = datetime.strptime(d, "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            d = datetime.now()
+        return datetime.strftime(d, form)
     
     def get_metadata(self, lang):
         # FIXME: full implementation will be required for full multi-lingual support

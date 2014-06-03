@@ -6,6 +6,8 @@ from lxml import etree
 from bs4 import BeautifulSoup
 import rdflib
 import whois
+import feedparser
+from io import BytesIO
 
 
 # FIXME: this should probably come from configuration somewhere
@@ -52,6 +54,8 @@ class WhoIsWrapper(object):
 ## Infrastructure classes for detection
 
 class Info(object):
+    request_timeout = 10
+
     def __init__(self):
         self.cache = {}
 
@@ -72,14 +76,16 @@ class Info(object):
                 return self.get(url)
 
             # if not, try, get a response and cache then return
-            resp = requests.get(url, timeout=5)
+            resp = requests.get(url, timeout=self.request_timeout)
             self.set(url, resp)
             return resp
 
         except requests.exceptions.ConnectionError:
             self.set("timeout_" + url, True)
+            return None
         except requests.exceptions.Timeout:
             self.set("timeout_" + url, True)
+            return None
 
     def soup(self, url):
         s = self.get("soup_" + url)
@@ -116,6 +122,31 @@ class Info(object):
         self.set("whois_" + host, who)
         return who
 
+    def feed(self, url):
+        f = self.get("feed_" + url)
+        if f is not None:
+            return f
+        resp = self.url_get(url)
+        if resp is None:
+            return None
+        f = feedparser.parse(resp.text)
+        self.set("feed_" + url, f)
+        return f
+
+    def xml(self, url):
+        x = self.get("xml_" + url)
+        if x is not None:
+            return x
+        resp = self.url_get(url)
+        if resp is None:
+            return None
+        try:
+            x = etree.parse(BytesIO(bytearray(resp.text, "utf-8")))
+        except:
+            return None
+        self.set("xml_" + url, x)
+        return x
+
 class Detector(object):
     def name(self):
         return "Abstract Detector"
@@ -123,6 +154,31 @@ class Detector(object):
         return False
     def detect(self, register, info):
         pass
+
+    def _expand_url(self, origin_url, rel):
+        if rel.startswith("http://") or rel.startswith("https://"):
+            return rel
+
+        parsed = urlparse(origin_url)
+
+        if rel.startswith("/"):
+            # absolute to the base of the domain
+            return parsed.scheme + "://" + parsed.netloc + rel
+        else:
+            full = parsed.scheme + "://" + parsed.netloc + parsed.path
+            if full.endswith("/"):
+                return full + rel
+            else:
+                parts = full.split("/")
+                if len(parts) == 3:
+                    return full + "/" + rel
+                elif len(parts) > 3:
+                    return "/".join(full[:-1]) + "/" + rel
+
+        return None
+
+class DetectorException(Exception):
+    pass
 
 ################################################################
 ## Detector implementations
@@ -164,6 +220,7 @@ class OperationalStatus(Detector):
         if pn or ip:
             log.info("Repository is by IP address and/or has port number - registering operational_status as Trial")
             register.operational_status = "Trial"
+            return
 
         # operation status is Operational
         log.info("Repository is responding appropriately - registering operational_status as Operational")
@@ -511,9 +568,10 @@ class Software(Detector):
             return software
 
         # may contain the phrase "Communities & Collections" on the home page
-        if "Communities & Collections" in soup.get_text():
-            software["confidence"] = 0.8
-            return software
+        if soup is not None:
+            if "Communities & Collections" in soup.get_text():
+                software["confidence"] = 0.8
+                return software
 
         # May contain the word DSpace in a heading tag somewhere
         if resp is not None:
@@ -632,6 +690,29 @@ class Organisation(Detector):
         register.add_organisation_object(org)
 
 class Feed(Detector):
+
+    type_map = {
+        "application/rss+xml" : "rss",
+        "application/atom+xml" : "atom"
+    }
+
+    version_map = {
+        "rss090" : "0.90",
+        "rss091n" : "Netscape 0.91",
+        "rss091u" : "Userland 0.91",
+        "rss10" : "1.0",
+        "rss092" : "0.92",
+        "rss093" : "0.93",
+        "rss094" : "0.94",
+        "rss20" : "2.0",
+        "rss" : None,
+        "atom01" : "0.1",
+        "atom02" : "0.2",
+        "atom03" : "0.3",
+        "atom10" : "1.0",
+        "atom" : None
+    }
+
     def name(self):
         return "Atom/RSS Feeds"
 
@@ -639,7 +720,186 @@ class Feed(Detector):
         return register.repo_url is not None
 
     def detect(self, register, info):
-        pass
+        soup = info.soup(register.repo_url)
+
+        # look in the link headers in the html
+        # <link type="application/rss+xml" rel="alternate" href="/feed/rss_1.0/site" />
+        # <link type="application/rss+xml" rel="alternate" href="/feed/rss_2.0/site" />
+        # <link type="application/atom+xml" rel="alternate" href="/feed/atom_1.0/site" />
+        alts = []
+        for link in soup.find_all("link"):
+            rels = link.get("rel")
+            if "alternate" in rels:
+                if link.get("type") is not None and link.get("type") in ["application/rss+xml", "application/atom+xml"]:
+                    url = self._expand_url(register.repo_url, link.get("href"))
+                    if url is not None:
+                        alts.append((url, link.get("type")))
+
+        for url, mime in alts:
+            feed = info.feed(url)
+            api = {"api_type" : self.type_map.get(mime), "base_url" :  url}
+
+            if feed.bozo == 0:
+                v = self.version_map.get(feed.version)
+                if v is not None:
+                    api["version"] = v
+
+            log.info(api.get("api_type") + " at " + api.get("base_url") + " detected from link headers")
+            register.add_api_object(api)
+
+        # anchor tags with RSS/Atom in the link body
+        # <a href="/feed/rss_1.0/site" style="background: url(/static/icons/feed.png) no-repeat">RSS 1.0</a>
+        # <a href="/feed/rss_2.0/site" style="background: url(/static/icons/feed.png) no-repeat">RSS 2.0</a>
+        # <a href="/feed/atom_1.0/site" style="background: url(/static/icons/feed.png) no-repeat">Atom</a>
+        possibles = []
+        for a in soup.find_all("a"):
+            norm = " " + a.text.lower().strip() + " "
+            url = self._expand_url(register.repo_url, a.get("href"))
+            if " rss " in norm:
+                possibles.append((url, "rss"))
+            elif " atom " in norm:
+                possibles.append((url, "atom"))
+
+        for url, t in possibles:
+            feed = info.feed(url)
+            if feed.bozo > 0:
+                continue
+            api = {"api_type" : t, "base_url" : url}
+            v = self.version_map.get(feed.version)
+            api["version"] = v
+
+            log.info(api.get("api_type") + " at " + api.get("base_url") + " detected from html body")
+            register.add_api_object(api)
+
+class OAI_PMH(Detector):
+    guesses = [
+        "/oai",
+        "/oaipmh",
+        "/oai-pmh",
+        "/oai/request",
+        "/dspace-oai/request",
+        "/cgi/oai2",
+        "/cgi-bin/oai.exe",
+        "/do/oai/"
+    ]
+    def name(self):
+        return "OAI-PMH"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        oai = None
+        for guess in self.guesses:
+            url = self._expand_url(register.repo_url, guess)
+            resp = info.url_get(url + "?verb=Identify")
+            if resp is None:
+                continue
+            if resp.status_code == requests.codes.ok:
+                oai = url
+                break
+
+        if oai is None:
+            log.info("Unable to locate OAI-PMH endpoint which responds")
+            return
+
+        # we have an oai endpoint
+
+        # have a go at getting the version
+        doc = info.xml(oai + "?verb=Identify")
+        if doc is None:
+            log.info("Detected possible OAI-PMH at " + oai + " but unable to parse feed")
+            return
+
+        info.set("oai_identify", url + "?verb=Identify")
+        log.info("OAI-PMH found by guessing at " + oai)
+        api = {"api_type" : "oai-pmh", "base_url" : oai}
+
+        root = doc.getroot()
+        pvs = root.xpath("//*[local-name() = 'protocolVersion']")
+        if len(pvs) > 0:
+            v = pvs[0].text
+            api["version"] = v
+
+        lmfdoc = info.xml(oai + "?verb=ListMetadataFormats")
+        lmf = lmfdoc.getroot()
+        for element in lmf.xpath("//*[local-name() = 'metadataFormat']"):
+            prefix = None
+            namespace = None
+            schema = None
+            for c in element.getchildren():
+                if c.tag.endswith("metadataPrefix"):
+                    prefix = c.text.strip()
+                if c.tag.endswith("metadataNamespace"):
+                    namespace = c.text.strip()
+                if c.tag.endswith("schema"):
+                    schema = c.text.strip()
+
+            format = {}
+            if prefix is not None:
+                format["prefix"] = prefix
+            if namespace is not None:
+                format["namespace"] = namespace
+            if schema is not None:
+                format["schema"] = schema
+
+            if "metadata_formats" not in api:
+                api["metadata_formats"] = []
+            api["metadata_formats"].append(format)
+
+        register.add_api_object(api)
+
+class Title(Detector):
+    def name(self):
+        return "OAI-PMH"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # get it from oai Identify
+        identify_url = info.get("oai_identify")
+        identify = None
+        if identify_url is not None:
+            identify = info.xml(identify_url)
+        if identify is not None:
+            root = identify.getroot()
+            rn = root.xpath("//*[local-name() = 'repositoryName']")
+            if len(rn) > 0:
+                name = rn[0].text
+                register.repo_name = name
+                return
+
+        # get it from atom feed title
+        atom_urls = register.get_api(type="atom")
+        for atom_url in atom_urls:
+            atom = info.feed(atom_url)
+            try:
+                name = atom.feed.title
+                register.repo_name = name
+                return
+            except:
+                pass
+
+        # get it from rss feed title
+        rss_urls = register.get_api(type="rss")
+        for rss_url in rss_urls:
+            rss = info.feed(rss_url)
+            try:
+                name = rss.feed.title
+                register.repo_name = name
+                return
+            except:
+                pass
+
+        # html title element of home page
+        soup = info.soup(register.repo_url)
+        titles = soup.find_all("title")
+        if len(titles) > 0:
+            name = titles[0].text
+            register.repo_name = name
+            return
+
 
 #############################################################
 # List of detectors and the order they should run
@@ -653,5 +913,7 @@ GENERAL = [
     RepositoryType,
     Software,
     Organisation,
-    Feed
+    Feed,
+    OAI_PMH,
+    Title
 ]

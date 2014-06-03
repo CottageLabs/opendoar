@@ -24,6 +24,7 @@ setup(
         "beautifulsoup4",
         "rdflib",
         "python-whois",
+        "feedparser",
         # for deployment
         "gunicorn",
         "newrelic",
