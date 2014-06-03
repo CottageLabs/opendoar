@@ -82,6 +82,20 @@ class Register(object):
         self.register["operational_status"] = val
 
     @property
+    def repo_name(self):
+        self.get_repo_name("en")
+
+    def get_repo_name(self, lang="en"):
+        self.get_metadata_value("name", lang)
+
+    @repo_name.setter
+    def repo_name(self, val):
+        self.set_repo_name(val, "en")
+
+    def set_repo_name(self, val, lang="en"):
+        self.set_metadata_value("name", val, lang)
+
+    @property
     def country(self):
         return self.get_metadata_value("country")
 
@@ -216,6 +230,16 @@ class Register(object):
 
         # if we get to here this is a new api object so we add it
         self.raw["register"]["api"].append(api_obj)
+
+    def get_api(self, type=None):
+        matches = []
+        for api in self.raw.get("register", {}).get("api", []):
+            if type is None:
+                matches.append(api)
+            else:
+                if api.get("type") == type:
+                    matches.append(api)
+        return matches
 
     @property
     def created_date(self):

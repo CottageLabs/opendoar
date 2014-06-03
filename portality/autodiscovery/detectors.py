@@ -82,8 +82,10 @@ class Info(object):
 
         except requests.exceptions.ConnectionError:
             self.set("timeout_" + url, True)
+            return None
         except requests.exceptions.Timeout:
             self.set("timeout_" + url, True)
+            return None
 
     def soup(self, url):
         s = self.get("soup_" + url)
@@ -137,8 +139,11 @@ class Info(object):
             return x
         resp = self.url_get(url)
         if resp is None:
-            pass
-        x = etree.parse(BytesIO(bytearray(resp.text, "utf-8")))
+            return None
+        try:
+            x = etree.parse(BytesIO(bytearray(resp.text, "utf-8")))
+        except:
+            return None
         self.set("xml_" + url, x)
         return x
 
@@ -215,6 +220,7 @@ class OperationalStatus(Detector):
         if pn or ip:
             log.info("Repository is by IP address and/or has port number - registering operational_status as Trial")
             register.operational_status = "Trial"
+            return
 
         # operation status is Operational
         log.info("Repository is responding appropriately - registering operational_status as Operational")
@@ -562,9 +568,10 @@ class Software(Detector):
             return software
 
         # may contain the phrase "Communities & Collections" on the home page
-        if "Communities & Collections" in soup.get_text():
-            software["confidence"] = 0.8
-            return software
+        if soup is not None:
+            if "Communities & Collections" in soup.get_text():
+                software["confidence"] = 0.8
+                return software
 
         # May contain the word DSpace in a heading tag somewhere
         if resp is not None:
@@ -786,19 +793,28 @@ class OAI_PMH(Detector):
         for guess in self.guesses:
             url = self._expand_url(register.repo_url, guess)
             resp = info.url_get(url + "?verb=Identify")
+            if resp is None:
+                continue
             if resp.status_code == requests.codes.ok:
                 oai = url
                 break
 
         if oai is None:
+            log.info("Unable to locate OAI-PMH endpoint which responds")
             return
 
         # we have an oai endpoint
-        log.info("OAI-PMH found by guessing at " + oai)
-        api = {"api_type" : "oai-pmh", "base_url" : oai}
 
         # have a go at getting the version
         doc = info.xml(oai + "?verb=Identify")
+        if doc is None:
+            log.info("Detected possible OAI-PMH at " + oai + " but unable to parse feed")
+            return
+
+        info.set("oai_identify", url + "?verb=Identify")
+        log.info("OAI-PMH found by guessing at " + oai)
+        api = {"api_type" : "oai-pmh", "base_url" : oai}
+
         root = doc.getroot()
         pvs = root.xpath("//*[local-name() = 'protocolVersion']")
         if len(pvs) > 0:
@@ -833,6 +849,56 @@ class OAI_PMH(Detector):
 
         register.add_api_object(api)
 
+class Title(Detector):
+    def name(self):
+        return "OAI-PMH"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # get it from oai Identify
+        identify_url = info.get("oai_identify")
+        identify = None
+        if identify_url is not None:
+            identify = info.xml(identify_url)
+        if identify is not None:
+            root = identify.getroot()
+            rn = root.xpath("//*[local-name() = 'repositoryName']")
+            if len(rn) > 0:
+                name = rn[0].text
+                register.repo_name = name
+                return
+
+        # get it from atom feed title
+        atom_urls = register.get_api(type="atom")
+        for atom_url in atom_urls:
+            atom = info.feed(atom_url)
+            try:
+                name = atom.feed.title
+                register.repo_name = name
+                return
+            except:
+                pass
+
+        # get it from rss feed title
+        rss_urls = register.get_api(type="rss")
+        for rss_url in rss_urls:
+            rss = info.feed(rss_url)
+            try:
+                name = rss.feed.title
+                register.repo_name = name
+                return
+            except:
+                pass
+
+        # html title element of home page
+        soup = info.soup(register.repo_url)
+        titles = soup.find_all("title")
+        if len(titles) > 0:
+            name = titles[0].text
+            register.repo_name = name
+            return
 
 
 #############################################################
@@ -848,5 +914,6 @@ GENERAL = [
     Software,
     Organisation,
     Feed,
-    OAI_PMH
+    OAI_PMH,
+    Title
 ]
