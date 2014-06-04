@@ -83,10 +83,10 @@ class Register(object):
 
     @property
     def repo_name(self):
-        self.get_repo_name("en")
+        return self.get_repo_name("en")
 
     def get_repo_name(self, lang="en"):
-        self.get_metadata_value("name", lang)
+        return self.get_metadata_value("name", lang)
 
     @repo_name.setter
     def repo_name(self, val):
@@ -94,6 +94,20 @@ class Register(object):
 
     def set_repo_name(self, val, lang="en"):
         self.set_metadata_value("name", val, lang)
+
+    @property
+    def description(self):
+        return self.get_description("en")
+
+    def get_description(self, lang="en"):
+        return self.get_metadata_value("description", lang)
+
+    @description.setter
+    def description(self, val):
+        self.set_description(val, "en")
+
+    def set_description(self, val, lang="en"):
+        self.set_metadata_value("description", val, lang)
 
     @property
     def country(self):

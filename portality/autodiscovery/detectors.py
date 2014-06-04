@@ -55,6 +55,7 @@ class WhoIsWrapper(object):
 
 class Info(object):
     request_timeout = 10
+    accept_language = "en"
 
     def __init__(self):
         self.cache = {}
@@ -77,7 +78,8 @@ class Info(object):
 
             # if not, try, get a response and cache then return
             # note that we're ignoring any ssl errors here
-            resp = requests.get(url, timeout=self.request_timeout, verify=False)
+            headers = {"Accept-Language" : self.accept_language}
+            resp = requests.get(url, timeout=self.request_timeout, verify=False, headers=headers)
             self.set(url, resp)
             return resp
 
@@ -909,6 +911,85 @@ class Title(Detector):
                 register.repo_name = name
                 return
 
+class Description(Detector):
+    def name(self):
+        return "OAI-PMH"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        atom_desc = ""
+        rss_desc = ""
+        p_desc = ""
+        td_desc = ""
+
+        # get it from atom feed subtitle
+        atom_urls = register.get_api(type="atom")
+        for atom_url in atom_urls:
+            atom = info.feed(atom_url)
+            try:
+                atom_desc = atom.feed.subtitle
+            except:
+                pass
+
+        # get it from rss feed description
+        rss_urls = register.get_api(type="rss")
+        for rss_url in rss_urls:
+            rss = info.feed(rss_url)
+            try:
+                desc = rss.feed.description
+                if len(desc) > len(rss_desc):
+                    rss_desc = desc
+            except:
+                pass
+
+        soup = info.soup(register.repo_url)
+        name = register.repo_name
+
+        # p element on home page (which ideally mentions the name) and is the longest text string
+        if soup is not None:
+            p_desc = self._desc_from_element(soup, "p", name)
+            td_desc = self._desc_from_element(soup, "td", name)
+
+        if name in p_desc:
+            register.description = p_desc
+        if name in atom_desc:
+            register.description = atom_desc
+        if name in rss_desc:
+            register.description = rss_desc
+        if name in td_desc:
+            register.description = td_desc
+
+        if len(p_desc) > 0:
+            register.description = p_desc
+            return
+        if len(atom_desc) > 0:
+            register.description = atom_desc
+            return
+        if len(rss_desc) > 0:
+            register.description = rss_desc
+            return
+        if len(td_desc) > 0:
+            register.description = td_desc
+            return
+
+    def _desc_from_element(self, soup, el, name=None):
+        likely = ""
+        fallback = ""
+        ps = soup.find_all(el)
+        for p in ps:
+            if name is not None and name in p.text:
+                if len(p.text) > len(likely):
+                    likely = p.text
+            if len(p.text) > len(fallback):
+                fallback = p.text
+
+        if likely != "":
+            return likely
+        elif fallback != "":
+            return fallback
+        return ""
 
 #############################################################
 # List of detectors and the order they should run
@@ -924,5 +1005,6 @@ GENERAL = [
     Organisation,
     Feed,
     OAI_PMH,
-    Title
+    Title,
+    Description
 ]
