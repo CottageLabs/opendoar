@@ -110,6 +110,14 @@ class Register(object):
         self.set_metadata_value("description", val, lang)
 
     @property
+    def twitter(self):
+        return self.get_metadata_value("twitter")
+
+    @twitter.setter
+    def twitter(self, val):
+        self.set_metadata_value("twitter", val)
+
+    @property
     def country(self):
         return self.get_metadata_value("country")
 

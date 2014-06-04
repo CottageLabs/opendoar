@@ -861,7 +861,7 @@ class OAI_PMH(Detector):
 
 class Title(Detector):
     def name(self):
-        return "OAI-PMH"
+        return "Title"
 
     def detectable(self, register):
         return register.repo_url is not None
@@ -913,7 +913,7 @@ class Title(Detector):
 
 class Description(Detector):
     def name(self):
-        return "OAI-PMH"
+        return "Description"
 
     def detectable(self, register):
         return register.repo_url is not None
@@ -991,6 +991,33 @@ class Description(Detector):
             return fallback
         return ""
 
+class Twitter(Detector):
+    pattern = "http[s]{0,1}://twitter.com/(.+)"
+
+    def name(self):
+        return "Twitter"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # twitter url looks like this: https://twitter.com/CamPuce
+        soup = info.soup(register.repo_url)
+        if soup is None:
+            return
+
+        tls = [a.get("href")
+               for a in soup.find_all("a")
+               if a.get("href") is not None and
+                  (a.get("href").startswith("https://twitter.com") or a.get("href").startswith("http://twitter.com"))
+            ]
+
+        for tl in tls:
+            m = re.match(self.pattern, tl)
+            if m:
+                register.twitter = m.group(1)
+                return
+
 #############################################################
 # List of detectors and the order they should run
 #############################################################
@@ -1006,5 +1033,6 @@ GENERAL = [
     Feed,
     OAI_PMH,
     Title,
-    Description
+    Description,
+    Twitter
 ]
