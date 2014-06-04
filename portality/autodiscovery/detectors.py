@@ -76,7 +76,8 @@ class Info(object):
                 return self.get(url)
 
             # if not, try, get a response and cache then return
-            resp = requests.get(url, timeout=self.request_timeout)
+            # note that we're ignoring any ssl errors here
+            resp = requests.get(url, timeout=self.request_timeout, verify=False)
             self.set(url, resp)
             return resp
 
@@ -328,9 +329,12 @@ class Language(Detector):
             # if we find a language, try to normalise to to digits and then identify it
             if lang is not None:
                 lang, territory = self._parse(lang)
-                log.info("Determining language based on HTTP headers " + register.repo_url + " -> " + lang + ", " + territory)
+                log.info("Determining language based on HTTP headers " + register.repo_url + " -> " + lang + ", " + str(territory))
                 try:
-                    locale = Locale(lang.lower(), territory.upper())
+                    if territory is not None:
+                        locale = Locale(lang.lower(), territory.upper())
+                    else:
+                        locale = Locale(lang.lower())
                     register.add_language(name=locale.language_name, code=locale.language)
                 except KeyError:
                     log.info("Unable to find Locale for " + lang + ", " + territory)
@@ -721,6 +725,8 @@ class Feed(Detector):
 
     def detect(self, register, info):
         soup = info.soup(register.repo_url)
+        if soup is None:
+            return
 
         # look in the link headers in the html
         # <link type="application/rss+xml" rel="alternate" href="/feed/rss_1.0/site" />
@@ -729,6 +735,8 @@ class Feed(Detector):
         alts = []
         for link in soup.find_all("link"):
             rels = link.get("rel")
+            if rels is None:
+                continue
             if "alternate" in rels:
                 if link.get("type") is not None and link.get("type") in ["application/rss+xml", "application/atom+xml"]:
                     url = self._expand_url(register.repo_url, link.get("href"))
@@ -894,11 +902,12 @@ class Title(Detector):
 
         # html title element of home page
         soup = info.soup(register.repo_url)
-        titles = soup.find_all("title")
-        if len(titles) > 0:
-            name = titles[0].text
-            register.repo_name = name
-            return
+        if soup is not None:
+            titles = soup.find_all("title")
+            if len(titles) > 0:
+                name = titles[0].text
+                register.repo_name = name
+                return
 
 
 #############################################################
