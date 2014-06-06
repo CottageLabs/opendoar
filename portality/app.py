@@ -2,7 +2,10 @@ from flask import Flask, request, abort, render_template, redirect, make_respons
 from flask.views import View
 from flask.ext.login import login_user, current_user
 
+import json
+
 import portality.models as models
+import portality.util as util
 from portality.core import app, login_manager
 from portality import settings, searchurl
 from portality.oarr import OARRClient
@@ -44,32 +47,102 @@ app.register_blueprint(stream, url_prefix='/stream')
 
 @app.route("/")
 def root():
-    return render_template("index.html", api_base_url=app.config.get("OARR_API_BASE_URL", "http://localhost:5001/"))
+    return render_template("index.html")
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/tools")
+def tools():
+    return render_template("tools.html")
+
+@app.route("/community")
+def community():
+    return render_template("community.html")
+
+@app.route("/stats")
+def community():
+    return render_template("stats.html")
+
+@app.route("/search")
+def search():
+    return render_template("search.html", api_base_url=app.config.get("OARR_API_BASE_URL", "http://localhost:5001/"))
 
 @app.route("/map")
 def mapp():
     return render_template("map.html")
 
 
-@app.route("/contribute")
+@app.route("/contribute", methods=['GET','POST'])
 def contribute():
 
-    autos = {
-        "org.name": rawstream(key="register.organisation.details.name",raw=True),
-        "api.type": rawstream(key="register.api.api_type",raw=True),
-        "policy.terms": rawstream(key="register.policy.policy_terms",raw=True)
+    record = {
+        "register" : {
+            "operational_status" : "",
+            "metadata" : [
+                {
+                    "lang" : "en",
+                    "default" : True,
+                    "record" : {
+                        "country" : "",
+                        "country_code" : "",
+                        "continent" : "",
+                        "continent_code" : "",
+                        "twitter" : "",
+                        "acronym" : "",
+                        "description" : "",
+                        "established_date" : "",
+                        "name" : "",
+                        "url" : "",
+                        "language" : [],
+                        "language_code" : [],
+                        "subject" : [],
+                        "repository_type" : [],
+                        "certification" : [],
+                        "content_type" : []
+                    }
+                }
+            ],
+            "software" : [],
+            "contact" : [],
+            "organisation" : [],
+            "policy" : [],
+            "api" : [],
+            "integration": []
+        }
     }
-    dropdowns = {
-        "ops": rawstream(key="register.operational_status",raw=True),
-        "contents": rawstream(key="register.metadata.record.content_type",raw=True,size=10000),
-        "subjects": rawstream(key="register.metadata.record.subject.term",raw=True,size=10000),
-        "types": rawstream(key="register.metadata.record.repository_type",raw=True),
-        "softwares": rawstream(key="register.software.name",raw=True),
-        "policytypes": rawstream(key="register.policy.policy_type",raw=True),
-        "policygrades": rawstream(key="register.policy.policy_grade",raw=True)
-    }
-    return render_template("contribute.html",autos=autos,dropdowns=dropdowns)
 
+    if request.method == 'GET':
+
+        dropdowns = {
+            "org_name": rawstream(key="register.organisation.details.name",raw=True),
+            "api_type": rawstream(key="register.api.api_type",raw=True),
+            "policy_terms": rawstream(key="register.policy.policy_terms",raw=True),
+            "ops": rawstream(key="register.operational_status",raw=True),
+            "contents": rawstream(key="register.metadata.record.content_type",raw=True,size=10000),
+            "subjects": rawstream(key="register.metadata.record.subject.term",raw=True,size=10000),
+            "types": rawstream(key="register.metadata.record.repository_type",raw=True),
+            "softwares": rawstream(key="register.software.name",raw=True),
+            "policytypes": rawstream(key="register.policy.policy_type",raw=True),
+            "policygrades": rawstream(key="register.policy.policy_grade",raw=True)
+        }
+
+        return render_template("contribute.html", dropdowns=dropdowns, record=record)
+
+    elif request.method == 'POST':
+    
+        # process the POST
+        # on success flash a success
+        # on fail flash a fail
+        flash('Thanks for your contribution', 'success')
+    
+        return redirect('/')
+    
 
 @app.route("/about")
 def about():
@@ -82,7 +155,7 @@ def repository(repo_id):
     if base is None:
         abort(500)
     client = OARRClient(base)
-    if repo_id.endswith('.json'):
+    if util.request_wants_json():
         repo_id = repo_id.replace('.json','')
         try:
             record = client.get_record(repo_id)
@@ -105,7 +178,7 @@ def organisation(org):
     if base is None:
         abort(500)
     client = OARRClient(base)
-    if org.endswith('.json'):
+    if util.request_wants_json():
         org = org.replace('.json','')
         try:
             record = client.get_org(org)
@@ -130,7 +203,12 @@ def detect():
         if url is None:
             return render_template("detect.html")
         register = autodiscovery.discover(url)
-        return render_template("repository.html", repo=register, searchurl=searchurl)
+        if util.request_wants_json():
+            resp = make_response( json.dumps(register) )
+            resp.mimetype = "application/json"
+            return resp        
+        else:
+            return render_template("repository.html", repo=register, searchurl=searchurl)
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=app.config['DEBUG'], port=app.config['PORT'])
