@@ -9,7 +9,6 @@ import whois
 import feedparser
 from io import BytesIO
 
-
 # FIXME: this should probably come from configuration somewhere
 LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
