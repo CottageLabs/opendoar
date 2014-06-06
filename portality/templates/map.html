@@ -149,6 +149,7 @@
         -moz-border-radius: 2px;
         border-radius: 2px;
         display:block;
+        color:#333;
     }
     .suggestion:hover{
         background:#ddd;
@@ -251,7 +252,7 @@ loading
 
 
 <div class="panel panel-default" id="options" style="display:none;">
-    <div class="panel-heading">
+    <div class="panel-heading" style="background-color:#53afdf;color:white;">
         <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
         <h2 style="text-align:center;">Options</h2>
     </div>
@@ -286,12 +287,11 @@ loading
 
 
 <div class="panel panel-default" id="welcome" style="display:none;">
-    <div class="panel-heading">
+    <div class="panel-heading" style="background-color:#53afdf;color:white;">
         <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
         <h2 style="text-align:center;">Welcome to openDOAR</h2>
     </div>
     <div class="panel-body">
-        <p>LOGO HERE, branded colours on borders, map etc.</p>
         <p>Scroll or double-click to zoom, click-and-drag to pan</p>
         <p>Click a country or organisation to focus on it</p>
         <p>Use the text search box above to find organisations</p>
@@ -303,7 +303,7 @@ loading
 
 
 <div class="panel panel-default" id="orgpanel" style="display:none;">
-    <div class="panel-heading">
+    <div class="panel-heading" style="background-color:#53afdf;color:white;">
         <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
         <h4></h4>
     </div>
@@ -315,7 +315,7 @@ loading
 
 
 <div class="panel panel-default" id="repopanel" style="display:none;">
-    <div class="panel-heading">
+    <div class="panel-heading" style="background-color:#53afdf;color:white;">
         <button type="button" class="close" data-dismiss="panel" aria-hidden="true">&times;</button>
         <h4></h4>
     </div>
@@ -655,7 +655,7 @@ function draw(topo) {
       .attr("d", path)
       .attr("id", function(d,i) { return d.id; })
       .attr("title", function(d,i) { return d.properties.name; })
-      .style("fill", '#eee');
+      .style("fill", '#53afdf');
 
   //offsets for tooltips
   var offsetL = document.getElementById('map').offsetLeft+20;

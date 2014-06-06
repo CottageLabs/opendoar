@@ -15,10 +15,13 @@ label{
     display:inline;
     margin:0 5px 0 0;
 }
+.banner{
+    margin-top:50px;
+}
 </style>
 
 
-<div class="hero-unit">
+<div class="hero-unit odh">
     {% if record.id %}
     <h1>repo name here</h1>
     <p><label for="record_register_operational_status">Repository status</label>
@@ -74,16 +77,16 @@ label{
         <input type="text" name="metadata_twitter" value="{{metadata.record.twitter}}"></p>
 
         <p><label for="metadata_country">Country</label>
-        <input type="text" name="metadata_country" value="{{metadata.record.country}}" class="needselect2"></p>
+        <input type="text" name="metadata_country" value="{{metadata.record.country}}" class="ac"></p>
 
         <p><label for="metadata_country_code">Country code</label>
-        <input type="text" name="metadata_country_code" value="{{metadata.record.country_code}}" class="needselect2"></p>
+        <input type="text" name="metadata_country_code" value="{{metadata.record.country_code}}" class="ac"></p>
 
         <p><label for="metadata_continent">Continent</label>
-        <input type="text" name="metadata_continent" value="{{metadata.record.continent}}"></p>
+        <input type="text" name="metadata_continent" value="{{metadata.record.continent}}" class="ac"></p>
 
         <p><label for="metadata_continent_code">Continent code</label>
-        <input type="text" name="metadata_continent_code" value="{{metadata.record.continent_code}}"></p>
+        <input type="text" name="metadata_continent_code" value="{{metadata.record.continent_code}}" class="ac"></p>
 
     </div>
     
@@ -93,48 +96,22 @@ label{
         <textarea name="metadata_description" style="height:110px;">{{metadata.record.description}}</textarea></p>
 
         <p><label for="metadata_language">Language</label>
-        <input type="text" name="metadata_language" value="{{metadata.record.language}}" class="needselect2"></p>
+        <input type="text" name="metadata_language" value="{{metadata.record.language}}" class="ac"></p>
 
         <p><label for="metadata_language_code">Language code</label>
-        <input type="text" name="metadata_language_code" value="{{metadata.record.language_code}}"></p>
+        <input type="text" name="metadata_language_code" value="{{metadata.record.language_code}}" class="ac"></p>
 
         <p><label for="metadata_repository_type">Repository type</label>
-        <select name="metadata_repository_type">
-            <option></option>
-            {% for op in dropdowns.types %}
-            <option>{{op}}</option>
-            {% endfor %}
-        </select></p>
+        <input type="text" name="metadata_repository_type" value="{{metadata.record.repository_type}}" class="ac"></p>
     
         <p><label for="metadata_content_type">Repository contents</label>
-        <select name="metadata_content_type" class="needselect2">
-            <option></option>
-            {% for op in dropdowns.contents %}
-            <option
-            {% if op == metadata.record.content_type %} selected="selected"{% endif %}
-            >{{op}}</option>
-            {% endfor %}
-        </select></p>
+        <input type="text" name="metadata_content_type" value="{{metadata.record.content_type}}" class="ac"></p>
 
         <p><label for="metadata_certification">Repository certifications</label>
-        <select name="metadata_certification" class="needselect2">
-            <option></option>
-            {% for op in dropdowns.certification %}
-            <option
-            {% if op == metadata.record.certification %} selected="selected"{% endif %}
-            >{{op}}</option>
-            {% endfor %}
-        </select></p>
+        <input type="text" name="metadata_certification" value="{{metadata.record.certification}}" class="ac"></p>
 
         <p><label for="metadata_subject">Repository subjects</label>
-        <select name="metadata_subject" class="needselect2">
-            <option></option>
-            {% for op in dropdowns.subjects %}
-            <option
-            {% if op == metadata.record.content_type %} selected="selected"{% endif %}
-            >{{op}}</option>
-            {% endfor %}
-        </select></p>
+        <input type="text" name="metadata_subject" value="{{metadata.record.subject}}" class="ac"></p>
 
     </div>
 
@@ -151,14 +128,14 @@ label{
 <!-- organisations -->
 <div id="organisation" class="row-fluid">
     <div class="span12">
-        <div class="well">
+        <div class="well banner odh">
             <h1>Organisational details</h1>
         </div>
     </div>
 </div>
 
 {% for org in record.register.organisation %}
-<div class="row-fluid multidisplay organisation">
+<div class="row-fluid multidisplay organisation" style="border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;">
 
     <div class="span6">
 
@@ -202,7 +179,7 @@ label{
 </div>
 {% endfor %}
 
-<div class="row-fluid multi organisation">
+<div class="row-fluid multi organisation" style="border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;">
 
     <div class="span6">
 
@@ -245,6 +222,7 @@ label{
 
 </div>
 
+<a class="btn btn-success addsection" href="#" data-type=".organisation">Add another organisation</a>
 
 
 
@@ -253,14 +231,14 @@ label{
 <!-- contacts -->
 <div id="contact" class="row-fluid">
     <div class="span12">
-        <div class="well">
+        <div class="well banner odh">
             <h1>Contact details</h1>
         </div>
     </div>
 </div>
 
 {% for contact in record.register.contact %}
-<div class="row-fluid multidisplay contact">
+<div class="row-fluid multidisplay contact" style="border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;">
 
     <div class="span6">
 
@@ -298,7 +276,7 @@ label{
 </div>
 {% endfor %}
 
-<div class="row-fluid multi contact">
+<div class="row-fluid multi contact" style="border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;">
 
     <div class="span6">
 
@@ -335,6 +313,7 @@ label{
 
 </div>
 
+<a class="btn btn-success addsection" href="#" data-type=".contact">Add another contact</a>
 
 
 
@@ -346,7 +325,7 @@ label{
 <!-- policy -->
 <div id="policy" class="row-fluid">
     <div class="span12">
-        <div class="well">
+        <div class="well banner odh">
             <h1>Repository policies</h1>
         </div>
     </div>
@@ -359,7 +338,7 @@ label{
                 <tr>
                     <th style="min-width:300px;">Type</th>
                     <th style="min-width:200px;">Grade</th>
-                    <th style="min-width:200px;">Description</th>
+                    <th style="min-width:430px;">Description</th>
                     <th style="min-width:200px;">Terms</th>
                 </tr>
             </thead>
@@ -368,7 +347,7 @@ label{
                 <tr>
             		<td><input type="text" name="policy_policy_type" value="{{policy.policy_type}}"></td>
             		<td><input type="text" name="policy_policy_grade" value="{{policy.policy_grade}}"></td>            		
-            		<td><textarea name="policy_description">{{policy.description}}</textarea></td>
+            		<td><textarea name="policy_description" style="height:18px;width:430px;">{{policy.description}}</textarea></td>
             		<td><input type="text" name="policy_terms" value="{{policy.terms}}"></td>            		
                 </tr>
                 {% endfor %}
@@ -380,7 +359,7 @@ label{
                 <tr>
             		<td><input type="text" name="policy_policy_type"></td>
             		<td><input type="text" name="policy_policy_grade"></td>            		
-            		<td><textarea name="policy_description"></textarea></td>
+            		<td><textarea name="policy_description" style="height:18px;width:430px;"></textarea></td>
             		<td><input type="text" name="policy_terms" class="needselect2"></td>            		
                 </tr>
             </tbody>
@@ -396,7 +375,7 @@ label{
 <!-- api -->
 <div id="api" class="row-fluid">
     <div class="span12">
-        <div class="well">
+        <div class="well banner odh">
             <h1>Repository APIs</h1>
         </div>
     </div>
@@ -452,7 +431,7 @@ label{
 <!-- software -->
 <div id="software" class="row-fluid">
     <div class="span12">
-        <div class="well">
+        <div class="well banner odh">
             <h1>Software</h1>
         </div>
     </div>
@@ -499,7 +478,7 @@ label{
 <!-- integration -->
 <div id="software" class="row-fluid">
     <div class="span12">
-        <div class="well">
+        <div class="well banner odh">
             <h1>Integration</h1>
         </div>
     </div>
@@ -572,14 +551,22 @@ jQuery(document).ready(function($) {
     $('.datepicker').datepicker(opts);
 
     // set suggester values
-    var autos = {{ autos|tojson|safe }};
-    $('.auto').each(function(i) {
+    var dropdowns = {{ dropdowns|tojson|safe }};
+    $('.ac').each(function(i) {
+        var type = $(this).attr('name');
+        alert(type);
+        if ( type in dropdowns ) {
+            var d = dropdowns[type];
+            $(this).autocomplete({
+                "source": d,
+                "minLength": 0
+            });
+        }
     });
     
     // function of things to do whenever a row is appended
     var preprow = function(row) {
         $(row).find('.delete-row').bind('click',deleterow);
-        $(row).find('.edit-row').unbind('click',editrow).bind('click',editrow);
         $(row).find('select').val("");
         $(row).find('input').val("");
         $(row).find('textarea').html("");
@@ -637,12 +624,22 @@ jQuery(document).ready(function($) {
     $('.delete-row').bind('click',deleterow);
 
 
-    var triggerdelete = function(event) {
+    var delbutton = '<a class="btn btn-warning delsection" href="#">Delete</a>';
+    var delsection = function(event) {
         event.preventDefault();
-        confirm('Are you sure you want to delete this student record?') ? $('#delete').trigger('click') : false;
-    };
-    $('#triggerdelete').bind('click',triggerdelete);
-
+        $(this).parent().remove();
+    }
+    $('.delsection').bind('click',delsection);
+    var addsection = function(event) {
+        event.preventDefault();
+        var type = $(this).attr('data-type');
+        var cloned = $(type).last().clone();
+        $(type).last().append(delbutton);
+        $(type).last().after(cloned);
+        // add functions to the stuff inserted
+        $('.delsection').unbind('click',delsection).bind('click',delsection);
+    }
+    $('.addsection').bind('click',addsection);
     
 })
 
