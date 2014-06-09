@@ -8,6 +8,8 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
 def discover(url):
+    if not url.startswith("http"):
+        url = "http://" + url
     r = Register()
     r.repo_url = url
 
@@ -22,6 +24,9 @@ def discover(url):
         detector = klazz()
         if detector.detectable(r):
             log.info(url + " - " + detector.name())
-            detector.detect(r, info)
+            try:
+                detector.detect(r, info)
+            except Exception as e:
+                log.info(e.message)
 
     return r
