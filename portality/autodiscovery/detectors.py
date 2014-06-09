@@ -885,6 +885,93 @@ class OAI_PMH(Detector):
 
         register.add_api_object(api)
 
+class Sword(Detector):
+    guesses = [
+        "/sword/servicedocument",
+        "/sword/service-document",
+        "/swordv2/servicedocument",
+        "/swordv2/service-document",
+        "/dspace-sword/servicedocument",
+        "/dspace-swordv2/servicedocument",
+        "/sword-app/servicedocument"
+    ]
+
+    def name(self):
+        return "Sword"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # first check standard sword auto-discovery
+        # <html:link rel="sword" href="[Service Document URL]"/> <!-- probably v1 -->
+        # <html:link rel="http://purl.org/net/sword/discovery/service-document" href="[Service Document URL]"/> <!-- probably v2 -->
+        soup = info.soup(register.repo_url)
+        if soup is not None:
+            links = soup.find_all("link")
+            for link in links:
+                rels = link.get("rel")
+                if rels is None:
+                    continue
+
+                # the swordv1 case
+                if "sword" in rels:
+                    path = link.get("href")
+                    url = self._expand_url(register.repo_url, path)
+                    api = {"api_type" : "sword", "version" : "1.3", "base_url" : url}
+                    self._add_info(api, info)
+                    log.info("Found SWORD 1.3 url in link headers: " + url)
+                    register.add_api_object(api)
+
+                # the swordv2 case
+                if "http://purl.org/net/sword/discovery/service-document" in rels:
+                    path = link.get("href")
+                    url = self._expand_url(register.repo_url, path)
+                    api = {"api_type" : "sword", "version" : "2.0", "base_url" : url}
+                    self._add_info(api, info)
+                    log.info("Found SWORD 2.0 url in link headers: " + url)
+                    register.add_api_object(api)
+
+        # now try the standard guesses
+        for guess in self.guesses:
+            url = self._expand_url(register.repo_url, guess)
+            resp = info.url_get(url)
+            if resp is None:
+                continue
+            if not (resp.status_code == requests.codes.ok or resp.status_code == 401 or resp.status_code == 403):
+                continue
+
+            api = {"api_type" : "sword", "base_url" : url}
+            self._guess_version(api, register)
+            self._add_info(api, info)
+            log.info("Found SWORD url by guessing: " + url)
+            register.add_api_object(api)
+
+    def _add_info(self, api, info):
+        resp = info.url_get(api["base_url"])
+        if resp.status_code == 401 or resp.status_code == 403:
+            api["authenticated"] = True
+        elif resp.status_code == requests.codes.ok:
+            api["authenticated"] = False
+
+    def _guess_version(self, api, register):
+        if "swordv2" in api["base_url"] or "sword2" in api["base_url"]:
+            api["version"] = "2.0"
+            return
+        if "swordv1" in api["base_url"] or "sword1" in api["base_url"]:
+            api["version"] = "1.3"
+            return
+
+        for name, version, url in register.software:
+            if name == "EPrints":
+                if version.startswith("3.2"):
+                    api["version"] = "1.3"
+                elif version.startswith("3.3"):
+                    api["version"] = "2.0"
+            if name == "DSpace":
+                if "/sword/" in api["base_url"]:
+                    api["version"] = "1.3"
+
 class Title(Detector):
     def name(self):
         return "Title"
@@ -1041,6 +1128,7 @@ class Twitter(Detector):
         for tl in tls:
             m = re.match(self.pattern, tl)
             if m:
+                log.info("Detected twitter " + m.group(1) + " from page scrape")
                 register.twitter = m.group(1)
                 return
 
@@ -1086,6 +1174,7 @@ class TechnicalContact(Detector):
 
         contact = {"role" : ["technical"], "details" : details}
         register.add_contact_object(contact)
+        log.info("Detected technical contact from whois record")
 
 #############################################################
 # List of detectors and the order they should run
@@ -1101,6 +1190,7 @@ GENERAL = [
     Organisation,
     Feed,
     OAI_PMH,
+    Sword,
     Title,
     Description,
     Twitter,

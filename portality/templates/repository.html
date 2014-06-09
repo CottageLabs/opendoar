@@ -238,7 +238,7 @@
                     {% endif %}
                 {% endif %}
                 {% if api.api_type == "sword" %}
-                    <strong>SWORD</strong><br>
+                    <strong>SWORD{% if api.version %} ({{api.version}}){% endif %}</strong><br>
                     <a href="{{api.base_url}}">{{api.base_url}}</a><br>
                     {% if api.accepts %}
                         Accepts: {{api.accepts|join(", ")}}<br>
