@@ -235,6 +235,18 @@ class Register(object):
             self.raw["register"]["organisation"] = []
         self.raw["register"]["organisation"].append(org_obj)
 
+    def add_contact_object(self, contact_obj):
+        """
+        org obj needs to conform to the correct structure.  Do we
+        need to extend the api to build the object?  Will do so later
+        if necessary
+        """
+        if "register" not in self.raw:
+            self.raw["register"] = {}
+        if "contact" not in self.raw["register"]:
+            self.raw["register"]["contact"] = []
+        self.raw["register"]["contact"].append(contact_obj)
+
     def add_api_object(self, api_obj):
         """
         api obj needs to conform to correct structure
