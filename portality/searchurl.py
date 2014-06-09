@@ -51,5 +51,5 @@ def continent(c):
     return _search_url(query)
 
 def _search_url(query):
-    return "/?source=" + json.dumps(query)
+    return "/search?source=" + json.dumps(query)
     

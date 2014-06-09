@@ -81,7 +81,7 @@ def mapp():
 @app.route("/contribute", methods=['GET','POST'])
 def contribute():
 
-    record = {
+    defaultrecord = {
         "register" : {
             "operational_status" : "",
             "metadata" : [
@@ -118,27 +118,56 @@ def contribute():
     }
 
     if request.method == 'GET':
+    
+        # check for a url request param
+        if 'url' in request.values:
+            # if there is one, then try to set the initial object
+            try:
+                register = autodiscovery.discover(request.values['url'])
+                record = register # this may need tweaking
+            except:
+                record = defaultrecord
+            record["detectdone"] = True
+        else:
+            # otherwise set a default initial object
+            record = defaultrecord
+
 
         dropdowns = {
+            "operational_status": rawstream(key="register.operational_status",raw=True),
+
+            "metadata_country": rawstream(key="register.metadata.record.country",raw=True),
+            "metadata_country_code": rawstream(key="register.metadata.record.country_code",raw=True),
+            "metadata_continent": rawstream(key="register.metadata.record.continent",raw=True),
+            "metadata_continent_code": rawstream(key="register.metadata.record.continent_code",raw=True),
+            "metadata_language": rawstream(key="register.metadata.record.language",raw=True),
+            "metadata_language_code": rawstream(key="register.metadata.record.language_code",raw=True),
+            "metadata_repository_type": rawstream(key="register.metadata.record.repository_type",raw=True),
+            "metadata_content_type": rawstream(key="register.metadata.record.content_type",raw=True),
+            "metadata_certification": rawstream(key="register.metadata.record.subject.term",raw=True),
+            "metadata_subject": rawstream(key="register.metadata.record.subject.term",raw=True),
+
             "org_name": rawstream(key="register.organisation.details.name",raw=True),
+
+            "contact_name": rawstream(key="register.contact.details.name",raw=True),
+
             "api_type": rawstream(key="register.api.api_type",raw=True),
-            "policy_terms": rawstream(key="register.policy.policy_terms",raw=True),
-            "ops": rawstream(key="register.operational_status",raw=True),
-            "contents": rawstream(key="register.metadata.record.content_type",raw=True,size=10000),
-            "subjects": rawstream(key="register.metadata.record.subject.term",raw=True,size=10000),
-            "types": rawstream(key="register.metadata.record.repository_type",raw=True),
-            "softwares": rawstream(key="register.software.name",raw=True),
-            "policytypes": rawstream(key="register.policy.policy_type",raw=True),
-            "policygrades": rawstream(key="register.policy.policy_grade",raw=True)
+            
+            "software_name": rawstream(key="register.software.name",raw=True)
         }
 
-        return render_template("contribute.html", dropdowns=dropdowns, record=record)
+        if util.request_wants_json():
+            resp = make_response( json.dumps({"record":record,"dropdowns":dropdowns}) )
+            resp.mimetype = "application/json"
+            return resp
+        else:
+            return render_template("contribute.html", dropdowns=dropdowns, record=record)
 
     elif request.method == 'POST':
     
         # process the POST
         # on success flash a success
-        # on fail flash a fail
+        # on fail flash a fail and redirect to populated form again
         flash('Thanks for your contribution', 'success')
     
         return redirect('/')

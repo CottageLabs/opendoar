@@ -21,18 +21,15 @@ label{
 </style>
 
 
+
+
+
+
 <div class="hero-unit odh">
     {% if record.id %}
     <h1>repo name here</h1>
     <p><label for="record_register_operational_status">Repository status</label>
-    <select name="record_register_operational_status">
-        <option></option>
-        {% for op in dropdowns.ops %}
-        <option
-        {% if record.register.operational_status == op %} selected="selected"{% endif %}
-        >{{op}}</option>
-        {% endfor %}
-    </select></p>
+    <input type="text" name="record_register_operational_status" class="ac"></p>
     {% else %}
     <h1>Add a repository to OpenDOAR</h1>
     {% endif %}
@@ -40,9 +37,16 @@ label{
 </div>
 
 
-<form action="" method="post">
+
+<form id="detect" method="GET" action="" style="display:none;">
+<input style="font-size:40px;width:99%;height:80px;line-height:40px;margin-top:20px;" type="text" name="url" id="url" placeholder="http:// your repository url here">
+<input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" value="Enter your repository URL above and click here to begin.">
+</form>
 
 
+
+
+<form id="form" action="" method="post">
 
 <!-- record metadata across all languages -->
 {% for metadata in record.register.metadata %}
@@ -111,7 +115,7 @@ label{
         <input type="text" name="metadata_certification" value="{{metadata.record.certification}}" class="ac"></p>
 
         <p><label for="metadata_subject">Repository subjects</label>
-        <input type="text" name="metadata_subject" value="{{metadata.record.subject}}" class="ac"></p>
+        <input type="text" name="metadata_subject" value="{{metadata.record.subject.term}}" class="ac"></p>
 
     </div>
 
@@ -140,7 +144,7 @@ label{
     <div class="span6">
 
         <p><label for="org_name">Name</label>
-        <input type="text" name="org_name" value="{{org.details.name}}"></p>
+        <input type="text" name="org_name" value="{{org.details.name}}" class="ac finder"></p>
 
         <p><label for="org_acronym">Acronym</label>
         <input type="text" name="org_acronym" value="{{org.details.acronym}}"></p>
@@ -184,7 +188,7 @@ label{
     <div class="span6">
 
         <p><label for="org_name">Name</label>
-        <input type="text" name="org_name"></p>
+        <input type="text" name="org_name" class="ac finder"></p>
 
         <p><label for="org_acronym">Acronym</label>
         <input type="text" name="org_acronym"></p>
@@ -243,7 +247,7 @@ label{
     <div class="span6">
 
         <p><label for="contact_name">Name</label>
-        <input type="text" name="contact_name" value="{{contact.details.name}}"></p>
+        <input type="text" name="contact_name" value="{{contact.details.name}}" class="ac finder"></p>
 
         <p><label for="contact_job_title">Job title</label>
         <input type="text" name="contact_job_title" value="{{contact.details.job_title}}"></p>
@@ -281,7 +285,7 @@ label{
     <div class="span6">
 
         <p><label for="contact_name">Name</label>
-        <input type="text" name="contact_name"></p>
+        <input type="text" name="contact_name" class="ac finder"></p>
 
         <p><label for="contact_job_title">Job title</label>
         <input type="text" name="contact_job_title"></p>
@@ -397,7 +401,7 @@ label{
             <tbody>
                 {% for api in record.register.api %}
                 <tr>
-            		<td><input type="text" name="api_api_type" value="{{api.api_type}}" style="width:100px;"></td>
+            		<td><input type="text" name="api_api_type" value="{{api.api_type}}" style="width:100px;" class="ac"></td>
             		<td><input type="text" name="api_version" value="{{api.version}}" style="width:100px;"></td>            		
             		<td><input type="text" name="api_base_url" value="{{api.base_url}}"></td>            		
             		<td><input type="text" name="api_metadata_prefixes" value="{{api.metadata_prefixes}}"></td>
@@ -411,7 +415,7 @@ label{
         <table class="multi">
             <tbody>
                 <tr>
-            		<td><input type="text" name="api_api_type" style="width:100px;"></td>
+            		<td><input type="text" name="api_api_type" style="width:100px;" class="ac"></td>
             		<td><input type="text" name="api_version" style="width:100px;"></td>            		
             		<td><input type="text" name="api_base_url" ></td>            		
             		<td><input type="text" name="api_metadata_prefixes"></td>
@@ -450,7 +454,7 @@ label{
             <tbody>
                 {% for software in record.register.software %}
                 <tr>
-            		<td><input type="text" name="software_name" value="{{software.name}}"></td>
+            		<td><input type="text" name="software_name" value="{{software.name}}" class="ac"></td>
             		<td><input type="text" name="software_version" value="{{software.version}}"></td>            		
             		<td><input type="text" name="software_url" value="{{software.url}}"></td>            		
                 </tr>
@@ -461,7 +465,7 @@ label{
         <table class="multi">
             <tbody>
                 <tr>
-            		<td><input type="text" name="software_name"></td>
+            		<td><input type="text" name="software_name" class="ac"></td>
             		<td><input type="text" name="software_version"></td>            		
             		<td><input type="text" name="software_url"></td>            		
                 </tr>
@@ -527,7 +531,7 @@ label{
 
 
 
-
+<input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" value="Click here when ready to submit this repository data to OpenDOAR.">
 
 </form>
 
@@ -542,6 +546,13 @@ label{
 
 jQuery(document).ready(function($) {
 
+    // start with a detect by URL
+    {% if not record.detectdone %}
+    $('#form').hide();
+    $('#detect').show();
+    $('#url').focus();
+    {% endif %}
+
     // set datepickers
     var opts = {
         inline: true,
@@ -554,12 +565,20 @@ jQuery(document).ready(function($) {
     var dropdowns = {{ dropdowns|tojson|safe }};
     $('.ac').each(function(i) {
         var type = $(this).attr('name');
-        alert(type);
-        if ( type in dropdowns ) {
+        if ( type == "org_country" ) { type == "metadata_country"; }
+        if ( type == "org_country_code" ) { type == "metadata_country_code"; }
+        if ( type == "integration_software" ) { type == "software_name"; }
+        if ( dropdowns.indexOf(type) != -1 ) {
             var d = dropdowns[type];
             $(this).autocomplete({
                 "source": d,
-                "minLength": 0
+                "minLength": 0,
+                "select": function() {
+                    if ( $(this).hasClass('finder') ) {
+                        // add an if this has finder class then trigger a search for 
+                        //supporting data, e.g. find an org on org name, contact on contact name, etc
+                    }
+                }
             });
         }
     });
