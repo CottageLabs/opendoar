@@ -2,11 +2,43 @@
 
 {% block content %}
 
+<style type='text/css'>
+g.nv-series {
+    cursor: pointer
+}
+</style>
+
 <div class="hero-unit odh">
 <h1>OpenDOAR stats</h1>
 </div>    
 
+<div id="controls">
+    Show top <input type="text" id="sizer" value="50" style="width:25px;"> of 
+    stat type:
+    <select id="facettype">
+        <option value="register.metadata.record.continent">Continent</option>
+        <option value="register.metadata.record.country">Country</option>
+        <option value="register.software.name">Software used</option>
+        <option value="register.metadata.record.repository_type">Repository type</option>
+        <option value="register.operational_status">Operational status</option>
+        <option value="register.metadata.record.content_type">Content type</option>
+        <option value="register.metadata.record.language">Language</option>
+        <option value="register.metadata.record.subject.term">Subjects</option>
+        <!--<option value="">Metadata re-use policy grades</option>
+        <option value="">Full-text re-use policy grades</option>
+        <option value="">Content policy grades</option>
+        <option value="">Submission policy grades</option>
+        <option value="">Preservation policy grades</option>-->
+    </select> 
+    as chart type:
+    <select id="charttype">
+        <option value="pie">Pie chart</option>
+        <option value="bar">Bar chart</option>
+    </select> 
+    <span id="loadingstatus" style="display:inline;"></span>
+</div>
 
+<div id="charts" style="width:100%;height:1000px;border:1px solid #ccc;"><svg></svg></div>
 
 
 
@@ -18,170 +50,171 @@
 
 jQuery(document).ready(function($) {
 
-    // COPIED FROM G4HE - RE-DO
+
+
+// the default query
+var query = {
+    "query": {
+        "match_all": {}
+    },
+    "size":0,
+    "facets":{
+    }
+}
+
+// and a place to store the query responses
+queryresponse = undefined;
+formatteddata = undefined;
+charttype = "pie";
+facettype = "register.metadata.record.continent.exact";
+sizer = 50;
+
+// format the returned query into data
+var formatdata = function() {
+    formatteddata = queryresponse.facets[facettype].terms;
+}
+
+// define what to do when response received
+var handleresults = function(data) {
+    queryresponse = data;
+    formatdata();
     
-    function doGraph(params) {
-        var data = params.data
-        var limit = params.limit ? params.limit : data.length
-        var label_field = params.label_field
-        var value_field = params.value_field
-        var name = params["name"]
-        var selector = params.svg_selector
-        var colour = params.colour
-        
-        var datums = []
-        var bars = {"key" : name, "color" : colour, "values" : []}
-        
-        for (var i = 0; i < data.length && i < limit; i++) {
-            var point = {}
-            point["label"] = data[i][label_field]
-            point["value"] = data[i][value_field]
-            bars.values.push(point)
+    $('#loadingstatus').html("");
+    $("#charts").html("<svg></svg>");
+    if ( charttype == "bar" ) {
+        drawbar();
+    } else {
+        drawpie();
+    }
+}
+
+// and the function that executes queries
+var executequery = function() {
+    // TODO: update the query by reading boxes from the page
+    $('#loadingstatus').html('loading');
+    // add facet requests to the query if tickboxes selected
+    sizer = parseInt($('#sizer').val());
+    charttype = $('#charttype').val();
+    facettype = $('#facettype').val() + ".exact";
+    query.facets = {};
+    query.facets[facettype] = {
+        "terms": {
+            "field":facettype,
+            "size":sizer
         }
-        datums.push(bars)
-        
-        var height = (28 * limit) + 42 + 43
-        $(selector).css("height", height + "px")
-        
-        // generate the graph
-        nv.addGraph(function() {
-            var chart = nv.models.multiBarHorizontalChart()
-              .x(function(d) { return d.label })
-              .y(function(d) { return d.value })
-              .margin({top: 30, right: 40, bottom: 50, left: 175})
-              .showValues(false)
-              .tooltips(true)
-              .showControls(false);
+    };
+    $.ajax({
+        type: 'GET',
+        url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(query),
+        dataType: 'JSONP',
+        success: handleresults
+    });
+}
+executequery(); // run once at page load to populate all points on map
+$('#facettype').bind('click',executequery);
+$('#charttype').bind('click',executequery);
+$('#sizer').bind('keyup',executequery);
 
-            chart.yAxis
-              .tickFormat(d3.format(',.0f'));
 
-            d3.select(selector)
-              .datum(datums)
-              .transition().duration(500)
-              .call(chart);
 
-            nv.utils.windowResize(chart.update);
+var drawpie = function() {
 
-            return chart;
-        });
-    }
-    
-    function generateTopCollaboratorsGraph(data, limit) {
-        // generate the default graph
-        doGraph({
-            data: data, 
-            limit: limit, 
-            label_field : "term", 
-            value_field: "total", 
-            name : "Collaboration Funding",
-            svg_selector : "#collaboration_highlight_graph_container svg",
-            colour : "#6C3BFF"
-        })
-    }
-    
-    // generate the top list of collaborators
-    function topCollaborators(count) {
-        // we always start by getting the collaboration definition and the range (which we set to the default 4, and current)
-        var cd = ["leadro", "principal_investigator", "co_investigator", "fellow"]
-        var from = $.datepicker.formatDate("yy-mm-dd", new Date())
-        
-        // build the query object
-        var obj = {
-            "count" : count, 
-            "collaboration_definition": cd.join(","), 
-            "order" : "funding"
-        };
-        if (from) {
-            obj["start"] = from
-        }
-        
-        $.ajax({
-            type: "GET",
-            url: "/organisation/{{org.name}}/collaboration/top",
-            dataType: "json",
-            data: obj,
-            success : generateCollaboratorGraphClosure(count)
-        })
-    }
-    
-    function generateCollaboratorGraphClosure(count) {
-        return function(data) {
-            generateTopCollaboratorsGraph(data, count)
-        }
-    }
-    
-    // actually generate the collaborators list for the top 10
-    topCollaborators(10)
-    
-    /////////////////////////////////////////////////////////////////////////
-    
-    // funding pie chart functions
-    
-    function doPie(params) {
-        var data = params.data
-        var label_field = params.label_field
-        var value_field = params.value_field
-        var selector = params.svg_selector
-        var name = params["name"]
-        
-        var datums = []
-        var pie = {"key" : name, "values" : []}
-        
-        for (var i = 0; i < data.length; i++) {
-            var helping = {}
-            helping["label"] = data[i][label_field]
-            helping["value"] = data[i][value_field]
-            pie.values.push(helping)
-        }
-        datums.push(pie)
-        
-        $(selector).css("height", "365px")
-        
-        // generate the pie
-        nv.addGraph(function() {
-            var chart = nv.models.pieChart()
-                .x(function(d) { return d.label })
-                .y(function(d) { return d.value })
-                .showLabels(true)
-                .labelThreshold(.05)
-                .donut(true);
+    $(selector).css("height","1000px")
 
-            d3.select(selector)
-                .datum(datums)
-                .transition().duration(500)
-                .call(chart);
+    var data = formatteddata;
+    var label_field = "term";
+    var value_field = "count";
+    var selector = "#charts svg";
+    var name = "";
     
-            return chart;
-        });
+    var datums = []
+    var pie = {"key" : name, "values" : []}
+    
+    for (var i = 0; i < data.length; i++) {
+        var helping = {}
+        helping["label"] = data[i][label_field]
+        helping["value"] = data[i][value_field]
+        pie.values.push(helping)
+    }
+    datums.push(pie)
         
-    }
+    // generate the pie
+    nv.addGraph(function() {
+        var chart = nv.models.pieChart()
+            .x(function(d) { return d.label })
+            .y(function(d) { return d.value })
+            .showLabels(true)
+            .labelThreshold(.05)
+            .donut(true);
+
+        d3.select(selector)
+            .datum(datums)
+            .transition().duration(500)
+            .call(chart);
+
+        return chart;
+    });
     
-    function fundingBreakdown() {
-        var start = $.datepicker.formatDate("yy-mm-dd", new Date())
-        var obj = {"start" : start}
-        $.ajax({
-            type: "GET",
-            url: "/organisation/{{org.name}}/funders",
-            dataType: "json",
-            data: obj,
-            success : generateFundersChart
-        })
-    }
+    //$(selector).css("height","100%")
     
-    function generateFundersChart(data) {
-        // generate the default graph
-        doPie({
-            data: data, 
-            label_field : "term", 
-            value_field: "total", 
-            svg_selector : "#funding_breakdown_container svg",
-            name : "Funding Breakdown"
-        })
-    }
+}
+
+
+
+
+var drawbar = function() {
+
+    $(selector).css("height","2000px")
+
+    var data = formatteddata;
+    var limit = data.length
+    var label_field = "term"
+    var value_field = "count"
+    var name = ""
+    var selector = "#charts svg"
+    var colour = "#53afdf"
     
-    // actually generate the funder pie chart
-    fundingBreakdown()
+    var datums = []
+    var bars = {"key" : name, "color" : colour, "values" : []}
+    
+    for (var i = 0; i < data.length && i < limit; i++) {
+        var point = {}
+        point["label"] = data[i][label_field]
+        point["value"] = data[i][value_field]
+        bars.values.push(point)
+    }
+    datums.push(bars)
+    
+    var height = (28 * limit) + 42 + 43
+    $(selector).css("height", height + "px")
+    
+    // generate the graph
+    nv.addGraph(function() {
+        var chart = nv.models.multiBarHorizontalChart()
+          .x(function(d) { return d.label })
+          .y(function(d) { return d.value })
+          .margin({top: 30, right: 40, bottom: 50, left: 175})
+          .showValues(false)
+          .tooltips(true)
+          .showControls(false);
+
+        chart.yAxis
+          .tickFormat(d3.format(',.0f'));
+
+        d3.select(selector)
+          .datum(datums)
+          .transition().duration(500)
+          .call(chart);
+
+        nv.utils.windowResize(chart.update);
+
+        return chart;
+    });
+
+    $(selector).css("height","100%")
+
+}
+
 
 
 })

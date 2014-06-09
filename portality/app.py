@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, render_template, redirect, make_response
+from flask import Flask, request, abort, render_template, redirect, make_response, flash
 from flask.views import View
 from flask.ext.login import login_user, current_user
 
@@ -144,7 +144,7 @@ def contribute():
             "metadata_language_code": rawstream(key="register.metadata.record.language_code",raw=True),
             "metadata_repository_type": rawstream(key="register.metadata.record.repository_type",raw=True),
             "metadata_content_type": rawstream(key="register.metadata.record.content_type",raw=True),
-            "metadata_certification": rawstream(key="register.metadata.record.subject.term",raw=True),
+            "metadata_certification": rawstream(key="register.metadata.record.certification",raw=True),
             "metadata_subject": rawstream(key="register.metadata.record.subject.term",raw=True),
 
             "org_name": rawstream(key="register.organisation.details.name",raw=True),
@@ -168,7 +168,7 @@ def contribute():
         # process the POST
         # on success flash a success
         # on fail flash a fail and redirect to populated form again
-        flash('Thanks for your contribution', 'success')
+        flash('Thanks for your contribution - if this system were not still in beta it would get processed!', 'success')
     
         return redirect('/')
     

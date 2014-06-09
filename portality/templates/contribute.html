@@ -568,7 +568,7 @@ jQuery(document).ready(function($) {
         if ( type == "org_country" ) { type == "metadata_country"; }
         if ( type == "org_country_code" ) { type == "metadata_country_code"; }
         if ( type == "integration_software" ) { type == "software_name"; }
-        if ( dropdowns.indexOf(type) != -1 ) {
+        if ( type in dropdowns ) {
             var d = dropdowns[type];
             $(this).autocomplete({
                 "source": d,
