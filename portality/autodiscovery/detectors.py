@@ -9,7 +9,6 @@ import whois
 import feedparser
 from io import BytesIO
 
-
 # FIXME: this should probably come from configuration somewhere
 LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
@@ -19,11 +18,24 @@ log = logging.getLogger(__name__)
 ## utilities
 
 class WhoIsWrapper(object):
+    """
+Registrant Phone:+49.17012345678
+Registrant Phone Ext:
+Registrant Fax:
+Registrant Fax Ext:
+Registrant Email:jung.uwe@gmail.com
+"""
 
     fields = {
         "org_name" : ["Registrant Organization", "Admin Organization", "Registered For", "Domain Owner", "Tech Organization", "Registered By"],
         "domain" : ["Domain", "Domain Name"],
-        "registrant_address" : ["Registrant Address"]
+        "address" : ["Registrant Address",
+                     ["Registrant Street", "Registrant City", "Registrant State/Province", "Registrant Postal Code", "Registrant Country"]
+        ],
+        "contact_name" : ["Registrant Name", "Registrant Contact", "Admin Name", "Tech Name"],
+        "email" : ["Registrant Email", "Admin Email", "Tech Email"],
+        "fax" : ["Registrant Fax", "Admin Fax", "Tech Fax"],
+        "phone" : ["Registrant Phone", "Admin Phone", "Tech Phone"],
     }
 
     long_pattern = ":\n\t(.+?)\n\n"
@@ -39,14 +51,29 @@ class WhoIsWrapper(object):
     def get(self, field):
         synonyms = self.fields.get(field, [])
         for syn in synonyms:
-            p = syn + self.long_pattern
-            m = re.search(p, self.body)
-            if m is not None:
-                return m.group(1)
-            p = syn + self.short_pattern
-            m = re.search(p, self.body)
-            if m is not None:
-                return m.group(1)
+            if isinstance(syn, list):
+                val = ""
+                for s in syn:
+                    raw = self.get_raw(s)
+                    if raw is not None:
+                        val += raw + "\n"
+                if val != "":
+                    return val.strip()
+            else:
+                val = self.get_raw(syn)
+                if val is not None:
+                    return val
+        return None
+
+    def get_raw(self, key):
+        p = key + self.long_pattern
+        m = re.search(p, self.body, re.DOTALL)
+        if m is not None:
+            return m.group(1)
+        p = key + self.short_pattern
+        m = re.search(p, self.body)
+        if m is not None:
+            return m.group(1)
         return None
 
 
@@ -673,12 +700,11 @@ class Organisation(Detector):
         who = info.whois(host)
 
         # try to extract the org details from the whois record
-        address = who.get("org_address")
         name = who.get("org_name")
         domain = who.get("domain")
 
         # did we get anything we could work with?
-        if address is None and name is None and domain is None:
+        if name is None and domain is None:
             return
 
         # if so, start building an org object
@@ -1018,6 +1044,49 @@ class Twitter(Detector):
                 register.twitter = m.group(1)
                 return
 
+class TechnicalContact(Detector):
+    def name(self):
+        return "Technical Contact"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # extract the host name from the url
+        url = register.repo_url
+        parsed = urlparse(url)
+        host = parsed.netloc.split(":")[0] # ensure we get rid of the port
+
+        # do the lookup.  This helpfully recurses up the domain tree until it
+        # gets an answer
+        who = info.whois(host)
+
+        name = who.get("contact_name")
+        email = who.get("email")
+        address = who.get("address")
+        fax = who.get("fax")
+        phone = who.get("phone")
+
+        details = {}
+        if name is not None:
+            details["name"] = name
+        if email is not None:
+            details["email"] = email
+        if address is not None:
+            details["address"] = address
+        if fax is not None:
+            details["fax"] = fax
+        if phone is not None:
+            details["phone"] = phone
+
+        if len(details.keys()) == 0:
+            return
+
+        # FIXME: may want to do some geolocation on the address
+
+        contact = {"role" : ["technical"], "details" : details}
+        register.add_contact_object(contact)
+
 #############################################################
 # List of detectors and the order they should run
 #############################################################
@@ -1034,5 +1103,6 @@ GENERAL = [
     OAI_PMH,
     Title,
     Description,
-    Twitter
+    Twitter,
+    TechnicalContact
 ]
