@@ -1217,6 +1217,7 @@ GENERAL = [
     Feed,
     OAI_PMH,
     Sword,
+    OpenSearch,
     Title,
     Description,
     Twitter,
