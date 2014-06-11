@@ -972,6 +972,32 @@ class Sword(Detector):
                 if "/sword/" in api["base_url"]:
                     api["version"] = "1.3"
 
+class OpenSearch(Detector):
+    def name(self):
+        return "OpenSearch"
+
+    def detectable(self, register):
+        return register.repo_url is not None
+
+    def detect(self, register, info):
+        # <link type="application/opensearchdescription+xml" rel="search" href="http://www.repository.cam.ac.uk:80/open-search/description.xml" title="DSpace" />
+        soup = info.soup(register.repo_url)
+        if soup is not None:
+            for link in soup.find_all("link"):
+                if link.get("type") == "application/opensearchdescription+xml":
+                    api = {"api_type" : "opensearch", "base_url" : link.get("href")}
+                    self._detect_version(api, info)
+                    register.add_api_object(api)
+                    log.info("Found opensearch in link headers: " + api["base_url"])
+
+    def _detect_version(self, api, info):
+        osdoc = info.xml(api["base_url"])
+        root = osdoc.getroot()
+        if 'http://a9.com/-/spec/opensearch/1.1/' in root.nsmap.values():
+            api["version"] = "1.1"
+        else:
+            api["version"] = "1.0"
+
 class Title(Detector):
     def name(self):
         return "Title"
@@ -1191,6 +1217,7 @@ GENERAL = [
     Feed,
     OAI_PMH,
     Sword,
+    OpenSearch,
     Title,
     Description,
     Twitter,
