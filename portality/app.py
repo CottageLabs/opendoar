@@ -66,7 +66,7 @@ def community():
     return render_template("community.html")
 
 @app.route("/stats")
-def community():
+def stats():
     return render_template("stats.html")
 
 @app.route("/search")
