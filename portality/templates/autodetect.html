@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-unit odh">
+    <h1>
+        Repository auto-detect<br>
+        <small>how to optimise your repository for detection by OpenDOAR</small>
+    </h1>
+</div>
+
+<p>OpenDOAR can automatically detect information about your repository in order to speed up the process of entering
+or updating inforamation in the registry.  This page tells you how best to set up your repository so that information
+about it can be easily obtained by us.</p>
+
+<h2>Operational Status</h2>
+
+<p>If your repository does not respond rapidly to requests for the home page, we will assume that it is no longer functioning</p>
+
+<p>If your repository is identified by an IP address rather than a domain name, or contains a port number as part of the
+    URL we'll assume that you're still in the trial stages of your repository's life.</p>
+
+<p>Look at, for example, the interpretation of the following URLs (assuming they respond to an initial request):</p>
+
+<table border="1" cellpadding="3" style="margin: 15px"><thead style="font-weight: bold; background: #cccccc"><tr><th>URL</th><th>Status</th><th>Reason</th></tr></thead><tbody>
+    <tr><td>http://192.168.0.44</td><td>Trial</td><td>The URL is an IP address, so is at risk of changing or disappearing.  Also, is not the kind of thing you expect users to understand.</td></tr>
+    <tr><td>http://www.myrepo.com:8080/xmlui</td><td>Trial</td><td>The port 8080 is expressed in the URL.  This is user-unfriendly, and also the kind of thing that might be expected to change or disappear in the future.</td></tr>
+    <tr><td>http://www.myrepo.edu/jspui</td><td>Operational</td><td>This is the kind of URL users expect, and which we can trust is likely to be stable.</td></tr>
+</tbody></table>
+
+<div class="alert alert-success">To ensure that we detect your repository as <strong>Operational</strong> deploy it with its own domain name (probably beneath your institution's domain) and ensure that port routing is correctly dealt with by your systems.</div>
+
+<h2>Country</h2>
+
+<p>If your repository is hosted at a URL with a ccTLD (e.g. it ends with .uk or .fr, etc) we will assume that this
+    is its country of origin</p>
+
+<p>If your repository is hosted at a generic TLD (e.g. .com or .org) we will attempt to geo-locate the IP address of the machine that serves it.</p>
+
+<div class="alert alert-success">To ensure that we detect your repository's <strong>Country</strong> correctly, either host it
+    at a domain which has your country's ccTLD in it, or host it on a machine which is in the same country as you.</div>
+
+
+<h2>Continent</h2>
+
+<p>We will infer the continent that your repository is based in from the detected country</p>
+
+<div class="alert alert-success">To ensure that we detect your repository's <strong>Continent</strong> correctly, either host it
+at a domain which has your country's ccTLD in it, or host it on a machine which is in the same country as you.</div>
+
+
+<h2>Language of content</h2>
+
+<p>If your repository announces its content language in the HTTP headers, we will assume that this is the language of the content</p>
+
+<p>For example, your repository may respond to a request for the home page with a response as follows, which we would interpret as
+being a repository in German.</p>
+
+<pre>
+    HTTP/1.1 200 OK
+    Server: Apache-Coyote/1.1
+    Content-Type: text/html;charset=UTF-8
+    Transfer-Encoding: chunked
+    Date: Mon, 23 Jun 2014 13:50:15 GMT
+    Content-Language: de
+</pre>
+
+<p>In all other cases we assume that the content is in the official languages of the country we detect for your repository</p>
+
+<p>For example, if your repository is located in Belgium, we will assume that the language of the content is Dutch, French and German</p>
+
+<div class="alert alert-success">To ensure that we detect your repository content's <strong>Language</strong> correctly, ensure that
+your web server is correctly indicating the language(s) that it provides through the HTTP headers.</div>
+
+<h2>Repository Type</h2>
+
+<p>Repository type is difficult to accurately determine, so we use the following rules to make a best guess:</p>
+
+<ol>
+    <li>If the URL contains the string ".gov." we assume this is a <em>Governmental</em> repository</li>
+    <li>If the URL contains ends with ".org", ".com", ".info", or ".net" we assume that the repository is both <em>Aggregating</em> and <em>Disciplinary</em></li>
+    <li>If the URL contains ".edu.", ends with ".edu" or does not fall within any of the above categories, we assume it to be <em>Institutional</em></li>
+</ol>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Repository Type</strong> correctly, ensure that it has
+    an appropriate URL for the usage.</div>
+
+<h2>Software</h2>
+
+<p>Detecting software type is highly specific to each software platform.  At the moment OpenDOAR can only detect EPrints and DSpace repositories; support for other
+repository types will be added in future.</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Software</strong> correctly, ensure that you are using DSpace version &gt; 1.8 and EPrints version &gt; 3.0</div>
+
+<h2>Organisation</h2>
+
+<p>Working out the organisation that owns a repository relies on the whois record for the domain that it lies under.  Whois records are
+notoriously difficult to read in a standardised way, being designed mostly for human eyes.  We use the whois record to make our best
+guess as to the institution, based on common fields that are often seen in such records.</p>
+
+<p>If your domain is not owned by the organisation that owns the repository, we will not be able to correctly guess your organisation</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Organisation</strong> correctly, ensure that
+your institution's whois record is up to date, and that you own the domain under which the repository is hosted</div>
+
+<h2>Atom/RSS Feeds</h2>
+
+<p>There are standard ways that websites indicate the location of their Atom/RSS feeds.  Typically in the HTML headers you should place something like:</p>
+
+<pre>
+    &lt;link type="application/rss+xml" rel="alternate" href="/feed/rss_2.0" /&gt;
+    &lt;link type="application/atom+xml" rel="alternate" href="/feed/atom_1.0" /&gt;
+</pre>
+
+<p>If we can't find these links in your home page HTML, we will try some likely URLs to see if we can find your feeds.</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Atom/RSS Feeds</strong> correctly, ensure that
+links to them are included in your repository home page's HTML headers</div>
+
+<h2>OAI-PMH</h2>
+
+<p>There is no standard way to tell a client the location of your OAI-PMH endpoint, so we try several well-known URL patterns to attempt to locate it.  They include:</p>
+
+<ul>
+    <li>/oai</li>
+    <li>/oaipmh</li>
+    <li>/oai-pmh</li>
+    <li>/oai/request</li>
+    <li>/dspace-oai/request</li>
+    <li>/cgi/oai2</li>
+    <li>/cgi-bin/oai.exe</li>
+    <li>/do/oai/</li>
+</ul>
+
+<p>These are the locations used by some of the major repository software platforms</p>
+
+
+<div class="alert alert-success">To ensure that we detect your <strong>OAI-PMH feed</strong> correctly, ensure that it
+appears at a sensible, guessable url such as /oai</div>
+
+<h2>SWORD</h2>
+
+<p>SWORD has standard ways for clients to detect the location of the Service Document which is the gateway to the SWORD endpoint.  In the HTML headers we look for something like:</p>
+
+<pre>
+    &lt;link rel="sword" href="[Service Document URL]"/&gt;
+    &lt;link rel="http://purl.org/net/sword/discovery/service-document" href="[Service Document URL]"/&gt;
+</pre>
+
+<p>If we can't find these in your home page HTML headers, then we try some standard URLs where the major repository platforms put their SWORD endpoints</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>SWORD Endpoint</strong> correctly, ensure that you use the
+    auto-discovery tags in the HTML headers of your repository home page, or place the SWORD endpoing at a sensible, guessable url such as /sword</div>
+
+<h2>OpenSearch</h2>
+
+<p>The OpenSearch descriptor is usually referenced in the HTML headers on your repository's home page:</p>
+
+<pre>
+    &lt;link type="application/opensearchdescription+xml" rel="search" href="http://www.myrepo.ac.uk/open-search/description.xml" /&gt;
+</pre>
+
+<div class="alert alert-success">To ensure that we detect your <strong>OpenSearch descriptor</strong> correctly, ensure that it
+is referenced correctly in your HTML headers.</div>
+
+<h2>Repository Name</h2>
+
+<p>The repository name can be detected from a number of locations, and we look for it in the following places, in order, until we find it:</p>
+
+<ol>
+    <li>The "repositoryName" element of the OAI-PMH feed's Identify page</li>
+    <li>The "title" element of the repository's Atom/RSS Feed</li>
+    <li>The "title" element of the repository home page's HTML headers</li>
+</ol>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Repository Name</strong> correctly, ensure that it
+is correctly specified in all of the above situations.</div>
+
+<h2>Repository Description</h2>
+
+<p>The repository description is almost impossible to obtain reliably.  We assume that the descriptive text is the
+    largest block of text that appears inside an HTML paragraph tag on your repository's home page.  If we have several
+options to choose from, we'll pick an option which contains your repository name</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Repository Description</strong> correctly, place it
+    on your home page inside HTML paragraph tags, and be sure to mention the name of your repository in the text.</div>
+
+<h2>Twitter Handle</h2>
+
+<p>Twitter handles are relatively easy to spot, as they have a standard form:</p>
+
+<pre>
+    http(s)://twitter.com/[twitter handle]
+</pre>
+
+<p>We look for links which match this form on your repository home page, and extract your twitter handle from it.</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Twitter Handle</strong> correctly, place it
+on your home page as an href on an anchor tag.  Using a standard "follow on twitter" approach will work.</div>
+
+
+<h2>Technical Contact</h2>
+
+<p>Working out the technical contact for a repository relies on the whois record for the domain that it lies under.  Whois records are
+notoriously difficult to read in a standardised way, being designed mostly for human eyes.  We use the whois record to make our best
+guess as to the technical contact for the domain, based on common fields that are often seen in such records.</p>
+
+<p>Note that the technical contact for your domain is unlikely to be the direct technical contact for the repository itself, but more
+likely for your institutional IT department.</p>
+
+<div class="alert alert-success">To ensure that we detect your <strong>Technical Contact</strong> correctly, ensure that
+your institution's whois record is up to date, and that you own the domain under which the repository is hosted</div>
+
+{% endblock %}

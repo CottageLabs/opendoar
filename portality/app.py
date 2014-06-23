@@ -77,6 +77,10 @@ def search():
 def mapp():
     return render_template("map.html")
 
+@app.route("/autodetect")
+def mapp():
+    return render_template("autodetect.html")
+
 
 @app.route("/contribute", methods=['GET','POST'])
 def contribute():
