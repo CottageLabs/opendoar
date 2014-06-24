@@ -78,8 +78,12 @@ def mapp():
     return render_template("map.html")
 
 @app.route("/autodetect")
-def mapp():
+def autodetect():
     return render_template("autodetect.html")
+
+@app.route("/registryfile")
+def registryfile():
+    return render_template("registryfile.html")
 
 
 @app.route("/contribute", methods=['GET','POST'])
