@@ -1,4 +1,4 @@
-from portality.autodiscovery import detectors
+from portality.autodiscovery import detectors, registryfile
 from portality.oarr import Register
 import logging
 
@@ -7,15 +7,23 @@ LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
-def discover(url):
+def discover(url, raise_registry_file_error=True):
     if not url.startswith("http"):
         url = "http://" + url
+
+    # first try to detect the registry file
+    try:
+        r = registryfile.RegistryFile.get(url)
+        if r is not None:
+            return r
+    except registryfile.RegistryFileException as e:
+        if raise_registry_file_error:
+            raise e
+
+    # if we get here, the registry file may have failed or it may not have existed
+    # in which case we fall back to auto-detect
     r = Register()
     r.repo_url = url
-
-    # This is a dictionary which can be used by detectors to store out-of-band info about
-    # the register, for re-use by other detectors
-    info = {}
 
     # for each general (i.e. non repo-type specific detector) check to see if the register contains
     # enough info for the detector to run, and then run it if so

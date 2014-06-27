@@ -44,17 +44,13 @@ be able to manage your repository's presence in the registry without manually en
             "metadata" : [
                 {
                     "lang" : "en",
-                    "default" : true|false
+                    "default" : true|false,
                     "record" : {
-                        "country" : "# name of country repository resides in #",
                         "country_code" : "# two-letter iso code for country #",
-                        "continent" : "# continent repository resides in #",
-                        "continent_code" : "# two-letter iso code for continent repository resides in #",
                         "twitter" : "# repository's twitter handle #",
                         "acronym" : "# repository name acronym #",
                         "description" : "# free text description of repository #",
                         "established_date" : "# date established #",
-                        "language" : [# languages of content found in repo (names of) #],
                         "language_code" : [# languages of content found in repo (iso-639-1) #],
                         "name" : "# name of repository #",
                         "url" : "# url for repository home page #",
@@ -65,9 +61,9 @@ be able to manage your repository's presence in the registry without manually en
                                 "code" : "# classification code #"
                             }
                         ],
-                        "repository_type" : [# list of vocabulary terms for the repository #],
-                        "certification" : [# list of certifications held by this repository #],
-                        "content_type" : [# list of vocabulary terms for the content in this repository #]
+                        "repository_type" : ["# list of vocabulary terms for the repository #"],
+                        "certification" : ["# list of certifications held by this repository #"],
+                        "content_type" : ["# list of vocabulary terms for the content in this repository #"]
                     }
                 }
             ],
@@ -80,7 +76,7 @@ be able to manage your repository's presence in the registry without manually en
             ],
             "contact" : [
                 {
-                    "role" : ["# contact role with regard to this repository #"]
+                    "role" : ["# contact role with regard to this repository #"],
                     "details": {
                         "name" : "# contact name #",
                         "email" : "# contact email #",
@@ -105,7 +101,6 @@ be able to manage your repository's presence in the registry without manually en
                         "unit_acronym" : "# acronym of unit responsible #",
                         "unit_url" : "# url of responsible unit #",
 
-                        "country" : "# country organisation resides in #",
                         "country_code" : "# two letter country code organisation resides in #",
                         "lat" : "# latitude of organisation/unit #",
                         "lon" : "# longitude of organisation/unit #"
@@ -115,9 +110,8 @@ be able to manage your repository's presence in the registry without manually en
             "policy" : [
                 {
                     "policy_type" : "# vocabulary term for policy type #",
-                    "policy_grade" : "# vocabulary term for quality of policy #",
                     "description" : "# description of policy terms, human readable #",
-                    "terms" : [# list of vocabulary terms describing the policy #]
+                    "terms" : ["# list of vocabulary terms describing the policy #"]
                 }
             ],
             "api" : [
@@ -126,9 +120,9 @@ be able to manage your repository's presence in the registry without manually en
                     "version" : "# version of the API #",
                     "base_url" : "# base url of API #",
 
-                    "metadata_formats" : [{"prefix" : "# prefix #", "namespace" : "# namespace #", "schema" : "# schema#"}], # oai-pmh
-                    "accepts" : [# list of accepted mimetypes #], # sword
-                    "accept_packaging" : [# list of accepted package formats #], #sword
+                    "metadata_formats" : [{"prefix" : "# prefix #", "namespace" : "# namespace #", "schema" : "# schema#"}],
+                    "accepts" : [# list of accepted mimetypes #],
+                    "accept_packaging" : [# list of accepted package formats #]
                 }
             ],
             "integration": [
@@ -153,7 +147,7 @@ be able to manage your repository's presence in the registry without manually en
             <li><code>last_updated</code> tells us when the registry file was last modified, so OpenDOAR knows whether to attempt to update its records again.
             This MUST be a datestamp in the form <code>YYYY-mm-ddTHH:MM:SSZ</code> so for example <code>2014-06-23T18:29:30Z</code></li>
             <li><code>register</code> is the container for all the information about the repository</li>
-            <li><code>replaces</code> - if the repository replaces an existing, separate repository system, this MAY be identified here.  Identifiers must take the form of an oarr info uri.</li>
+            <li><code>replaces</code> - if the repository replaces an existing, separate repository system, this MAY be identified here.  Identifiers MUST take the form of an oarr info uri.</li>
             <li><code>operational_status</code> - MUST contain one of "Trial" or "Operational", all other values will be ignored.</li>
             <li><code>metadata</code> - SHOULD contain one or more metadata records about the repository.  If there are multiple records, they MUST be in different languages, and one of them should be marked as the default (see the section on Metadata)</li>
             <li><code>software</code> - MAY contain one or more pieces of software that are provisioned to operate the repository (See the section on Software)</li>
@@ -235,25 +229,21 @@ be able to manage your repository's presence in the registry without manually en
         <p>The full specification for the metadata section of the registry file is as follows</p>
 
         <ul>
-            <li><code>lang</code> - the two-letter language code for the language the record is in</li>
-            <li><code>default</code> - true | false, whether this should be consider the default or primary metadata record.  This record SHOULD have all fields that appear in any other language variants of the metadata.</li>
-            <li><code>record</code> - the container for the actual metadata record</li>
-            <li><code>country</code> - the name of the country the repository resides in.  If you do not provide this, it will be added for you if the country code is provided.</li>
-            <li><code>country_code</code> - the two-letter country code for the country the repository resides in</li>
-            <li><code>continent</code> - the name of the continent the repository resides in.  If you do not provide this, it will be added for you if the country code is provided</li>
-            <li><code>continent_code</code> - the two-letter continent code for the continent the repository resides in.  If you do not provide this, it will be added for you if the country code is provided</li>
-            <li><code>twitter</code> - twitter account the repository posts content via.</li>
-            <li><code>acronym</code> - acronym for the repository name</li>
-            <li><code>description</code> - human readable description of the repository</li>
-            <li><code>established_date</code> - year that the repository began operation.  MUST be a 4 digit year (e.g. 2011)</li>
-            <li><code>language</code> - a list of language names that the content of the repository is in.  If you do not provide this, it will be added for you if the language_code field is provided.</li>
-            <li><code>language_code</code> - a list of two-letter language codes that the content of the repository is in</li>
-            <li><code>name</code> - the name of the repository</li>
-            <li><code>url</code> - the URL for the repository home page</li>
-            <li><code>subject</code> - a list of subject classifications for the content of the repository (see the section below on Subject Classification)</li>
-            <li><code>repository_type</code> - one of "Institutional", "Governmental", "Aggregating", or "Disciplinary".  Other values are permitted, if the repository type is not covered by the allowed terms.</li>
-            <li><code>certification</code> - one of the allowed terms for repository certification (see the section below on Repository Certification).  Other values are permitted, if the certification is not covered by the allowed terms.</li>
-            <li><code>content_type</code> - one of the allowed terms for repository content type (see the section below on Repository Content Types).  Other values are permitted, if the certification is not covered by the allowed terms.</li>
+            <li><code>lang</code> - MUST contain the two-letter (ISO 639-1) language code for the language the record is in</li>
+            <li><code>default</code> - true | false, whether this should be consider the default or primary metadata record.  There MUST be one record marked as the default.  This record SHOULD have all fields that appear in any other language variants of the metadata.</li>
+            <li><code>record</code> - the container for the actual metadata record.  There MUST be a record entry in the metadata object.</li>
+            <li><code>country_code</code> - MAY contain the country code for the country the repository resides in, and if present MUST use the two-letter (ISO 3166-1) code</li>
+            <li><code>twitter</code> - MAY contain twitter account the repository posts content via.</li>
+            <li><code>acronym</code> - MAY contain an acronym for the repository name</li>
+            <li><code>description</code> - MAY contain a human readable description of the repository</li>
+            <li><code>established_date</code> - MAY year that the repository began operation.  MUST be a 4 digit year equal to or earlier than the current year (e.g. 2011), if present</li>
+            <li><code>language_code</code> - MAY contain a list of two-letter language codes that the content of the repository is in, which MUST be in ISO 639-1 if provided</li>
+            <li><code>name</code> - SHOULD contain the name of the repository</li>
+            <li><code>url</code> - MUST contain the URL for the repository home page.  MUST be present in the default metadata record, and MUST validate as a url.</li>
+            <li><code>subject</code> - MAY contain a list of subject classifications for the content of the repository (see the section below on Subject Classification)</li>
+            <li><code>repository_type</code> - SHOULD contain one or more of "Institutional", "Governmental", "Aggregating", or "Disciplinary".  Other values are permitted, if the repository type is not covered by the allowed terms.</li>
+            <li><code>certification</code> - MAY contain one of the allowed terms for repository certification (see the section below on Repository Certification).  Other values are permitted, if the certification is not covered by the allowed terms.</li>
+            <li><code>content_type</code> - MAY contan one of the allowed terms for repository content type (see the section below on Repository Content Types).  Other values are permitted, if the certification is not covered by the allowed terms.</li>
         </ul>
 
 <pre>
@@ -261,10 +251,7 @@ be able to manage your repository's presence in the registry without manually en
         "lang" : "en",
         "default" : true|false
         "record" : {
-            "country" : "# name of country repository resides in #",
             "country_code" : "# two-letter iso code for country #",
-            "continent" : "# continent repository resides in #",
-            "continent_code" : "# two-letter iso code for continent repository resides in #",
             "twitter" : "# repository's twitter handle #",
             "acronym" : "# repository name acronym #",
             "description" : "# free text description of repository #",
@@ -289,98 +276,51 @@ be able to manage your repository's presence in the registry without manually en
 
         <h3>Subject Classification</h3>
 
-        <p><strong>TODO: where does the current classification for OpenDOAR come from</strong></p>
+        <p>A subject classification allows us to specify the subjects covered by the repository in a formal way.  OpenDOAR uses an ad hoc mechanism for
+        defining the classifications, and you should check the API documentation to find out how to view the current list of active classifications.</p>
 
-        <p>A subject classification allows us to specify the subjects covered by the repository in a formal way.  The core OpenDOAR subject classifications are:</p>
-
-        <ul>
-            <li>Agriculture, Food and Veterinary</li>
-            <li>Architecture</li>
-            <li>Arts and Humanities General</li>
-            <li>Biology and Biochemistry</li>
-            <li>Business and Economics</li>
-            <li>Chemistry and Chemical Technology</li>
-            <li>Civil Engineering</li>
-            <li>Computers and IT</li>
-            <li>Earth and Planetary Sciences</li>
-            <li>Ecology and Environment</li>
-            <li>Education</li>
-            <li>Electrical and Electronic Engineering</li>
-            <li>Fine and Performing Arts</li>
-            <li>Geography and Regional Studies</li>
-            <li>Health and Medicine</li>
-            <li>History and Archaeology</li>
-            <li>Language and Literature</li>
-            <li>Law and Politics</li>
-            <li>Library and Information Science</li>
-            <li>Management and Planning</li>
-            <li>Mathematics and Statistics</li>
-            <li>Mechanical Engineering and Materials</li>
-            <li>Multidisciplinary</li>
-            <li>Philosophy and Religion</li>
-            <li>Physics and Astronomy</li>
-            <li>Psychology</li>
-            <li>Science General</li>
-            <li>Social Sciences General</li>
-            <li>Technology General</li>
-        </ul>
+        <p>It is RECOMMENDED that where possible and relevant you re-use classification terms that are already in existance</p>
 
         <p>Subject classifications MUST specify a <code>term</code> and MAY specify a <code>scheme</code> and a <code>code</code> if desired.</p>
 
-        <p>For example, to specify several of the OpenDOAR classifications, you could use:</p>
+        <p>For example, to specify several classifications, you could use:</p>
 
 <pre>
     "subject" : [
         {"term" : "Architecture" },
         {"term" : "Civil Engineering" },
-        {"term" : "Technology General" }
+        {"term" : "Technology" }
     ]
 </pre>
 
         <h3>Repository Certification</h3>
 
-        <p><strong>TODO: check that these certifications form a good basis, and extend the documentation to talk more about them</strong></p>
-
         <p>Repository certifications allow us to determine what policies or practicies the repository has in place, and to quickly locate
         repositories which meet certain criteria.  The core OpenDOAR certifications are:</p>
 
         <ul>
-            <li>RIOXX</li>
-            <li>DINI</li>
-            <li>Data seal of approval</li>
-            <li>TrustedDigitalRepository</li>
-            <li>Nestor-Seal</li>
-            <li>DIN 31644</li>
-            <li>ISO 16363:2012</li>
-            <li>World Data System</li>
-            <li>Ranking web of repositories</li>
+            <li>RIOXX - <a href="http://rioxx.net/">http://rioxx.net/</a></li>
+            <li>DINI - <a href="http://dini.de/dini-zertifikat/english/">http://dini.de/dini-zertifikat/english/</a></li>
+            <li>Data seal of approval - <a href="http://datasealofapproval.org/en/">http://datasealofapproval.org/en/</a></li>
+            <li>TrustedDigitalRepository - <a href="http://www.trusteddigitalrepository.eu/Site/Trusted%20Digital%20Repository.html">http://www.trusteddigitalrepository.eu/Site/Trusted%20Digital%20Repository.html</a></li>
+            <li>Nestor-Seal - <a href="http://www.langzeitarchivierung.de/Subsites/nestor/EN/nestor-Siegel/siegel_node.html">http://www.langzeitarchivierung.de/Subsites/nestor/EN/nestor-Siegel/siegel_node.html</a></li>
+            <li>DIN 31644 - <a href="http://www.nabd.din.de/cmd?level=tpl-art-detailansicht&committeeid=54738855&artid=147058907&languageid=en&bcrumblevel=3">http://www.nabd.din.de/cmd?level=tpl-art-detailansicht&committeeid=54738855&artid=147058907&languageid=en&bcrumblevel=3</a></li>
+            <li>ISO 16363:2012 - <a href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=56510">http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=56510</a></li>
+            <li>Ranking web of repositories - <a href="http://repositories.webometrics.info/en">http://repositories.webometrics.info/en</a></li>
         </ul>
 
-        <p>For example, to specify several of the OpenDOAR certifications, you could use:</p>
+        <p>For example, to specify several of the certifications, you could use:</p>
 
 <pre>
-    "certification" : ["RIOXX", "World Data System"]
+    "certification" : ["RIOXX", "ISO 16363:2012"]
 </pre>
 
         <h3>Repository Content Types</h3>
 
-        <p>Capturing repository content types allows us to easily categorise and locate relevant repositories.  The core list
-        of content types by OpenDOAR are:</p>
+        <p>Capturing repository content types allows us to easily categorise and locate relevant repositories.  OpenDOAR uses an ad hoc mechanism for
+        defining the content types, and you should check the API documentation to find out how to view the current list of active content types.</p>
 
-        <ul>
-            <li>Bibliographic references</li>
-            <li>Books, chapters and sections</li>
-            <li>Conference and workshop papers</li>
-            <li>Datasets</li>
-            <li>Journal articles</li>
-            <li>Learning Objects</li>
-            <li>Multimedia and audio-visual materials</li>
-            <li>Other special item types</li>
-            <li>Patents</li>
-            <li>Software</li>
-            <li>Theses and dissertations</li>
-            <li>Unpublished reports and working papers</li>
-        </ul>
+        <p>It is RECOMMENDED that where possible and relevant you re-use content types that are already in existance</p>
 
         <p>For example, to specify several of the OpenDOAR content types, you could use:</p>
 
@@ -399,9 +339,9 @@ be able to manage your repository's presence in the registry without manually en
         <p>The full specification for the software section of the registry file is as follows</p>
 
         <ul>
-            <li><code>name</code> - the common name of the software</li>
-            <li><code>version</code> - the version of the software in use</li>
-            <li><code>url</code> - a url where information about the software can be found (e.g. its community home page)</li>
+            <li><code>name</code> - MUST contain the common name of the software</li>
+            <li><code>version</code> - MAY contain the version of the software in use</li>
+            <li><code>url</code> - MAY a url where information about the software can be found (e.g. its community home page).  MUST be a valid url, if present.</li>
         </ul>
 
 <pre>
@@ -453,15 +393,15 @@ be able to manage your repository's presence in the registry without manually en
 
         <ul>
             <li><code>role</code> - SHOULD contain one or more roles for the contact with regard to the repository.  RECOMMENDED values are "technical", "administrator", "manager"</li>
-            <li><code>details</code> - container for the contact details of the person with the given set of roles</li>
-            <li><code>name</code> - the name of the contact</li>
-            <li><code>email</code> - email address for the contact</li>
-            <li><code>address</code> - postal/physical address for the contact</li>
-            <li><code>fax</code> - fax number for contact</li>
-            <li><code>phone</code> - phone number for contact</li>
-            <li><code>lat</code> - latitude on which the contact's physical location lies</li>
-            <li><code>lon</code> - longitude on which the contact's physical location lies</li>
-            <li><code>job_title</code> - contact's role at their host organisation</li>
+            <li><code>details</code> - container for the contact details of the person with the given set of roles.  MUST be present for each contact.</li>
+            <li><code>name</code> - MAY contain the name of the contact</li>
+            <li><code>email</code> - MAY contain the email address for the contact</li>
+            <li><code>address</code> - MAY contain the postal/physical address for the contact</li>
+            <li><code>fax</code> - MAY contain the fax number for contact</li>
+            <li><code>phone</code> - MAY contain the phone number for contact</li>
+            <li><code>lat</code> - MAY contain the latitude on which the contact's physical location lies.  If present, MUST be a numeric latitude, and <code>lon</code> MUST also be specified</li>
+            <li><code>lon</code> - MAY contain the longitude on which the contact's physical location lies.  If present, MUST be a numeric longitude, <code>lat</code> MUST also be specified</li>
+            <li><code>job_title</code> - MAY contact's role at their host organisation</li>
         </ul>
 
 <pre>
@@ -491,18 +431,16 @@ be able to manage your repository's presence in the registry without manually en
 
         <ul>
             <li><code>role</code> - SHOULD contain one or more roles for the organisation with regard to the repository.  RECOMMENDED values are "host"</li>
-            <li><code>details</code> - container for the details organisation with the given set of roles</li>
-            <li><code>name</code> - the name of the organisation as a whole</li>
-            <li><code>acronym</code> - the common acronym for the organisation as a whole</li>
-            <li><code>url</code> - the url for the organisation as a whole (e.g. institutional home page)</li>
-            <li><code>unit</code> - the unit within the organisation which has the specific relationship with the repository, if relevant</li>
-            <li><code>unit_acronym</code> - the common acronum for the unit within the organisation which has the specific relationship with the repository, if relevant</li>
-            <li><code>unit_url</code> - the url for the unit within the organisation which has the specific relationship with the repository, if relevant.  For example, the library home page/</li>
-            <li><code>country</code> - the name of the country in which the organisation is principally based.  If omitted, this will be added for you if the country_code is supplied</li>
-            <li><code>country_code</code> - the two-letter country code for the country in which the organisation is principally based.</li>
-            <li><code>lat</code> - latitude on which the organisation or organisational unit's canonical physical location lies</li>
-            <li><code>lon</code> - longitude on whichthe organisation or organisational unit's canonical physical location lies</li>
-
+            <li><code>details</code> - container for the details organisation with the given set of roles.  MUST be present for each organisation</li>
+            <li><code>name</code> - MAY contain the name of the organisation as a whole</li>
+            <li><code>acronym</code> - MAY contain the common acronym for the organisation as a whole</li>
+            <li><code>url</code> - MAY contain the url for the organisation as a whole (e.g. institutional home page).  If provided, MUST validate as a url.</li>
+            <li><code>unit</code> - MAY contain the unit within the organisation which has the specific relationship with the repository, if relevant</li>
+            <li><code>unit_acronym</code> - MAY contain the common acronum for the unit within the organisation which has the specific relationship with the repository, if relevant</li>
+            <li><code>unit_url</code> - MAY the url for the unit within the organisation which has the specific relationship with the repository, if relevant.  For example, the library home page. If provided, MUST validate as a url.</li>
+            <li><code>country_code</code> - MAY the two-letter (ISO 639-1) country code for the country in which the organisation is principally based.  If provided, MUST be from the ISO 639-1 standard</li>
+            <li><code>lat</code> - MAY contain the latitude on which the organisation or organisational unit's canonical physical location lies. If present, MUST be a numeric latitude, and <code>lon</code> MUST also be specified</li>
+            <li><code>lon</code> - MAY contain the longitude on whichthe organisation or organisational unit's canonical physical location lies. If present, MUST be a numeric longitude, <code>lat</code> MUST also be specified</li>
         </ul>
 
 <pre>
@@ -528,7 +466,7 @@ be able to manage your repository's presence in the registry without manually en
         <a name="policy"></a>
         <h2>Policy</h2>
 
-        <p><strong>TODO: develop some standard vocabularies for policy terms, so that we can easily search across repositories by them</strong></p>
+        <p><strong>TODO: develop some standard vocabularies for policy terms, so that we can easily search across repositories by them.  Right now there are lots of human readable strings, where we should strive for some standardisation</strong></p>
 
         <p>The registry file MAY contain one or more records of policies the repository implements</p>
 
@@ -542,23 +480,17 @@ be able to manage your repository's presence in the registry without manually en
             <li>Content</li>
         </ul>
 
-        <p><strong>TODO: strongly considering removing policy_grade altogether from the data and model</strong></p>
-
-        <p><strong>TODO: have a better idea as to what the "terms" should look like.  Right now there are lots of human readable strings, where we should strive for some standardisation</strong></p>
-
         <p>The full specification for the policy section of the registry file is as follows</p>
 
         <ul>
-            <li><code>policy_type</code> - SHOULD contain one of the values listed above, but MAY contain other values if appropriate</li>
-            <li><code>policy_grade</code> - DEPRECATED</li>
-            <li><code>description</code> - human readable description of repository policy.</li>
-            <li><code>terms</code> - a list of standardised terms (tbc) which describe the aspects of the policy</li>
+            <li><code>policy_type</code> - MUST be present, and SHOULD contain one of the values listed above, but MAY contain other values if appropriate</li>
+            <li><code>description</code> - MAY contain a human readable description of repository policy.</li>
+            <li><code>terms</code> - MUST contain a list of standardised terms (tbc) which describe the aspects of the policy.  If there are no policy terms, a record for this policy_type MUST NOT be provided.</li>
         </ul>
 
 <pre>
     {
         "policy_type" : "# vocabulary term for policy type #",
-        "policy_grade" : "# vocabulary term for quality of policy #",
         "description" : "# description of policy terms, human readable #",
         "terms" : [# list of vocabulary terms describing the policy #]
     }
@@ -584,10 +516,10 @@ be able to manage your repository's presence in the registry without manually en
         <p>The basic formulation of an API entry in the registry record is as follows:</p>
 
         <ul>
-            <li><code>api_type</code> - type of api the repository supports.  MUST use one of the above standard names if suitable, but MAY contain any value</li>
+            <li><code>api_type</code> - MUST be present, and indicates type of api the repository supports.  MUST use one of the above standard names if suitable, but MAY contain any value</li>
             <li><code>version</code> - if the form of the API has a version number, this MAY be included here</li>
-            <li><code>base_url</code> - the url which provides the best entry point for anyone wanting to begin integration with the API</li>
-            <li><code>authenticated</code> - does access to the API require some form of authentication and authorisation.  If this is not present, it is assumed to be false.</li>
+            <li><code>base_url</code> - MUST be present and validate as a url, and indicates the url which provides the best entry point for anyone wanting to begin integration with the API.</li>
+            <li><code>authenticated</code> - MAY indicate whether access to the API require some form of authentication and authorisation.  If this is not present, it is assumed to be false.</li>
         </ul>
 
 <pre>
@@ -604,11 +536,11 @@ be able to manage your repository's presence in the registry without manually en
         <h3>OAI-PMH</h3>
 
         <ul>
-            <li><code>metadata_formats</code> - the list of metadata formats that are provided by the OAI-PMH endpoint
+            <li><code>metadata_formats</code> - MAY the list of metadata formats that are provided by the OAI-PMH endpoint
             <ul>
-                <li><code>prefix</code> - the short name of the metadata format, e.g. <code>oai_dc</code></li>
-                <li><code>namespace</code> - the namespace for this format</li>
-                <li><code>schema</code> - the url to the schema or DTD which describes this format</li>
+                <li><code>prefix</code> - MUST be present, and is the short name of the metadata format, e.g. <code>oai_dc</code></li>
+                <li><code>namespace</code> - MAY provide the namespace for this format</li>
+                <li><code>schema</code> - MAY contain the url to the schema or DTD which describes this format</li>
             </ul>
             </li>
         </ul>
@@ -632,8 +564,8 @@ be able to manage your repository's presence in the registry without manually en
         <h3>SWORD</h3>
 
         <ul>
-            <li><code>accepts</code> - mimetypes the sword endpoint will take deposit of</li>
-            <li><code>accept_packaging</code> - identifiers of packaging formats that the sword endpoitn will take deposit of</li>
+            <li><code>accepts</code> - SHOULD contain the mimetypes the sword endpoint will take deposit of</li>
+            <li><code>accept_packaging</code> - SHOULD contain the identifiers of packaging formats that the sword endpoitn will take deposit of</li>
         </ul>
 
         <p>For Example:</p>
@@ -663,11 +595,11 @@ be able to manage your repository's presence in the registry without manually en
         <p>The formulation of an Integration's entry in the registry record is as follows:</p>
 
         <ul>
-            <li><code>integrated_with</code> - type of system the repository is integrated with.  There is currently no recommended vocabulary for this field</li>
-            <li><code>nature</code> - description of the nature of the integration (human readable)</li>
-            <li><code>url</code> - url for the software integrated with, if available.</li>
-            <li><code>software</code> - the name of the software integrated with</li>
-            <li><code>version</code> - the version of the software integrated with</li>
+            <li><code>integrated_with</code> - MUST contain the type of system the repository is integrated with.  There is currently no recommended vocabulary for this field</li>
+            <li><code>nature</code> - MAY description of the nature of the integration (human readable)</li>
+            <li><code>url</code> - MAY contain url for the software integrated with, if available.  MUST validate as a url.</li>
+            <li><code>software</code> - MAY contain the name of the software integrated with</li>
+            <li><code>version</code> - MAY contain the version of the software integrated with</li>
         </ul>
 
 <pre>
