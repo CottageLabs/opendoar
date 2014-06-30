@@ -1,11 +1,35 @@
 from portality.autodiscovery import detectors, registryfile
 from portality.oarr import Register
-import logging
+import logging, requests
 
 # FIXME: this should probably come from configuration somewhere
 LOG_FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
+
+def validate_registry_file(repo_url=None, registry_file_url=None, registry_file_content=None):
+    cont = None
+    source = None
+
+    if repo_url is not None:
+        resp = registryfile.RegistryFile.autodetect(repo_url)
+        if resp is not None:
+            cont = resp.text
+            source = repo_url
+    elif registry_file_url is not None:
+        resp = registryfile.RegistryFile.retrieve(registry_file_url)
+        if resp is not None:
+            cont = resp.text
+            source = registry_file_url
+    elif registry_file_content is not None:
+        cont = registry_file_content
+        source = "supplied content"
+
+    if cont is None:
+        raise registryfile.RegistryFileException("validation error", ["Unable to obtain a registry file/its content to validate"])
+
+    obj = registryfile.RegistryFile.validate(cont, source)
+    return obj
 
 def discover(url, raise_registry_file_error=True):
     if not url.startswith("http"):

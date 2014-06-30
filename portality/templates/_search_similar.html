@@ -1,0 +1,28 @@
+<div class="span3">
+    <div class="well">
+        <strong>search for similar repositories</strong>
+        <ul>
+        {% for s in reg.software %}
+            <li>using <a href="{{searchurl.software(s.name)}}">{{s.name}}</a></li>
+        {% endfor %}
+        {% for t in metadata.repository_type %}
+            <li><a href="{{searchurl.repository_type(t)}}">{{t}}</a> repository</li>
+        {% endfor %}
+        {% for api in reg.api %}
+            <li>supporting <a href="{{searchurl.api_type(api.api_type)}}">{{api.api_type}}</a></li>
+        {% endfor %}
+        {% for t in metadata.content_type %}
+            <li>contains <a href="{{searchurl.content_type(t)}}">{{t}}</a></li>
+        {% endfor %}
+        {% for s in metadata.subject %}
+            <li>covers <a href="{{searchurl.subject(s.term)}}">{{s.term}}</a></li>
+        {% endfor %}
+        {% if metadata.country %}
+            <li>in <a href="{{searchurl.country(metadata.country)}}">{{metadata.country}}</a></li>
+        {% endif %}
+        {% if metadata.continent %}
+            <li>in <a href="{{searchurl.continent(metadata.continent)}}">{{metadata.continent}}</a></li>
+        {% endif %}
+        </ul>
+    </div>
+</div>

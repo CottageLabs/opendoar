@@ -10,9 +10,13 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 log = logging.getLogger(__name__)
 
 class RegistryFileException(Exception):
-    def __init__(self, message, errors):
+    def __init__(self, message, errors, obj=None):
         self.message = message
         self.errors = errors
+        self.obj = obj
+
+    def obj_as_json(self):
+        return json.dumps(self.obj, indent=2)
 
 class RegistryFile(object):
 
@@ -116,39 +120,45 @@ class RegistryFile(object):
             return None
         log.info("Located OARR file for " + repo_url)
 
+        # now do the validation
+        obj = cls.validate(resp.text, repo_url)
+
+        # if we have successfully validated, then make a new registry object and then expand
+        # the data based on what we know
+        reg = cls.expand(obj)
+        return reg
+
+    @classmethod
+    def validate(cls, registry_file_content, source):
         # now attempt to parse the file contents as json
         try:
-            obj = json.loads(resp.text)
+            obj = json.loads(registry_file_content)
         except ValueError:
-            log.info("OARR file did not parse as JSON from " + repo_url)
-            raise RegistryFileException("error reading file", ["OARR file did not parse as JSON from " + repo_url])
+            log.info("OARR file did not parse as JSON from " + source)
+            raise RegistryFileException("error reading file", ["OARR file did not parse as JSON from " + source])
 
         # if we parsed it as json, next check that the shape of the file is right
         schema_valid, smessages = cls.schema_validate(obj)
         if not schema_valid:
-            raise RegistryFileException("error validating file", smessages)
+            raise RegistryFileException("error validating file", smessages, obj)
 
         # if the schema was valid, go and check that it has all the correct content
         content_valid, cmessages = cls.content_validate(obj)
         if not content_valid:
-            raise RegistryFileException("error validating file", cmessages)
+            raise RegistryFileException("error validating file", cmessages, obj)
 
-        # if we have successfully validated, then make a new registry object and then expand
-        # the data based on what we know
-        reg = oarr.Register(obj)
-        cls._expand(reg)
-
-        return reg
+        return obj
 
     @classmethod
-    def _expand(cls, reg):
+    def expand(cls, obj):
         # this includes looking up country name, continent name and continent code
         # l = babel.Locale.parse("und_GB") <- get a given country's locale with unknown language
         # l.get_territory_name("fr") <- get the name of that country in a given language
         # also normalise codes (lang lower case, country uppercase)
         # also convert language codes to their names in the given locale
         # also do the country lookup for organisations
-        pass
+        reg = oarr.Register(obj)
+        return reg
 
     @classmethod
     def schema_validate(cls, obj):
@@ -514,15 +524,22 @@ class RegistryFile(object):
                     break
 
         if href is not None:
-            resp = requests.get(href)
-            if resp.status_code == requests.codes.ok:
+            resp = cls.retrieve(href)
+            if resp is not None:
                 return resp
 
         # if we didn't find the headers, then try the default location
         href = cls._expand_url(repo_url, "/oarr.json")
-        resp = requests.get(href)
-        if resp.status_code == requests.codes.ok:
+        resp = cls.retrieve(href)
+        if resp is not None:
             return resp
 
         # couldn't find the file, or there was an error
+        return None
+
+    @classmethod
+    def retrieve(cls, registry_file_url):
+        resp = requests.get(registry_file_url)
+        if resp.status_code == requests.codes.ok:
+            return resp
         return None
