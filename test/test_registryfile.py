@@ -11,6 +11,8 @@ OARR_SCHEMA_INVALID = os.path.join(REGISTRY_FILE_RESOURCES, "oarr-schema-invalid
 OARR_BROKEN = os.path.join(REGISTRY_FILE_RESOURCES, "oarr-broken.json")
 OARR_EMPTY = os.path.join(REGISTRY_FILE_RESOURCES, "oarr-empty.json")
 OARR_NO_DEFAULT = os.path.join(REGISTRY_FILE_RESOURCES, "oarr-no-default.json")
+OARR_ENGLISH = os.path.join(REGISTRY_FILE_RESOURCES, "oarr-english.json")
+OARR_MULTI_LANGUAGE = os.path.join(REGISTRY_FILE_RESOURCES, "oarr-multi-language.json")
 
 expected_messages_for_total_failure = [
     "last updated date is not of the form YYYY-mm-ddTHH:MM:SSZ : yesterday",
@@ -235,3 +237,83 @@ class TestRegistryFile(TestCase):
                 for msg in expected_messages_for_total_failure:
                     assert msg in e.errors
                 raise e
+
+    def test_13_expand_english(self):
+        # expand the object and ensure we get an oarr.Register back
+        obj = read_json(OARR_ENGLISH)
+        reg = registryfile.RegistryFile.expand(obj)
+        assert isinstance(reg, oarr.Register)
+
+        # check that we have metadata in only one language
+        mdlangs = reg.get_metadata_langs()
+        assert len(mdlangs) == 1
+        assert "en" in mdlangs
+
+        # default language on all @property methods is "en", so no need to request explicitly
+        assert reg.continent == "Europe"
+        assert reg.continent_code == "EU"
+        assert reg.country == "United Kingdom"
+        assert reg.country_code == "GB"
+        for lang in reg.language:
+            assert lang == "English"
+        for lang in reg.language_code:
+            assert lang == "en"
+        orgs = reg.get_organisation_objects()
+        for org in orgs:
+            details = org.get("details", {})
+            cc = details.get("country_code")
+            country = details.get("country")
+            assert cc == "GB"
+            assert country == "United Kingdom"
+
+    def test_14_expand_multilingual(self):
+        # expand the object and ensure we get an oarr.Register back
+        obj = read_json(OARR_MULTI_LANGUAGE)
+        reg = registryfile.RegistryFile.expand(obj)
+        assert isinstance(reg, oarr.Register)
+
+        # check that we have two metadata languages
+        mdlangs = reg.get_metadata_langs()
+        assert len(mdlangs) == 2
+        assert "en" in mdlangs
+        assert "fr" in mdlangs
+
+        # default language on all @property methods is "en", so no need to request explicitly
+        # when looking at the english version
+        assert reg.continent == "Europe"
+        assert reg.continent_code == "EU"
+        assert reg.country == "United Kingdom"
+        assert reg.country_code == "GB"
+
+        for lang in reg.language_code:
+            assert lang in ["en", "fr"]
+        assert len(reg.language_code) == 2
+
+        for lang in reg.language:
+            assert lang in ["English", "French"]
+        assert len(reg.language) == 2
+
+        # now request the french versions
+        assert reg.continent == "Europe" # continent names are always in English
+        assert reg.continent_code == "EU"
+        assert reg.get_metadata_value("country", "fr") == "Royaume-Uni" # French for UK
+        assert reg.country_code == "GB"
+
+        for lang in reg.language_code:
+            assert lang in ["en", "fr"]
+        assert len(reg.language_code) == 2
+
+        for lang in reg.get_metadata_value("language", "fr"):
+            assert lang in ["anglais", u'fran\xe7ais']
+        assert len(reg.language) == 2
+
+        orgs = reg.get_organisation_objects()
+        assert len(orgs) == 2
+        for org in orgs:
+            details = org.get("details", {})
+            cc = details.get("country_code")
+            country = details.get("country")
+            assert cc in ["DE", "FO"]
+            assert country in ["Germany", "Faroe Islands"]
+
+

@@ -1,8 +1,9 @@
 from portality.autodiscovery import detectors
 from portality import schema
 from portality import oarr
-import requests, logging, json, pycountry, urlparse
+import requests, logging, json, pycountry, urlparse, babel
 from datetime import datetime
+from incf.countryutils import transformations
 
 # FIXME: this should probably come from configuration somewhere
 LOG_FORMAT = '%(asctime)-15s %(message)s'
@@ -16,7 +17,9 @@ class RegistryFileException(Exception):
         self.obj = obj
 
     def obj_as_json(self):
-        return json.dumps(self.obj, indent=2)
+        if self.obj is not None:
+            return json.dumps(self.obj, indent=2)
+        return None
 
 class RegistryFile(object):
 
@@ -89,29 +92,6 @@ class RegistryFile(object):
     _operational_status = ["Trial", "Operational"]
 
     @classmethod
-    def _expand_url(cls, origin_url, rel):
-        if rel.startswith("http://") or rel.startswith("https://"):
-            return rel
-
-        parsed = urlparse.urlparse(origin_url)
-
-        if rel.startswith("/"):
-            # absolute to the base of the domain
-            return parsed.scheme + "://" + parsed.netloc + rel
-        else:
-            full = parsed.scheme + "://" + parsed.netloc + parsed.path
-            if full.endswith("/"):
-                return full + rel
-            else:
-                parts = full.split("/")
-                if len(parts) == 3:
-                    return full + "/" + rel
-                elif len(parts) > 3:
-                    return "/".join(full[:-1]) + "/" + rel
-
-        return None
-
-    @classmethod
     def get(cls, repo_url):
         # first locate and retrieve the file
         resp = cls.autodetect(repo_url)
@@ -150,13 +130,76 @@ class RegistryFile(object):
         return obj
 
     @classmethod
+    def _localised_territory(cls, territory, lang):
+        l = babel.Locale.parse("und_" + territory) # <- get a given country's locale with unknown language
+        return l.get_territory_name(lang) # <- get the name of that country in a given language
+
+    @classmethod
+    def _localised_language(cls, language_code, lang):
+        l = babel.Locale.parse(language_code)
+        return l.get_language_name(lang)
+
+    @classmethod
+    def _continent(cls, country_code):
+        continent_code = transformations.cca_to_ctca2(country_code)
+        continent = transformations.cca_to_ctn(country_code)
+        return continent_code, continent
+
+    @classmethod
     def expand(cls, obj):
-        # this includes looking up country name, continent name and continent code
-        # l = babel.Locale.parse("und_GB") <- get a given country's locale with unknown language
-        # l.get_territory_name("fr") <- get the name of that country in a given language
-        # also normalise codes (lang lower case, country uppercase)
-        # also convert language codes to their names in the given locale
-        # also do the country lookup for organisations
+        r = obj.get("register", {})
+        mds = r.get("metadata", [])
+
+        for md in mds:
+            record = md.get("record", {})
+
+            # normalise metadata.lang -> lower case
+            lang = md.get("lang", "en").lower()
+            md["lang"] = lang
+
+            cc = record.get("country_code")
+            if cc is not None:
+                # normalise metadata.record.country_code -> upper case
+                cc = cc.upper()
+                record["country_code"] = cc
+
+                # set metadata.record.country from metadata.record.country_code in the correct language (metadata.lang)
+                country = cls._localised_territory(cc, lang)
+                record["country"] = country
+
+                # set metadata.record.continent_code in all metadata.records
+                # set metadata.record.continent for metadata.record.continent_code in the correct language (metadata.lang)
+                # FIXME: we do not have translations of continent names, so they are always in english
+                continent_code, continent = cls._continent(cc)
+                record["continent_code"] = continent_code
+                record["continent"] = continent
+
+            langs = record.get("language_code", [])
+
+            # normalise metadata.record.language_code -> lower case
+            norm_langs = [l.lower() for l in langs]
+            record["language_code"] = norm_langs
+
+            # set metadata.record.language from metadata.record.language_code in the correct language (metadata.lang)
+            full_lang_names = []
+            for l in norm_langs:
+                full_lang_names.append(cls._localised_language(l, lang))
+            record["language"] = full_lang_names
+
+        orgs = r.get("organisation", [])
+        for org in orgs:
+            details = org.get("details", {})
+            cc = details.get("country_code")
+            if cc is not None:
+                # normalise organisation.details.country_code -> upper case
+                cc = cc.upper()
+                details["country_code"] = cc
+
+                # set organisation.details.country from organisation.details.country_code in english
+                country = cls._localised_territory(cc, "en")
+                details["country"] = country
+
+        # finally make a register object out of the raw object and return
         reg = oarr.Register(obj)
         return reg
 
@@ -491,26 +534,6 @@ class RegistryFile(object):
         return len(msgs) == 0, msgs
 
     @classmethod
-    def _validate_url(cls, url, msgs):
-        parsed = None
-        try:
-            parsed = urlparse.urlparse(url)
-        except:
-            msg = "unable to parse url: " + str(url)
-            log.info(msg)
-            msgs.append(msg)
-        if parsed is None:
-            return
-        if parsed.scheme == "":
-            msg = "url does not contain a scheme (e.g. http or https): " + str(url)
-            log.info(msg)
-            msgs.append(msg)
-        if "." not in parsed.netloc:
-            msg = "url domain does not look complete " + str(url)
-            log.info(msg)
-            msgs.append(msg)
-
-    @classmethod
     def autodetect(cls, repo_url):
         info = detectors.Info()
         href = None
@@ -542,4 +565,47 @@ class RegistryFile(object):
         resp = requests.get(registry_file_url)
         if resp.status_code == requests.codes.ok:
             return resp
+        return None
+
+    @classmethod
+    def _validate_url(cls, url, msgs):
+        parsed = None
+        try:
+            parsed = urlparse.urlparse(url)
+        except:
+            msg = "unable to parse url: " + str(url)
+            log.info(msg)
+            msgs.append(msg)
+        if parsed is None:
+            return
+        if parsed.scheme == "":
+            msg = "url does not contain a scheme (e.g. http or https): " + str(url)
+            log.info(msg)
+            msgs.append(msg)
+        if "." not in parsed.netloc:
+            msg = "url domain does not look complete " + str(url)
+            log.info(msg)
+            msgs.append(msg)
+
+    @classmethod
+    def _expand_url(cls, origin_url, rel):
+        if rel.startswith("http://") or rel.startswith("https://"):
+            return rel
+
+        parsed = urlparse.urlparse(origin_url)
+
+        if rel.startswith("/"):
+            # absolute to the base of the domain
+            return parsed.scheme + "://" + parsed.netloc + rel
+        else:
+            full = parsed.scheme + "://" + parsed.netloc + parsed.path
+            if full.endswith("/"):
+                return full + rel
+            else:
+                parts = full.split("/")
+                if len(parts) == 3:
+                    return full + "/" + rel
+                elif len(parts) > 3:
+                    return "/".join(full[:-1]) + "/" + rel
+
         return None
