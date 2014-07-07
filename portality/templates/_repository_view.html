@@ -33,7 +33,9 @@
                 {% if reg.software and reg.software|length != 0 %}
                     based on
                     {% for s in reg.software %}
+                        {% if s.name %}
                         <em>{{s.name}}</em>{% if not loop.first %}, {% endif %}
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
 
@@ -138,7 +140,7 @@
         <strong>Subject classifications</strong>
         <ul>
             {% for s in metadata.subject %}
-            <li>{% if s.scheme %}[{{s.scheme}}] {% endif %}{{s.term}}{% if s.code %} ({{s.code}}){% endif %}</li>
+            <li>{% if s.scheme %}[{{s.scheme}}] {% endif %}{% if s.term %}{{s.term}}{% endif %}{% if s.code %} ({{s.code}}){% endif %}</li>
             {% endfor %}
             {% if metadata.subject|length == 0 %}
                 This repository has not registered any subject classifications
@@ -185,7 +187,7 @@
                     {% for int in reg.integration %}
                         <li>{{int.integrated_with}} -
                             {% if int.url %}<a href="{{int.url}}">{% endif %}
-                                {{int.software}} {{int.version}}
+                                {% if int.software %}{{int.software}}{% endif %}{% if int.version %} {{int.version}}{% endif %}
                             {% if int.url %}</a>{% endif %}
                             {% if int.nature %}- {{int.nature}}{% endif %}</li>
                     {% endfor %}
@@ -200,7 +202,7 @@
                 <div class="span4" style="margin-bottom: 20px">
                 {% if api.api_type == "oai-pmh" %}
                     <strong>OAI-PMH</strong><br>
-                    <a href="{{api.base_url}}">{{api.base_url}}</a><br>
+                    {% if api.base_url %}<a href="{{api.base_url}}">{{api.base_url}}</a><br>{% endif %}
                     {% if api.metadata_formats %}
                         Metadata Formats:<br>
                         {% for format in api.metadata_formats %}
@@ -210,7 +212,7 @@
                 {% endif %}
                 {% if api.api_type == "sword" %}
                     <strong>SWORD{% if api.version %} ({{api.version}}){% endif %}</strong><br>
-                    <a href="{{api.base_url}}">{{api.base_url}}</a><br>
+                    {% if api.base_url %}<a href="{{api.base_url}}">{{api.base_url}}</a><br>{% endif %}
                     {% if api.accepts %}
                         Accepts: {{api.accepts|join(", ")}}<br>
                     {% endif %}
@@ -221,7 +223,7 @@
                 {% endif %}
                 {% if api.api_type != "oai-pmh" and api.api_type != "sword" %}
                     <strong>{{api.api_type}}{% if api.version %} ({{api.version}}){% endif %}</strong><br>
-                    <a href="{{api.base_url}}">{{api.base_url}}</a>
+                    {% if api.base_url %}<a href="{{api.base_url}}">{{api.base_url}}</a>{% endif %}
                 {% endif %}
                 </div>
             {% endfor %}
@@ -251,7 +253,7 @@
     {% endif %}
 
     <div style="padding: 10px">
-    <strong>{{p.policy_type}}</strong><br>
+    {% if p.policy_type %}<strong>{{p.policy_type}}</strong><br>{% endif %}
     {% if p.description %}<p>{{p.description}}</p>{% endif %}
     {% if p.policy_grade %}<em>{{p.policy_grade}}</em><br> {% endif %}
     <ul>

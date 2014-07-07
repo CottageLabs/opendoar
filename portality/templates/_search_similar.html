@@ -3,19 +3,29 @@
         <strong>search for similar repositories</strong>
         <ul>
         {% for s in reg.software %}
+            {% if s.name %}
             <li>using <a href="{{searchurl.software(s.name)}}">{{s.name}}</a></li>
+            {% endif %}
         {% endfor %}
         {% for t in metadata.repository_type %}
+            {% if t %}
             <li><a href="{{searchurl.repository_type(t)}}">{{t}}</a> repository</li>
+            {% endif %}
         {% endfor %}
         {% for api in reg.api %}
+            {% if api.api_type %}
             <li>supporting <a href="{{searchurl.api_type(api.api_type)}}">{{api.api_type}}</a></li>
+            {% endif %}
         {% endfor %}
         {% for t in metadata.content_type %}
+            {% if t %}
             <li>contains <a href="{{searchurl.content_type(t)}}">{{t}}</a></li>
+            {% endif %}
         {% endfor %}
         {% for s in metadata.subject %}
+            {% if s.term %}
             <li>covers <a href="{{searchurl.subject(s.term)}}">{{s.term}}</a></li>
+            {% endif %}
         {% endfor %}
         {% if metadata.country %}
             <li>in <a href="{{searchurl.country(metadata.country)}}">{{metadata.country}}</a></li>
