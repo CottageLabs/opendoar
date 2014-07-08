@@ -1,0 +1,152 @@
+{
+    "last_updated" : "2014-06-26T10:39:00Z",
+
+    "register" : {
+        "replaces" : "info:oarr:123456789",
+        "operational_status" : "Operational",
+
+        "metadata" : [
+            {
+                "lang" : "EN",
+                "default" : true,
+                "record" : {
+                    "country_code" : "GB",
+                    "twitter" : "cottagelabs",
+                    "acronym" : "CL",
+                    "description" : "An example repository",
+                    "established_date" : 2011,
+                    "language_code" : ["EN", "fr"],
+                    "name" : "Cottage Labs",
+                    "url" : "http://cottagelabs.com",
+                    "subject" : [
+                        {
+                            "scheme" : "CL",
+                            "term" : "programming",
+                            "code" : "P"
+                        }
+                    ],
+                    "repository_type" : ["Institutional", "Commercial"],
+                    "certification" : ["RIOXX", "DINI"],
+                    "content_type" : ["Blog posts", "Research Papers"]
+                }
+            },
+            {
+                "lang" : "FR",
+                "record" : {
+                    "country_code" : "GB",
+                    "twitter" : "cottagelabs",
+                    "acronym" : "CL",
+                    "description" : "An example repository",
+                    "established_date" : 2011,
+                    "language_code" : ["EN", "fr"],
+                    "name" : "Cottage Labs",
+                    "url" : "http://cottagelabs.com",
+                    "subject" : [
+                        {
+                            "scheme" : "CL",
+                            "term" : "programming",
+                            "code" : "P"
+                        }
+                    ],
+                    "repository_type" : ["Institutional", "Commercial"],
+                    "certification" : ["RIOXX", "DINI"],
+                    "content_type" : ["Blog posts", "Research Papers"]
+                }
+            }
+        ],
+        "software" : [
+            {
+                "name" : "DSpace",
+                "version" : "3.1",
+                "url" : "http://dspace.org"
+            }
+        ],
+        "contact" : [
+            {
+                "role" : ["technical"],
+                "details": {
+                    "name" : "Richard Jones",
+                    "email" : "us@cottagelabs.com",
+                    "address" : "The Cottage, Over There, UK",
+                    "fax": "01234 567890",
+                    "phone": "09876 543 211",
+                    "lat" : 51.4768,
+                    "lon" : 0.0,
+                    "job_title" : "Founder and Senior Partner"
+                }
+            }
+        ],
+        "organisation" : [
+            {
+                "role" : ["host"],
+                "details" : {
+                    "name" : "Cottage Labs",
+                    "acronym" : "CL",
+                    "url" : "http://cottagelabs.com",
+
+                    "unit" : "Software Department",
+                    "unit_acronym" : "CLSD",
+                    "unit_url" : "http://cottagelabs.com",
+
+                    "country_code" : "de",
+                    "lat" : 51.4768,
+                    "lon" : 0.0
+                }
+            },
+            {
+                "role" : ["host"],
+                "details" : {
+                    "name" : "University of Nottingham",
+                    "acronym" : "UoN",
+                    "url" : "http://www.notts.ac.uk",
+
+                    "unit" : "Centre for Research Communication",
+                    "unit_acronym" : "CRC",
+                    "unit_url" : "http://sherpa.ac.uk",
+
+                    "country_code" : "FO",
+                    "lat" : 51.4768,
+                    "lon" : 0.0
+                }
+            }
+        ],
+        "policy" : [
+            {
+                "policy_type" : "Submission",
+                "description" : "We do stuff with the content",
+                "terms" : ["limited to certain stuff", "put things in the repository please"]
+            }
+        ],
+        "api" : [
+            {
+                "api_type" : "rss",
+                "version" : "2.0",
+                "base_url" : "http://myrepo.edu/rss",
+                "authorisation" : false
+            },
+            {
+                "api_type" : "sword",
+                "version" : "2.0",
+                "base_url" : "http://myrepo.edu/sword",
+                "authorisation": true,
+                "accepts" : ["application/zip"],
+                "accept_packaging" : ["http://some.package/format"]
+            },
+            {
+                "api_type" : "oai-pmh",
+                "version" : "2.0",
+                "base_url" : "http://myrepo.edu/oai",
+                "metadata_formats" : [{"prefix" : "oai_dc", "namespace" : "http://oai.dc", "schema" : "oai.xsd"}]
+            }
+        ],
+        "integration": [
+            {
+                "integrated_with" : "CRIS",
+                "nature" : "deposit from CRIS to repository",
+                "url" : "http://the.cris.com/",
+                "software" : "Cristal",
+                "version": "7.4.3"
+            }
+        ]
+    }
+}

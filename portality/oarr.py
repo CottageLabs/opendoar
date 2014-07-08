@@ -163,8 +163,8 @@ class Register(object):
             self.set_metadata_value("continent_code", code, lang)
 
     @property
-    def language(self):
-        return self.get_metadata_value("language")
+    def language(self, lang="en"):
+        return self.get_metadata_value("language", lang)
 
     @property
     def language_code(self):
@@ -191,8 +191,8 @@ class Register(object):
                     self.set_metadata_value("language_code", existing, lang)
 
     @property
-    def repository_type(self):
-        return self.get_metadata_value("repository_type")
+    def repository_type(self, lang="en"):
+        return self.get_metadata_value("repository_type", lang)
 
     def add_repository_type(self, val, lang="en"):
         existing = self.get_metadata_value("repository_type", lang)
@@ -234,6 +234,9 @@ class Register(object):
         if "organisation" not in self.raw["register"]:
             self.raw["register"]["organisation"] = []
         self.raw["register"]["organisation"].append(org_obj)
+
+    def get_organisation_objects(self):
+        return self.raw.get("register", {}).get("organisation", [])
 
     def add_contact_object(self, contact_obj):
         """
@@ -298,7 +301,10 @@ class Register(object):
         else:
             d = datetime.now()
         return datetime.strftime(d, form)
-    
+
+    def get_metadata_langs(self):
+        return [md.get("lang") for md in self.raw.get("register", {}).get("metadata", [])]
+
     def get_metadata(self, lang):
         # FIXME: full implementation will be required for full multi-lingual support
         default = None

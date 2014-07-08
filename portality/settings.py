@@ -120,33 +120,14 @@ QUERY_ROUTE = {
     "publisher_query" : {"role" : "publisher", "default_filter" : False, "owner_filter" : True}
 }
 
-# ========================
-# MEDIA SETTINGS
-
-# location of media storage folder
-MEDIA_FOLDER = "media"
-
-
-# ========================
-# PAGEMANAGER SETTINGS
-
-# folder name for storing page content
-# will be added under the templates/pagemanager route
-CONTENT_FOLDER = "content"
-
-# etherpad endpoint if available for collaborative editing
-COLLABORATIVE = 'http://localhost:9001'
-
-# when a page is deleted from the index should it also be removed from 
-# filesystem and etherpad (if they are available in the first place)
-DELETE_REMOVES_FS = False # True / False
-DELETE_REMOVES_EP = False # MUST BE THE ETHERPAD API-KEY OR DELETES WILL FAIL
-
-# disqus account shortname if available for page comments
-COMMENTS = ''
-
 # ==============================
 # OARR Config
 
 OARR_API_BASE_URL = "http://oarr.ooz.cottagelabs.com"
 
+# ==============================
+# Registry file validation settings
+
+# if someone is uploading a test file to validate, this is the maximum size that flask will
+# permit - 1Mb, which should be ample
+MAX_CONTENT_LENGTH = 1024 * 1024

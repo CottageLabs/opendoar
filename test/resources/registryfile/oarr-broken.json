@@ -1,0 +1,180 @@
+{
+    "last_updated" : "yesterday",
+
+    "register" : {
+        "replaces" : "123456789",
+        "operational_status" : "Etherial",
+
+        "metadata" : [
+            {},
+            {
+                "lang" : "fr",
+                "record" : {
+                }
+            },
+            {
+                "lang" : "fr",
+                "default" : true,
+                "record" : {
+                }
+            },
+            {
+                "lang" : "english",
+                "default" : true,
+                "record" : {
+                    "country_code" : "uk",
+                    "twitter" : "cottagelabs",
+                    "acronym" : "CL",
+                    "description" : "An example repository",
+                    "established_date" : "thursday",
+                    "language_code" : ["welsh", "franglais"],
+                    "name" : "Cottage Labs",
+                    "subject" : [
+                        {
+                            "scheme" : "CL",
+                            "term" : "programming",
+                            "code" : "P"
+                        }
+                    ],
+                    "repository_type" : ["Institutional", "Commercial"],
+                    "certification" : ["RIOXX", "DINI"],
+                    "content_type" : ["Blog posts", "Research Papers"]
+                }
+            },
+            {
+                "lang" : "de",
+                "record" : {
+                    "established_date" : 2100,
+                    "url" : "http://cottagelabs"
+                }
+            },
+            {
+                "lang" : "en",
+                "record" : {"established_date" : 1600}
+            }
+        ],
+        "software" : [
+            {
+                "version" : "3.1",
+                "url" : "http://dspace"
+            }
+        ],
+        "contact" : [
+            {},
+            {
+                "details" : {}
+            },
+            {
+                "role" : ["technical"],
+                "details": {
+                    "name" : "Richard Jones",
+                    "email" : "us@cottagelabs.com",
+                    "address" : "The Cottage, Over There, UK",
+                    "fax": "01234 567890",
+                    "phone": "09876 543 211",
+                    "lon" : 0.0,
+                    "job_title" : "Founder and Senior Partner"
+                }
+            },
+            {
+                "role" : ["technical"],
+                "details": {
+                    "lat" : 54.0
+                }
+            },
+            {
+                "role" : ["technical"],
+                "details": {
+                    "lat" : "north a bit",
+                    "lon" : "west a bit"
+                }
+            },
+            {
+                "role" : ["technical"],
+                "details": {
+                    "lat" : 500.9,
+                    "lon" : 932.4
+                }
+            }
+        ],
+        "organisation" : [
+            {},
+            {
+                "details" : {}
+            },
+            {
+                "role" : ["host"],
+                "details" : {
+                    "name" : "Cottage Labs",
+                    "acronym" : "CL",
+                    "url" : "http://cottagelabs",
+
+                    "unit" : "Software Department",
+                    "unit_acronym" : "CLSD",
+                    "unit_url" : "http://cottagelabs",
+
+                    "country_code" : "london",
+                    "lon" : 0.0
+                }
+            },
+            {
+                "role" : ["host"],
+                "details": {
+                    "lat" : 54.0
+                }
+            },
+            {
+                "role" : ["host"],
+                "details": {
+                    "lat" : "north a bit",
+                    "lon" : "west a bit"
+                }
+            },
+            {
+                "role" : ["host"],
+                "details": {
+                    "lat" : 500.9,
+                    "lon" : 932.4
+                }
+            }
+        ],
+        "policy" : [
+            {
+                "description" : "We do stuff with the content",
+                "terms" : ["limited to certain stuff", "put things in the repository please"]
+            },
+            {
+                "policy_type" : "Submission",
+                "description" : "We do stuff with the content"
+            }
+        ],
+        "api" : [
+            {
+                "version" : "2.0",
+                "authorisation" : false
+            },
+            {
+                "api_type" : "sword",
+                "version" : "2.0",
+                "base_url" : "http://sword",
+                "authorisation": true,
+                "metadata_formats" : [{"prefix" : "oai_dc", "namespace" : "http://oai.dc", "schema" : "oai.xsd"}]
+            },
+            {
+                "api_type" : "oai-pmh",
+                "version" : "2.0",
+                "base_url" : "http://myrepo.edu/oai",
+                "accepts" : ["application/zip"],
+                "accept_packaging" : ["http://some.package/format"]
+            }
+        ],
+        "integration": [
+            {
+                "nature" : "deposit from CRIS to repository",
+                "url" : "http://cris",
+                "software" : "Cristal",
+                "version": "7.4.3"
+            }
+        ]
+    }
+}

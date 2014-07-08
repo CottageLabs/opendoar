@@ -1,0 +1,634 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-unit odh">
+    <h1>
+        The Registry File<br>
+        <small>telling us about your repository</small>
+    </h1>
+</div>
+
+        <p>
+        <a href="#overview">Overview</a> ||
+        <a href="#highlevel">High-Level Registry File Structure</a> ||
+        <a href="#metadata">Metadata</a> ||
+        <a href="#software">Software</a> ||
+        <a href="#contact">Contact</a> ||
+        <a href="#organisation">Organisation</a> ||
+        <a href="#policy">Policy</a> ||
+        <a href="#api">API</a> ||
+        <a href="#integration">Integration</a> ||
+        <a href="#integration">Discovery</a>
+        </p>
+
+<p>The Registry File is a JSON formatted document which your repository can make available which will allow OpenDOAR to
+create and update information about your repository automatically in the registry.  By maintaining this file you will
+be able to manage your repository's presence in the registry without manually entering data into the OpenDOAR system.</p>
+
+<p>This page outlines the registry file, and goes into detail on how it should be created and populated</p>
+
+        <a name="overview"></a>
+        <h2>Overview</h2>
+
+        <p>Below is the full expression of the registry file, with all available fields shown.  Later sections will go into
+        detail on each of the sections.</p>
+
+<pre>
+    {
+        "last_updated" : "# datestamp of last registry file modification #",
+
+        "register" : {
+            "replaces" : "# oarr info uri of repository this one replaces (info:oarr:[identifier]) #",
+            "operational_status" : "Trial | Operational",
+
+            "metadata" : [
+                {
+                    "lang" : "en",
+                    "default" : true|false,
+                    "record" : {
+                        "country_code" : "# two-letter iso code for country #",
+                        "twitter" : "# repository's twitter handle #",
+                        "acronym" : "# repository name acronym #",
+                        "description" : "# free text description of repository #",
+                        "established_date" : "# date established #",
+                        "language_code" : [# languages of content found in repo (iso-639-1) #],
+                        "name" : "# name of repository #",
+                        "url" : "# url for repository home page #",
+                        "subject" : [
+                            {
+                                "scheme" : "# classification scheme #",
+                                "term" : "# classification term #",
+                                "code" : "# classification code #"
+                            }
+                        ],
+                        "repository_type" : ["# list of vocabulary terms for the repository #"],
+                        "certification" : ["# list of certifications held by this repository #"],
+                        "content_type" : ["# list of vocabulary terms for the content in this repository #"]
+                    }
+                }
+            ],
+            "software" : [
+                {
+                    "name" : "# name of software used to provide this repository #",
+                    "version" : "# version of software used to provide this repository #",
+                    "url" : "# url for the software/this version of the software #"
+                }
+            ],
+            "contact" : [
+                {
+                    "role" : ["# contact role with regard to this repository #"],
+                    "details": {
+                        "name" : "# contact name #",
+                        "email" : "# contact email #",
+                        "address" : "# postal address for contact #",
+                        "fax": "# fax number of contact #",
+                        "phone": "# phone number of contact #",
+                        "lat" : "# latitude of contact location #",
+                        "lon" : "# longitude of contact location #",
+                        "job_title" : "# contact job title #"
+                    }
+                }
+            ],
+            "organisation" : [
+                {
+                    "role" : [# organisation roles with regard to this repository #],
+                    "details" : {
+                        "name" : "# name of organisation #",
+                        "acronym" : "# acronym of organisation #",
+                        "url" : "# organisation url #",
+
+                        "unit" : "# name of organisation's unit responsible #"
+                        "unit_acronym" : "# acronym of unit responsible #",
+                        "unit_url" : "# url of responsible unit #",
+
+                        "country_code" : "# two letter country code organisation resides in #",
+                        "lat" : "# latitude of organisation/unit #",
+                        "lon" : "# longitude of organisation/unit #"
+                    }
+                }
+            ],
+            "policy" : [
+                {
+                    "policy_type" : "# vocabulary term for policy type #",
+                    "description" : "# description of policy terms, human readable #",
+                    "terms" : ["# list of vocabulary terms describing the policy #"]
+                }
+            ],
+            "api" : [
+                {
+                    "api_type" : "# api type from known list or free text #",
+                    "version" : "# version of the API #",
+                    "base_url" : "# base url of API #",
+
+                    "metadata_formats" : [{"prefix" : "# prefix #", "namespace" : "# namespace #", "schema" : "# schema#"}],
+                    "accepts" : [# list of accepted mimetypes #],
+                    "accept_packaging" : [# list of accepted package formats #]
+                }
+            ],
+            "integration": [
+                {
+                    "integrated_with" : "# type of system integrated with #",
+                    "nature" : "# nature of integration #",
+                    "url" : "# url of system integrated with, if available #",
+                    "software" : "# name of software integrated with #",
+                    "version": "# version of software integrated with #"
+                }
+            ]
+        }
+    }
+</pre>
+
+        <a name="highlevel"></a>
+        <h2>High-Level Registry File Structure</h2>
+
+        <p>The Registry file consists to a small collection of high-level elements which encapsulate all that we need to know about a repository.</p>
+
+        <ul>
+            <li><code>last_updated</code> tells us when the registry file was last modified, so OpenDOAR knows whether to attempt to update its records again.
+            This MUST be a datestamp in the form <code>YYYY-mm-ddTHH:MM:SSZ</code> so for example <code>2014-06-23T18:29:30Z</code></li>
+            <li><code>register</code> is the container for all the information about the repository</li>
+            <li><code>replaces</code> - if the repository replaces an existing, separate repository system, this MAY be identified here.  Identifiers MUST take the form of an oarr info uri.</li>
+            <li><code>operational_status</code> - MUST contain one of "Trial" or "Operational", all other values will be ignored.</li>
+            <li><code>metadata</code> - SHOULD contain one or more metadata records about the repository.  If there are multiple records, they MUST be in different languages, and one of them should be marked as the default (see the section on Metadata)</li>
+            <li><code>software</code> - MAY contain one or more pieces of software that are provisioned to operate the repository (See the section on Software)</li>
+            <li><code>contact</code> - MAY contain one or more contacts for the repository (See the section on Contacts)</li>
+            <li><code>organisation</code> - MAY contain one or more organisations responsible for the repository (see the section on Organisation)</li>
+            <li><code>policy</code> - MAY contain one or more policy statements on behalf of the repository (see the section on Policy)</li>
+            <li><code>api</code> - MAY contain one or more API endpoints and associated information regarding their access (see the section on API)</li>
+            <li><code>integration</code> - MAY contain one or more systems with which the repository is integrated at the host organisation (see the section on Integration).</li>
+        </ul>
+
+<pre>
+    {
+        "last_updated" : "# datestamp of last registry file modification #",
+
+        "register" : {
+            "replaces" : "# oarr info uri of repository this one replaces (info:oarr:[identifier]) #",
+            "operational_status" : "Trial | Operational",
+
+            "metadata" : [# list of metadata records #],
+            "software" : [# list of software components which make up the repository #],
+            "contact" : [# list of contacts for the repository #],
+            "organisation" : [# list of organisations responsible for the repository #],
+            "policy" : [# list of policies the repository implements #],
+            "api" : [# list of APIs the repository provides #],
+            "integration": [# list of systems the repository integrates with #]
+        }
+    }
+</pre>
+
+        <a name="metadata"></a>
+        <h2>Metadata</h2>
+
+        <p>The Registry file SHOULD contain one or more metadata records for the repository.  Each metadata record provides
+        useful information about the repository of a generally human-readable or human-interest nature, such as the name of
+        the repository or a description.  Some of the fields may be suitable for translation or representation in other languages
+        so the metadata part of the registry file allows for multiple metadata records, and a default metadata record which should be
+        considered the primary record.</p>
+
+        <p>The consequence of this is that the metadata for a repository can be provided in any language for which there is
+        a suitable translation, and in the event that no particular metadata field is available for that language, the default
+        value can be used.</p>
+
+        <p>Consider the following (artificial) metadata record in two languages</p>
+
+        <table border="1" cellpadding="3" style="margin: 15px"><thead style="font-weight: bold; background: #cccccc"><tr><th>Field</th><th>Stored English (default)</th><th>Stored Spanish</th><th>Requested Spanish</th></tr></thead><tbody>
+
+            <tr><td>Name</td><td>Digital Academic Repository of the University of Navarra</td><td>Depósito Académico Digital de la Universidad de Navarra</td><td>Depósito Académico Digital de la Universidad de Navarra</td></tr>
+            <tr><td>Description</td><td>This is an institutional repository for the University of Navarra.</td><td>&nbsp;</td><td>This is an institutional repository for the University of Navarra.</td></tr>
+            <tr><td>Twitter</td><td>@darun</td><td></td><td>@darun</td></tr>
+
+        </tbody></table>
+
+        <p>The registry has two metadata records, one in English (which is the default) and one in Spanish.  If we want to look at the metadata in Spanish,
+        we see the Spanish values where such values exist, and the English values where they do not.</p>
+
+        <p>In the <code>metadata</code> section of the registry file, this repository would look like this:</p>
+
+<pre>
+    "metadata" : [
+        {
+            "lang" : "en",
+            "default" : true,
+            "record" : {
+                "twitter" : "darun",
+                "description" : "This is an institutional repository for the University of Navarra.",
+                "name" : "Digital Academic Repository of the University of Navarra",
+            }
+        },
+        {
+            "lang" : "es",
+            "default" : false,
+            "record" : {
+                "name" : "Depósito Académico Digital de la Universidad de Navarra",
+            }
+        }
+    ]
+</pre>
+
+        <p>The full specification for the metadata section of the registry file is as follows</p>
+
+        <ul>
+            <li><code>lang</code> - MUST contain the two-letter (ISO 639-1) language code for the language the record is in</li>
+            <li><code>default</code> - true | false, whether this should be consider the default or primary metadata record.  There MUST be one record marked as the default.  This record SHOULD have all fields that appear in any other language variants of the metadata.</li>
+            <li><code>record</code> - the container for the actual metadata record.  There MUST be a record entry in the metadata object.</li>
+            <li><code>country_code</code> - MAY contain the country code for the country the repository resides in, and if present MUST use the two-letter (ISO 3166-1) code</li>
+            <li><code>twitter</code> - MAY contain twitter account the repository posts content via.</li>
+            <li><code>acronym</code> - MAY contain an acronym for the repository name</li>
+            <li><code>description</code> - MAY contain a human readable description of the repository</li>
+            <li><code>established_date</code> - MAY year that the repository began operation.  MUST be a 4 digit year equal to or earlier than the current year (e.g. 2011), if present</li>
+            <li><code>language_code</code> - MAY contain a list of two-letter language codes that the content of the repository is in, which MUST be in ISO 639-1 if provided</li>
+            <li><code>name</code> - SHOULD contain the name of the repository</li>
+            <li><code>url</code> - MUST contain the URL for the repository home page.  MUST be present in the default metadata record, and MUST validate as a url.</li>
+            <li><code>subject</code> - MAY contain a list of subject classifications for the content of the repository (see the section below on Subject Classification)</li>
+            <li><code>repository_type</code> - SHOULD contain one or more of "Institutional", "Governmental", "Aggregating", or "Disciplinary".  Other values are permitted, if the repository type is not covered by the allowed terms.</li>
+            <li><code>certification</code> - MAY contain one of the allowed terms for repository certification (see the section below on Repository Certification).  Other values are permitted, if the certification is not covered by the allowed terms.</li>
+            <li><code>content_type</code> - MAY contan one of the allowed terms for repository content type (see the section below on Repository Content Types).  Other values are permitted, if the certification is not covered by the allowed terms.</li>
+        </ul>
+
+<pre>
+    {
+        "lang" : "en",
+        "default" : true|false
+        "record" : {
+            "country_code" : "# two-letter iso code for country #",
+            "twitter" : "# repository's twitter handle #",
+            "acronym" : "# repository name acronym #",
+            "description" : "# free text description of repository #",
+            "established_date" : "# date established #",
+            "language" : [# languages of content found in repo (names of) #],
+            "language_code" : [# languages of content found in repo (iso-639-1) #],
+            "name" : "# name of repository #",
+            "url" : "# url for repository home page #",
+            "subject" : [
+                {
+                    "scheme" : "# classification scheme #",
+                    "term" : "# classification term #",
+                    "code" : "# classification code #"
+                }
+            ],
+            "repository_type" : [# list of vocabulary terms for the repository #],
+            "certification" : [# list of certifications held by this repository #],
+            "content_type" : [# list of vocabulary terms for the content in this repository #]
+        }
+    }
+</pre>
+
+        <h3>Subject Classification</h3>
+
+        <p>A subject classification allows us to specify the subjects covered by the repository in a formal way.  OpenDOAR uses an ad hoc mechanism for
+        defining the classifications, and you should check the API documentation to find out how to view the current list of active classifications.</p>
+
+        <p>It is RECOMMENDED that where possible and relevant you re-use classification terms that are already in existance</p>
+
+        <p>Subject classifications MUST specify a <code>term</code> and MAY specify a <code>scheme</code> and a <code>code</code> if desired.</p>
+
+        <p>For example, to specify several classifications, you could use:</p>
+
+<pre>
+    "subject" : [
+        {"term" : "Architecture" },
+        {"term" : "Civil Engineering" },
+        {"term" : "Technology" }
+    ]
+</pre>
+
+        <h3>Repository Certification</h3>
+
+        <p>Repository certifications allow us to determine what policies or practicies the repository has in place, and to quickly locate
+        repositories which meet certain criteria.  The core OpenDOAR certifications are:</p>
+
+        <ul>
+            <li>RIOXX - <a href="http://rioxx.net/">http://rioxx.net/</a></li>
+            <li>DINI - <a href="http://dini.de/dini-zertifikat/english/">http://dini.de/dini-zertifikat/english/</a></li>
+            <li>Data seal of approval - <a href="http://datasealofapproval.org/en/">http://datasealofapproval.org/en/</a></li>
+            <li>TrustedDigitalRepository - <a href="http://www.trusteddigitalrepository.eu/Site/Trusted%20Digital%20Repository.html">http://www.trusteddigitalrepository.eu/Site/Trusted%20Digital%20Repository.html</a></li>
+            <li>Nestor-Seal - <a href="http://www.langzeitarchivierung.de/Subsites/nestor/EN/nestor-Siegel/siegel_node.html">http://www.langzeitarchivierung.de/Subsites/nestor/EN/nestor-Siegel/siegel_node.html</a></li>
+            <li>DIN 31644 - <a href="http://www.nabd.din.de/cmd?level=tpl-art-detailansicht&committeeid=54738855&artid=147058907&languageid=en&bcrumblevel=3">http://www.nabd.din.de/cmd?level=tpl-art-detailansicht&committeeid=54738855&artid=147058907&languageid=en&bcrumblevel=3</a></li>
+            <li>ISO 16363:2012 - <a href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=56510">http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=56510</a></li>
+            <li>Ranking web of repositories - <a href="http://repositories.webometrics.info/en">http://repositories.webometrics.info/en</a></li>
+        </ul>
+
+        <p>For example, to specify several of the certifications, you could use:</p>
+
+<pre>
+    "certification" : ["RIOXX", "ISO 16363:2012"]
+</pre>
+
+        <h3>Repository Content Types</h3>
+
+        <p>Capturing repository content types allows us to easily categorise and locate relevant repositories.  OpenDOAR uses an ad hoc mechanism for
+        defining the content types, and you should check the API documentation to find out how to view the current list of active content types.</p>
+
+        <p>It is RECOMMENDED that where possible and relevant you re-use content types that are already in existance</p>
+
+        <p>For example, to specify several of the OpenDOAR content types, you could use:</p>
+
+<pre>
+    "content_type" : ["Bibliographic references", "Theses and dissertations"]
+</pre>
+
+        <a name="software"></a>
+        <h2>Software</h2>
+
+        <p>The registry file MAY contain one or more records of software that is used to provision the repository</p>
+
+        <p>This is intended to denote the software which is actively engaged in providing the repository experience, rather than any supporting infrastructure (e.g. the
+        operating system) or any systems with which the repository is integrated (for that, see the section on Integration), such as a CRIS.</p>
+
+        <p>The full specification for the software section of the registry file is as follows</p>
+
+        <ul>
+            <li><code>name</code> - MUST contain the common name of the software</li>
+            <li><code>version</code> - MAY contain the version of the software in use</li>
+            <li><code>url</code> - MAY a url where information about the software can be found (e.g. its community home page).  MUST be a valid url, if present.</li>
+        </ul>
+
+<pre>
+    {
+        "name" : "# name of software used to provide this repository #",
+        "version" : "# version of software used to provide this repository #",
+        "url" : "# url for the software/this version of the software #"
+    }
+</pre>
+
+        <p>For example, a simple DSpace installation may look like this:</p>
+
+<pre>
+    "software" : [
+        {
+            "name" : "DSpace",
+            "version" : "3.1",
+            "url" : "http://www.dspace.org"
+        }
+    ]
+</pre>
+
+        <p>A more complex example which uses several pieces of software to provide the repository might be:</p>
+
+<pre>
+    "software" : [
+        {
+            "name" : "Fedora",
+            "version" : "4.0",
+            "url" : "http://www.fedoracommons.info"
+        },
+        {
+            "name" : "Vital",
+            "version" : "5.3",
+            "url" : "http://www.vtls.com/products/vital"
+        }
+    ]
+</pre>
+
+        <a name="contact"></a>
+        <h2>Contact</h2>
+
+        <p>The registry file MAY contain one or more records for contacts for the repository</p>
+
+        <p>This is intended to provide end-users of the registry data a way to get in contact with the repository owners with regard to both policies
+        and technical details.</p>
+
+        <p>The full specification for the contact section of the registry file is as follows</p>
+
+        <ul>
+            <li><code>role</code> - SHOULD contain one or more roles for the contact with regard to the repository.  RECOMMENDED values are "technical", "administrator", "manager"</li>
+            <li><code>details</code> - container for the contact details of the person with the given set of roles.  MUST be present for each contact.</li>
+            <li><code>name</code> - MAY contain the name of the contact</li>
+            <li><code>email</code> - MAY contain the email address for the contact</li>
+            <li><code>address</code> - MAY contain the postal/physical address for the contact</li>
+            <li><code>fax</code> - MAY contain the fax number for contact</li>
+            <li><code>phone</code> - MAY contain the phone number for contact</li>
+            <li><code>lat</code> - MAY contain the latitude on which the contact's physical location lies.  If present, MUST be a numeric latitude, and <code>lon</code> MUST also be specified</li>
+            <li><code>lon</code> - MAY contain the longitude on which the contact's physical location lies.  If present, MUST be a numeric longitude, <code>lat</code> MUST also be specified</li>
+            <li><code>job_title</code> - MAY contact's role at their host organisation</li>
+        </ul>
+
+<pre>
+    {
+        "role" : ["# contact role with regard to this repository #"]
+        "details": {
+            "name" : "# contact name #",
+            "email" : "# contact email #",
+            "address" : "# postal address for contact #",
+            "fax": "# fax number of contact #",
+            "phone": "# phone number of contact #",
+            "lat" : "# latitude of contact location #",
+            "lon" : "# longitude of contact location #",
+            "job_title" : "# contact job title #"
+        }
+    }
+</pre>
+
+        <a name="organisation"></a>
+        <h2>Organisation</h2>
+
+        <p>The registry file MAY contain one or more records for organisations responsible for the repository</p>
+
+        <p>This is intended to provide end-users of the registry data a way to effectively geo-locate the repository.</p>
+
+        <p>The full specification for the organisation section of the registry file is as follows</p>
+
+        <ul>
+            <li><code>role</code> - SHOULD contain one or more roles for the organisation with regard to the repository.  RECOMMENDED values are "host"</li>
+            <li><code>details</code> - container for the details organisation with the given set of roles.  MUST be present for each organisation</li>
+            <li><code>name</code> - MAY contain the name of the organisation as a whole</li>
+            <li><code>acronym</code> - MAY contain the common acronym for the organisation as a whole</li>
+            <li><code>url</code> - MAY contain the url for the organisation as a whole (e.g. institutional home page).  If provided, MUST validate as a url.</li>
+            <li><code>unit</code> - MAY contain the unit within the organisation which has the specific relationship with the repository, if relevant</li>
+            <li><code>unit_acronym</code> - MAY contain the common acronum for the unit within the organisation which has the specific relationship with the repository, if relevant</li>
+            <li><code>unit_url</code> - MAY the url for the unit within the organisation which has the specific relationship with the repository, if relevant.  For example, the library home page. If provided, MUST validate as a url.</li>
+            <li><code>country_code</code> - MAY the two-letter (ISO 639-1) country code for the country in which the organisation is principally based.  If provided, MUST be from the ISO 639-1 standard</li>
+            <li><code>lat</code> - MAY contain the latitude on which the organisation or organisational unit's canonical physical location lies. If present, MUST be a numeric latitude, and <code>lon</code> MUST also be specified</li>
+            <li><code>lon</code> - MAY contain the longitude on whichthe organisation or organisational unit's canonical physical location lies. If present, MUST be a numeric longitude, <code>lat</code> MUST also be specified</li>
+        </ul>
+
+<pre>
+    {
+        "role" : [# organisation roles with regard to this repository #],
+        "details" : {
+            "name" : "# name of organisation #",
+            "acronym" : "# acronym of organisation #",
+            "url" : "# organisation url #",
+
+            "unit" : "# name of organisation's unit responsible #"
+            "unit_acronym" : "# acronym of unit responsible #",
+            "unit_url" : "# url of responsible unit #",
+
+            "country" : "# country organisation resides in #",
+            "country_code" : "# two letter country code organisation resides in #",
+            "lat" : "# latitude of organisation/unit #",
+            "lon" : "# longitude of organisation/unit #"
+        }
+    }
+</pre>
+
+        <a name="policy"></a>
+        <h2>Policy</h2>
+
+        <p><strong>TODO: develop some standard vocabularies for policy terms, so that we can easily search across repositories by them.  Right now there are lots of human readable strings, where we should strive for some standardisation</strong></p>
+
+        <p>The registry file MAY contain one or more records of policies the repository implements</p>
+
+        <p>The following are the core polic types that OpenDOAR is interested in.  You SHOULD try to provide policy information for terms in this list, but you MAY provide policies in any other areas</p>
+
+        <ul>
+            <li>Submission</li>
+            <li>Preserve</li>
+            <li>Metadata</li>
+            <li>Data</li>
+            <li>Content</li>
+        </ul>
+
+        <p>The full specification for the policy section of the registry file is as follows</p>
+
+        <ul>
+            <li><code>policy_type</code> - MUST be present, and SHOULD contain one of the values listed above, but MAY contain other values if appropriate</li>
+            <li><code>description</code> - MAY contain a human readable description of repository policy.</li>
+            <li><code>terms</code> - MUST contain a list of standardised terms (tbc) which describe the aspects of the policy.  If there are no policy terms, a record for this policy_type MUST NOT be provided.</li>
+        </ul>
+
+<pre>
+    {
+        "policy_type" : "# vocabulary term for policy type #",
+        "description" : "# description of policy terms, human readable #",
+        "terms" : [# list of vocabulary terms describing the policy #]
+    }
+</pre>
+
+        <a name="api"></a>
+        <h2>API</h2>
+
+        <p>The registry file MAY contain one or more records of APIs the repository provides</p>
+
+        <p>The following are the main APIs that OpenDOAR is familiar with; if you provide these APIs you MUST use the standard name for them in the <code>api_type</code> field:</p>
+
+        <ul>
+            <li>atom</li>
+            <li>rss</li>
+            <li>sword</li>
+            <li>oai-pmh</li>
+            <li>opensearch</li>
+        </ul>
+
+        <p>If you have an API which is not in this list, you MAY provide your own type definition for it</p>
+
+        <p>The basic formulation of an API entry in the registry record is as follows:</p>
+
+        <ul>
+            <li><code>api_type</code> - MUST be present, and indicates type of api the repository supports.  MUST use one of the above standard names if suitable, but MAY contain any value</li>
+            <li><code>version</code> - if the form of the API has a version number, this MAY be included here</li>
+            <li><code>base_url</code> - MUST be present and validate as a url, and indicates the url which provides the best entry point for anyone wanting to begin integration with the API.</li>
+            <li><code>authenticated</code> - MAY indicate whether access to the API require some form of authentication and authorisation.  If this is not present, it is assumed to be false.</li>
+        </ul>
+
+<pre>
+    {
+        "api_type" : "# api type from known list or free text #",
+        "version" : "# version of the API #",
+        "base_url" : "# base url of API #"
+    }
+</pre>
+
+        <p>Some APIs have additional fields that they can provide to improve the discovery experience of end-users of OpenDOAR.  The next sections detail the extensions.
+            You MUST NOT provide extensions to the API definition which are not already defined in this document.</p>
+
+        <h3>OAI-PMH</h3>
+
+        <ul>
+            <li><code>metadata_formats</code> - MAY the list of metadata formats that are provided by the OAI-PMH endpoint
+            <ul>
+                <li><code>prefix</code> - MUST be present, and is the short name of the metadata format, e.g. <code>oai_dc</code></li>
+                <li><code>namespace</code> - MAY provide the namespace for this format</li>
+                <li><code>schema</code> - MAY contain the url to the schema or DTD which describes this format</li>
+            </ul>
+            </li>
+        </ul>
+
+        <p>For Example:</p>
+<pre>
+    {
+        "api_type" : "oai-pmh",
+        "version" : "2.0",
+        "base_url" : "http://www.myrepo.edu/oai",
+        "metadata_formats" : [
+            {
+                "prefix" : "oai_dc",
+                "namespace" : "http://www.openarchives.org/OAI/2.0/oai_dc/",
+                "schema" : "http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
+            }
+        ]
+    }
+</pre>
+
+        <h3>SWORD</h3>
+
+        <ul>
+            <li><code>accepts</code> - SHOULD contain the mimetypes the sword endpoint will take deposit of</li>
+            <li><code>accept_packaging</code> - SHOULD contain the identifiers of packaging formats that the sword endpoitn will take deposit of</li>
+        </ul>
+
+        <p>For Example:</p>
+
+<pre>
+{
+    "api_type" : "sword",
+    "version" : "2.0",
+    "base_url" : "http://www.myrepo.edu/swordv2/service-document",
+    "authenticated" : true,
+    "accepts" : ["application/zip"],
+    "accept_packaging" : [
+        "http://purl.org/net/sword/package/Binary",
+        "http://purl.org/net/sword/package/SimpleZip"
+    ]
+}
+</pre>
+
+        <a name="integration"></a>
+        <h2>Integration</h2>
+
+        <p>The registry file MAY contain one or more records of Integrations with other systems that the repository has.</p>
+
+        <p>Common kinds of integrations would be with the institutional CRIS system, or single-sign-on.  It may also include integration with
+        national systems or agreements with other repositories to mirror content.</p>
+
+        <p>The formulation of an Integration's entry in the registry record is as follows:</p>
+
+        <ul>
+            <li><code>integrated_with</code> - MUST contain the type of system the repository is integrated with.  There is currently no recommended vocabulary for this field</li>
+            <li><code>nature</code> - MAY description of the nature of the integration (human readable)</li>
+            <li><code>url</code> - MAY contain url for the software integrated with, if available.  MUST validate as a url.</li>
+            <li><code>software</code> - MAY contain the name of the software integrated with</li>
+            <li><code>version</code> - MAY contain the version of the software integrated with</li>
+        </ul>
+
+<pre>
+{
+    "integrated_with" : "# type of system integrated with #",
+    "nature" : "# nature of integration #",
+    "url" : "# url of system integrated with, if available #",
+    "software" : "# name of software integrated with #",
+    "version": "# version of software integrated with #"
+}
+</pre>
+
+        <a name="discovery"></a>
+        <h2>Discovery</h2>
+
+        <p>There are two ways that you can make your registry file discoverable by OpenDOAR</p>
+
+        <h3>Auto-Discovery</h3>
+
+        <p>Place a link to the file in your HTML link headers as follows:</p>
+
+<pre>
+    &lt;link rel="oarr" type="application/json" href="[file url]"&gt;
+</pre>
+
+        <h3>Standardised Location</h3>
+
+        <p>Place your file at a standard location at the root of your repository's domain, with the name <code>oarr.json</code></p>
+
+        <p>So if your repository is at <code>http://www.myrepo.edu/xmlui</code> your registry file would be at <code>http://www.myrepo.edu/oarr.json</code></p>
+
+{% endblock %}
