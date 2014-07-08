@@ -8,3 +8,4 @@ dist/*
 
 app.cfg
 .idea
+.nide

@@ -40,7 +40,7 @@ class OARRClient(object):
     }):
         try:
             resp = requests.get(self.base_url + "/query?source=" + json.dumps(qry) )
-            return resp
+            return resp.json()
         except:
             return {}
 

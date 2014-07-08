@@ -33,11 +33,14 @@ def stream(index='record',key='register.metadata.record.subject.term',size=1000,
     if not isinstance(key,list):
         keys = key.split(',')
 
-    if not counts: counts = request.values.get('counts',False)
+    try:
+        if not counts: counts = request.values.get('counts',False)    
+        if request.values.get('order',False): order = request.values['order']
+        if not q: q = request.values.get('q','*')
+        size = request.values.get('size',size)
+    except:
+        q = '*'
 
-    if request.values.get('order',False): order = request.values['order']
-
-    if not q: q = request.values.get('q','*')
     if not q.endswith("*") and "~" not in q: q += "*"
     if not q.startswith("*") and "~" not in q: q = "*" + q
 
@@ -49,7 +52,7 @@ def stream(index='record',key='register.metadata.record.subject.term',size=1000,
     if q != "*": qry['query'] = {"query_string": {"query": q}}
     for ky in keys:
         ks = ky.replace('.exact','')
-        qry['facets'][ks] = {"terms":{"field":ks+app.config['FACET_FIELD'],"order":order, "size":request.values.get('size',size)}}
+        qry['facets'][ks] = {"terms":{"field":ks+app.config['FACET_FIELD'],"order":order, "size":size}}
         
     base = app.config.get("OARR_API_BASE_URL")
     if base is None:

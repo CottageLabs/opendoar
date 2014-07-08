@@ -1,10 +1,13 @@
-import os, requests, json, esprit
+import os, requests, json, esprit, requests, uuid
 from flask import Flask
 from functools import wraps
 
 from portality import settings
 from flask.ext.login import LoginManager, current_user
 login_manager = LoginManager()
+
+from werkzeug import generate_password_hash
+
 
 def create_app():
     app = Flask(__name__)
@@ -33,6 +36,22 @@ def initialise_index(app):
         if not esprit.raw.has_mapping(conn, key):
             r = esprit.raw.put_mapping(conn, key, mapping)
             print key, r.status_code
+    i = str(app.config['ELASTIC_SEARCH_HOST']).rstrip('/')
+    i += '/' + app.config['ELASTIC_SEARCH_DB']
+    if app.config.get('SUPER_USER_ROLE'):
+        un = app.config['SUPER_USER_ROLE']
+        ia = i + '/account/' + un
+        ae = requests.get(ia)
+        if ae.status_code != 200:
+            su = {
+                "id":un, 
+                "email":"test@test.com",
+                "api_key":str(uuid.uuid4()),
+                "password":generate_password_hash(un),
+                "role": ["admin"]
+            }
+            c = requests.post(ia, data=json.dumps(su))
+            print "first superuser account created for user " + un + " with password " + un 
     
 def setup_error_email(app):
     ADMINS = app.config.get('ADMINS', '')

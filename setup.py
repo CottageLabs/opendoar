@@ -6,7 +6,7 @@ setup(
     version = '1.0.0',
     packages = find_packages(),
     install_requires = [
-        "esprit",
+        #"esprit",
         "werkzeug==0.8.3",
         "Flask==0.9",
         "Flask-Login==0.1.3",

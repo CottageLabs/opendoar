@@ -39,9 +39,8 @@ label{
 
 
 <form id="detect" method="GET" action="" style="display:none;">
-<h3 style="color:red;">NOTE: this site is currently in development and is only available for demo; this contribution form does not currently work. <br>To see a demo of the auto-detection features in development, try out the <a href="/detect">/detect</a> demo.</h3>
-<input style="font-size:40px;width:99%;height:80px;line-height:40px;margin-top:20px;" type="text" name="url" id="url" placeholder="http:// your repository url here">
-<input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" value="Enter your repository URL above and click here to begin.">
+<input style="font-size:40px;width:99%;height:80px;line-height:40px;margin-top:20px;" type="text" name="url" id="url" placeholder="http:// repository url here">
+<input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" value="Enter a repository URL above and click here to begin">
 </form>
 
 
@@ -342,7 +341,6 @@ label{
             <thead>
                 <tr>
                     <th style="min-width:300px;">Type</th>
-                    <th style="min-width:200px;">Grade</th>
                     <th style="min-width:430px;">Description</th>
                     <th style="min-width:200px;">Terms</th>
                 </tr>
@@ -351,7 +349,6 @@ label{
                 {% for policy in record.register.policy %}
                 <tr>
             		<td><input type="text" name="policy_policy_type" value="{{policy.policy_type}}"></td>
-            		<td><input type="text" name="policy_policy_grade" value="{{policy.policy_grade}}"></td>            		
             		<td><textarea name="policy_description" style="height:18px;width:430px;">{{policy.description}}</textarea></td>
             		<td><input type="text" name="policy_terms" value="{{policy.terms}}"></td>            		
                 </tr>
@@ -363,7 +360,6 @@ label{
             <tbody>
                 <tr>
             		<td><input type="text" name="policy_policy_type"></td>
-            		<td><input type="text" name="policy_policy_grade"></td>            		
             		<td><textarea name="policy_description" style="height:18px;width:430px;"></textarea></td>
             		<td><input type="text" name="policy_terms" class="needselect2"></td>            		
                 </tr>
