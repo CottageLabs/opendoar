@@ -20,6 +20,30 @@ from email import Encoders
 
 from portality.core import app
 
+import HTMLParser
+
+
+def dewindows(string):
+    h = HTMLParser.HTMLParser()
+    try:
+        string = string.decode("windows-1252")
+    except:
+        try:
+            string = string.decode("windows-1251")
+        except:
+            try:
+                string = string.decode("ISO-8859-1")
+            except:
+                try:
+                    string = string.decode("utf-8")
+                except:
+                    pass
+    try:
+        string = h.unescape(string)
+    except:
+        pass
+    return string
+
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))

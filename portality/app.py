@@ -86,38 +86,6 @@ def mapp():
 def autodetect():
     return render_template("autodetect.html")
 
-@app.route("/registryfile")
-def registryfile():
-    return render_template("registryfile.html")
-
-@app.route("/registryfile/validate", methods=["GET", "POST"])
-def validate_registry_file():
-    if request.method == "GET":
-        return render_template("registryfile_validate.html")
-    else:
-        obj = None
-        url = request.values.get("url")
-        if url is not None and url != "":
-            try:
-                obj = autodiscovery.validate_registry_file(registry_file_url=url)
-            except autodiscovery.registryfile.RegistryFileException as e:
-                return render_template("registryfile_validation_results.html", exception=e)
-        elif request.files['upload']:
-            file = request.files["upload"]
-            content = file.read()
-            try:
-                obj = autodiscovery.validate_registry_file(registry_file_content=content)
-            except autodiscovery.registryfile.RegistryFileException as e:
-                return render_template("registryfile_validation_results.html", exception=e)
-
-        if obj is not None:
-            reg = autodiscovery.registryfile.RegistryFile.expand(obj)
-            return render_template("registryfile_validation_results.html", repo=reg)
-        else:
-            flash("You did not provide a URL or a file to validate", "error")
-            return render_template("registryfile_validate.html", )
-
-
 
 @app.route("/contribute", methods=['GET','POST'])
 def contribute():
@@ -143,6 +111,8 @@ def contribute():
             # otherwise set a default initial object
             record = util.defaultrecord
 
+        print record
+
         if util.request_wants_json():
             resp = make_response( json.dumps({"record":record,"dropdowns":util.dropdowns}) )
             resp.mimetype = "application/json"
@@ -151,12 +121,13 @@ def contribute():
             return render_template("contribute.html", dropdowns=util.dropdowns, record=record)
 
     elif request.method == 'POST':
-    
-        # process the POST
-        # on success flash a success
-        # on fail flash a fail and redirect to populated form again
-        flash('Thanks for your contribution - if this system were not still in beta it would get processed!', 'success')
-    
+        base = app.config.get("OARR_API_BASE_URL")
+        apikey = app.config.get("OARR_API_KEY")
+        if base is None or apikey is None: abort(500)
+        client = OARRClient(base, apikey)
+        record = client.prep_record(util.defaultrecord,request)
+        #client.save_record(record)
+        flash('Thanks for your contribution - your record will be processed soon', 'success')
         return redirect('/')
     
 
@@ -183,7 +154,7 @@ def repository(repo_id):
     else:
         try:
             record = client.get_record(repo_id)
-            return render_template("repository.html", repo=record, searchurl=searchurl, search_similar=True)
+            return render_template("repository.html", repo=record, searchurl=searchurl)
         except:
             abort(404)
 

@@ -124,6 +124,7 @@ QUERY_ROUTE = {
 # OARR Config
 
 OARR_API_BASE_URL = "http://oarr.ooz.cottagelabs.com"
+OARR_API_KEY = "7283f58477704e05ae75845425c002f6" # in real use this should not be stored in the repo, but overridden on the server config
 
 # ==============================
 # Registry file validation settings

@@ -27,13 +27,18 @@ label{
 
 <div class="hero-unit odh">
     {% if record.id %}
-    <h1>repo name here</h1>
-    <p><label for="record_register_operational_status">Repository status</label>
-    <input type="text" name="record_register_operational_status" class="ac"></p>
+    <h1>{{record.register.metadata[0].record.name}}</h1>
     {% else %}
     <h1>Add a repository to OpenDOAR</h1>
     {% endif %}
-
+    {% if current_user.is_super %}
+    <p id="sumeta" style="color:white;"><br>Operational status: 
+    <input type="text" name="record_register_operational_status" class="ac" style="margin-right:50px;">
+    In OpenDOAR: 
+    <input type="checkbox" name="record_admin_opendoar_in_opendoar" 
+    {% if record.id %}{% if record.admin.opendoar.in_opendoar %}checked="checked"{% endif %}{% endif %}>
+    </p>
+    {% endif %}
 </div>
 
 
@@ -41,8 +46,13 @@ label{
 <form id="detect" method="GET" action="" style="display:none;">
 <input style="font-size:40px;width:99%;height:80px;line-height:40px;margin-top:20px;" type="text" name="url" id="url" placeholder="http:// repository url here">
 <input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" value="Enter a repository URL above and click here to begin">
-</form>
 
+{% if not current_user.is_super %}
+<p><br><br>Alternatively, if you'd just like to see what we can detect about your repository and how that default information would look as a record in OpenDoar, 
+<br>then <a href="/detect">try out our repository metadata autodetection tool</a>.</p>
+{% endif %}
+
+</form>
 
 
 
@@ -528,7 +538,19 @@ label{
 
 
 
-<input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" value="Click here when ready to submit this repository data to OpenDOAR.">
+<input type="submit" class="btn btn-info" style="width:100%;font-size:30px;line-height:30px;height:120px;margin-top:30px;" 
+{% if current_user.is_super %}
+value="Click here when ready to save this data to OpenDOAR"
+{% else %}
+value="Click here when ready to submit this repository data to OpenDOAR"
+{% endif %}
+>
+
+{% if current_user.is_super and record.id %}
+<p style="color:red;"><br>
+<input type="submit" name="submit" value="Delete" class="btn btn-small btn-danger">
+Or click the button to the left to delete this record. WANRING: Cannot be undone!</p>
+{% endif %}
 
 </form>
 
@@ -546,6 +568,7 @@ jQuery(document).ready(function($) {
     // start with a detect by URL
     {% if not record.detectdone %}
     $('#form').hide();
+    $('#sumeta').hide();
     $('#detect').show();
     $('#url').focus();
     {% endif %}

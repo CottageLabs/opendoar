@@ -7,7 +7,7 @@ from portality.core import app
 import portality.util as util
 
 from portality.oarr import OARRClient
-import json
+import json, time
 
 blueprint = Blueprint('admin', __name__)
 
@@ -69,8 +69,9 @@ def index():
 def record(uuid=None):
 
     base = app.config.get("OARR_API_BASE_URL")
-    if base is None: abort(500)
-    client = OARRClient(base)
+    apikey = app.config.get("OARR_API_KEY")
+    if base is None or apikey is None: abort(500)
+    client = OARRClient(base, apikey)
 
     if request.method == 'GET':
 
@@ -93,11 +94,15 @@ def record(uuid=None):
             else:
                 # otherwise set a default initial object
                 record = util.defaultrecord
+                
 
         else:
             # get record from OARR
-            record = client.get_record(uuid)
-            if record is None: abort(404)
+            try:
+                record = client.get_record(uuid).raw
+                record["detectdone"] = True
+            except:
+                abort(404)
 
         if util.request_wants_json():
             resp = make_response( json.dumps({"record":record,"dropdowns":util.dropdowns}) )
@@ -109,30 +114,34 @@ def record(uuid=None):
     elif ( request.method == 'POST' and request.values.get('submit','') == "Delete" ) or request.method == 'DELETE':
         record = client.get_record(uuid)
         if record is None: abort(404)
-        # this should perform a delete
+        #client.delete_record(uuid)
         time.sleep(1)
         flash("Record not deleted - there is no delete functionality yet")
         return redirect(url_for('.index'))
 
     elif request.method == 'POST':
         if uuid == 'new':
-            record = client.get_record(uuid)
-            if record is None: abort(404)
-
             # save the new record to OARR
+            record = client.prep_record(util.defaultrecord,request)
+            #client.save_record(record)
 
             flash("New record created", "success")
-            return redirect(url_for('record') + '/' + str(record['id']))
+            return redirect(url_for('.index'))
         else:
-            record = client.get_record(uuid)
-            if record is None: abort(404)
+            rec = client.get_record(uuid)
+            if rec is None: abort(404)
 
-            # save the changes to OARR
+            # do whatever needs done here to update the record from the form input
+            record = client.prep_record(rec.raw,request)
 
+            # save the new record to OARR
+            #client.save_record(record)
+
+            record["detectdone"] = True
             flash("Record has been updated", "success")
             return render_template(
                 'contribute.html', 
                 record=record, 
                 dropdowns=util.dropdowns
             )
-            
+                

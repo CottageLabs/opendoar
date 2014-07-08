@@ -6,7 +6,7 @@ class OARRClientException(Exception):
     pass
 
 class OARRClient(object):
-    def __init__(self, base_url):
+    def __init__(self, base_url, api_key=False):
         self.base_url = base_url
         if not self.base_url.endswith("/"):
             self.base_url += "/"
@@ -17,7 +17,33 @@ class OARRClient(object):
             return Register(resp.json())
         except:
             return None
-    
+
+    def save_record(self, record={}, record_id=""):
+        if "id" in record and record_id == "":
+            record_id = record["id"]
+        if not self.api_key:
+            return False
+        else:
+            try:
+                addr = self.base_url + "/record/" + record_id + '?api_key=' + self.api_key
+                resp = requests.post(addr, data=json.dumps(record))
+                if resp.json()["success"]:
+                    if record_id == "": record_id = resp.json()["id"]
+                    return record_id
+                else:
+                    return False
+
+            except:
+                return False
+
+    def delete_record(self, record_id):
+        addr = self.base_url + "/record/" + record_id + '?api_key=' + self.api_key
+        resp = requests.delete(addr)
+        return True
+
+    def prep_record(record,request):
+        return _prep_record(record,request)
+
     def get_org(self, org):
         qry = {
             "query":{
@@ -163,8 +189,8 @@ class Register(object):
             self.set_metadata_value("continent_code", code, lang)
 
     @property
-    def language(self, lang="en"):
-        return self.get_metadata_value("language", lang)
+    def language(self):
+        return self.get_metadata_value("language")
 
     @property
     def language_code(self):
@@ -191,8 +217,8 @@ class Register(object):
                     self.set_metadata_value("language_code", existing, lang)
 
     @property
-    def repository_type(self, lang="en"):
-        return self.get_metadata_value("repository_type", lang)
+    def repository_type(self):
+        return self.get_metadata_value("repository_type")
 
     def add_repository_type(self, val, lang="en"):
         existing = self.get_metadata_value("repository_type", lang)
@@ -234,9 +260,6 @@ class Register(object):
         if "organisation" not in self.raw["register"]:
             self.raw["register"]["organisation"] = []
         self.raw["register"]["organisation"].append(org_obj)
-
-    def get_organisation_objects(self):
-        return self.raw.get("register", {}).get("organisation", [])
 
     def add_contact_object(self, contact_obj):
         """
@@ -301,10 +324,7 @@ class Register(object):
         else:
             d = datetime.now()
         return datetime.strftime(d, form)
-
-    def get_metadata_langs(self):
-        return [md.get("lang") for md in self.raw.get("register", {}).get("metadata", [])]
-
+    
     def get_metadata(self, lang):
         # FIXME: full implementation will be required for full multi-lingual support
         default = None
@@ -503,5 +523,34 @@ class Org(object):
         return datetime.strftime(datetime.strptime(self.last_updated, "%Y-%m-%dT%H:%M:%SZ"), form)
     
 
+
+def _prep_record(record,request):
+    print json.dumps(record,indent=4)
+    print json.dumps(request.values,indent=4)
+
+    for key in request.form.keys():
+        if not key.startswith("blah_") and not key.startswith("blah_") and key not in ["blah", "submit", "detectdone"]: # list keys that are not lists of things or otherwise special
+            val = request.form[key]
+            if val == "on": # this may be useful for checkbox issues
+                rec[key] = True
+            elif val == "off":
+                rec[key] = False
+            elif key in ['blah']: # list keys that should have windows chars taken out of them
+                rec[key] = util.dewindows(val)
+            else:
+                rec[key] = val
+
+    # then go through each key set by the first key in the set (capture tabular form fields)
+    for k,v in enumerate(request.form.getlist('blah_title')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                rec["blah"].append({
+                    "title":v,
+                    'brief_blah': util.dewindows(request.form.getlist('blah_brief_blah')[k]) # dewindows it if necessary                        
+                })
+            except:
+                pass
+    
+    return rec
 
 
