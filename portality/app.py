@@ -87,6 +87,36 @@ def mapp():
 def autodetect():
     return render_template("autodetect.html")
 
+@app.route("/registryfile")
+def registryfile():
+    return render_template("registryfile.html")
+
+@app.route("/registryfile/validate", methods=["GET", "POST"])
+def validate_registry_file():
+    if request.method == "GET":
+        return render_template("registryfile_validate.html")
+    else:
+        obj = None
+        url = request.values.get("url")
+        if url is not None and url != "":
+            try:
+                obj = autodiscovery.validate_registry_file(registry_file_url=url)
+            except autodiscovery.registryfile.RegistryFileException as e:
+                return render_template("registryfile_validation_results.html", exception=e)
+        elif request.files['upload']:
+            file = request.files["upload"]
+            content = file.read()
+            try:
+                obj = autodiscovery.validate_registry_file(registry_file_content=content)
+            except autodiscovery.registryfile.RegistryFileException as e:
+                return render_template("registryfile_validation_results.html", exception=e)
+
+        if obj is not None:
+            reg = autodiscovery.registryfile.RegistryFile.expand(obj)
+            return render_template("registryfile_validation_results.html", repo=reg)
+        else:
+            flash("You did not provide a URL or a file to validate", "error")
+            return render_template("registryfile_validate.html", )
 
 @app.route("/contribute", methods=["GET","POST"])
 def contribute():
