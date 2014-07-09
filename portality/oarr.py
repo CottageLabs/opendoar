@@ -528,6 +528,8 @@ def _prep_record(record,request):
     print json.dumps(record,indent=4)
     print json.dumps(request.values,indent=4)
 
+    # remember to strip trailing ", " from multi select fields, and deal with values in "" too
+
     for key in request.form.keys():
         if not key.startswith("blah_") and not key.startswith("blah_") and key not in ["blah", "submit", "detectdone"]: # list keys that are not lists of things or otherwise special
             val = request.form[key]

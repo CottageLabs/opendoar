@@ -7,8 +7,6 @@ from flask import request, current_app, flash
 from random import choice
 from copy import deepcopy
 
-from portality.view.stream import stream as rawstream
-
 from urlparse import urlparse, urljoin
 
 import smtplib
@@ -205,29 +203,5 @@ defaultrecord = {
         "api" : [],
         "integration": []
     }
-}
-
-
-dropdowns = {
-    "operational_status": rawstream(key="register.operational_status",raw=True),
-
-    "metadata_country": rawstream(key="register.metadata.record.country",raw=True),
-    "metadata_country_code": rawstream(key="register.metadata.record.country_code",raw=True),
-    "metadata_continent": rawstream(key="register.metadata.record.continent",raw=True),
-    "metadata_continent_code": rawstream(key="register.metadata.record.continent_code",raw=True),
-    "metadata_language": rawstream(key="register.metadata.record.language",raw=True),
-    "metadata_language_code": rawstream(key="register.metadata.record.language_code",raw=True),
-    "metadata_repository_type": rawstream(key="register.metadata.record.repository_type",raw=True),
-    "metadata_content_type": rawstream(key="register.metadata.record.content_type",raw=True),
-    "metadata_certification": rawstream(key="register.metadata.record.certification",raw=True),
-    "metadata_subject": rawstream(key="register.metadata.record.subject.term",raw=True),
-
-    "org_name": rawstream(key="register.organisation.details.name",raw=True),
-
-    "contact_name": rawstream(key="register.contact.details.name",raw=True),
-
-    "api_type": rawstream(key="register.api.api_type",raw=True),
-    
-    "software_name": rawstream(key="register.software.name",raw=True)
 }
 

@@ -6,6 +6,8 @@ from portality.core import app
 
 import portality.util as util
 
+from portality.view.duplicate import duplicate as duplicate
+
 from portality.oarr import OARRClient
 import json, time
 
@@ -73,6 +75,9 @@ def record(uuid=None):
     if base is None or apikey is None: abort(500)
     client = OARRClient(base, apikey)
 
+    detectdone = False
+    dup = False
+
     if request.method == 'GET':
 
         if uuid is None or uuid == "new":
@@ -90,7 +95,11 @@ def record(uuid=None):
                         record = util.defaultrecord
                 else:
                     record = util.defaultrecord
-                record["detectdone"] = True
+                detectdone = True
+
+                # check if there is already a record with this url
+                dup = duplicate(request.values['url'],raw=True)
+
             else:
                 # otherwise set a default initial object
                 record = util.defaultrecord
@@ -100,16 +109,20 @@ def record(uuid=None):
             # get record from OARR
             try:
                 record = client.get_record(uuid).raw
-                record["detectdone"] = True
+                detectdone = True
+
+                # check if there is already a record with this url
+                dup = duplicate(record['register']['metadata'][0]['record']['url'],raw=True)
+                
             except:
                 abort(404)
 
         if util.request_wants_json():
-            resp = make_response( json.dumps({"record":record,"dropdowns":util.dropdowns}) )
+            resp = make_response( json.dumps({"record":record}) )
             resp.mimetype = "application/json"
             return resp
         else:
-            return render_template("contribute.html", dropdowns=util.dropdowns, record=record)
+            return render_template("contribute.html", record=record, detectdone=detectdone, duplicate=dup)
 
     elif ( request.method == 'POST' and request.values.get('submit','') == "Delete" ) or request.method == 'DELETE':
         record = client.get_record(uuid)
@@ -137,11 +150,12 @@ def record(uuid=None):
             # save the new record to OARR
             #client.save_record(record)
 
-            record["detectdone"] = True
+            detectdone = True
             flash("Record has been updated", "success")
             return render_template(
                 'contribute.html', 
-                record=record, 
-                dropdowns=util.dropdowns
+                record=record,
+                detectdone=detectdone,
+                duplicate=dup
             )
                 

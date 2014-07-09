@@ -18,6 +18,9 @@ label{
 .banner{
     margin-top:50px;
 }
+#dupwarning{
+    display:none;
+}
 </style>
 
 
@@ -33,9 +36,9 @@ label{
     {% endif %}
     {% if current_user.is_super %}
     <p id="sumeta" style="color:white;"><br>Operational status: 
-    <input type="text" name="record_register_operational_status" class="ac" style="margin-right:50px;">
+    <input type="text" name="register__operational_status" class="acs" style="margin-right:50px;">
     In OpenDOAR: 
-    <input type="checkbox" name="record_admin_opendoar_in_opendoar" 
+    <input type="checkbox" name="admin__opendoar__in_opendoar" 
     {% if record.id %}{% if record.admin.opendoar.in_opendoar %}checked="checked"{% endif %}{% endif %}>
     </p>
     {% endif %}
@@ -58,80 +61,92 @@ label{
 
 <form id="form" action="" method="post">
 
+<p style="color:red;">NOTE: for fields marked (s) * it is possible to provide multiple comma-separated values. 
+If you wish to provide a value that contains a comma, wrap it in double quotation marks, e.g. "books, videos".</p>
+
 <!-- record metadata across all languages -->
 {% for metadata in record.register.metadata %}
 
 {% if metadata.default %}
 
+<div id="metadata_default">
+
 <h1>
     {{metadata.lang}}
-    <input type="hidden" name="metadata_default" value="{{metadata.default}}">
+    <input type="hidden" name="register__metadata__default" value="{{metadata.default}}">
     {% if metadata.default %}<small>DEFAULT</small>{% else %}<a class="makdefault" href="#">make default</a>{% endif %}
 </h1>
 
-
-                    
 <div class="row-fluid">
 
     <div class="span6">
 
-        <p><label for="metadata_url">URL</label>
-        <input type="text" name="metadata_url" value="{{metadata.record.url}}"></p>
+        <p><label for="register__metadata__record__url">URL</label>
+        <input id="url" type="text" name="register__metadata__record__url" value="{{metadata.record.url}}"></p>
+        
+        <p id="dupwarning" style="color:red;">
+        NOTE: there is already an OpenDOAR record with this URL. <br>
+        <a id="dupid" target="_blank" href="/repository/">Click here to review it</a> before creating a new record.</p>
+        </p>
 
-        <p><label for="metadata_name">Name</label>
-        <input type="text" name="metadata_name" value="{{metadata.record.name}}"></p>
+        <p><label for="register__metadata__record__name">Name</label>
+        <input type="text" name="register__metadata__record__name" value="{{metadata.record.name}}"></p>
 
-        <p><label for="metadata_acronym">Acronym</label>
-        <input type="text" name="metadata_acronym" value="{{metadata.record.acronym}}"></p>
+        <p><label for="register__metadata__record__acronym">Acronym</label>
+        <input type="text" name="register__metadata__record__acronym" value="{{metadata.record.acronym}}"></p>
 
-        <p><label for="metadata_established_date">Established date</label>
-        <input type="text" name="metadata_established_date" class="datepicker" value="{{metadata.record.established_date}}"></p>
+        <p><label for="register__metadata__record__established_date">Established date</label>
+        <input type="text" name="register__metadata__record__established_date" class="datepicker" value="{{metadata.record.established_date}}"></p>
 
-        <p><label for="metadata_twitter">Twitter</label>
-        <input type="text" name="metadata_twitter" value="{{metadata.record.twitter}}"></p>
-
-        <p><label for="metadata_country">Country</label>
-        <input type="text" name="metadata_country" value="{{metadata.record.country}}" class="ac"></p>
-
-        <p><label for="metadata_country_code">Country code</label>
-        <input type="text" name="metadata_country_code" value="{{metadata.record.country_code}}" class="ac"></p>
-
-        <p><label for="metadata_continent">Continent</label>
-        <input type="text" name="metadata_continent" value="{{metadata.record.continent}}" class="ac"></p>
-
-        <p><label for="metadata_continent_code">Continent code</label>
-        <input type="text" name="metadata_continent_code" value="{{metadata.record.continent_code}}" class="ac"></p>
+        <p><label for="register__metadata__record__twitter">Twitter</label>
+        <input type="text" name="register__metadata__record__twitter" value="{{metadata.record.twitter}}"></p>
+<!--
+        <p><label for="register__metadata__record__country">Country</label>
+        <input type="text" name="register__metadata__record__country" value="{{metadata.record.country}}" class="acs"></p>
+-->
+        <p><label for="register__metadata__record__country_code">Country code</label>
+        <input type="text" name="register__metadata__record__country_code" value="{{metadata.record.country_code}}" class="acs"></p>
+<!--
+        <p><label for="register__metadata__record__continent">Continent</label>
+        <input type="text" name="register__metadata__record__continent" value="{{metadata.record.continent}}" class="acs"></p>
+-->
+        <p><label for="register__metadata__record__continent_code">Continent code</label>
+        <input type="text" name="register__metadata__record__continent_code" value="{{metadata.record.continent_code}}" class="acs"></p>
 
     </div>
     
     <div class="span6">
 
-        <p><label for="metadata_description">Description</label>
-        <textarea name="metadata_description" style="height:110px;">{{metadata.record.description}}</textarea></p>
-
-        <p><label for="metadata_language">Language</label>
-        <input type="text" name="metadata_language" value="{{metadata.record.language}}" class="ac"></p>
-
-        <p><label for="metadata_language_code">Language code</label>
-        <input type="text" name="metadata_language_code" value="{{metadata.record.language_code}}" class="ac"></p>
-
-        <p><label for="metadata_repository_type">Repository type</label>
-        <input type="text" name="metadata_repository_type" value="{{metadata.record.repository_type}}" class="ac"></p>
+        <p><label for="register__metadata__record__description">Description</label>
+        <textarea name="register__metadata__record__description" style="height:110px;">{{metadata.record.description}}</textarea></p>
+<!--        
+        <p><label for="register__metadata__record__language">Language <span style="color:red;">(s) *</span></label>
+        <input type="text" name="register__metadata__record__language" value="{{', '.join(metadata.record.language)}}" class="ac"></p>
+-->
+        <p><label for="register__metadata__record__language_code">Language code <span style="color:red;">(s) *</span></label>
+        <input type="text" name="register__metadata__record__language_code" value="{{', '.join(metadata.record.language_code)}}" class="ac"></p>
+        
+        <p><label for="register__metadata__record__repository_type">Repository type <span style="color:red;">(s) *</span></label>
+        <input type="text" name="register__metadata__record__repository_type" value="{{', '.join(metadata.record.repository_type)}}" class="ac"></p>
     
-        <p><label for="metadata_content_type">Repository contents</label>
-        <input type="text" name="metadata_content_type" value="{{metadata.record.content_type}}" class="ac"></p>
-
-        <p><label for="metadata_certification">Repository certifications</label>
-        <input type="text" name="metadata_certification" value="{{metadata.record.certification}}" class="ac"></p>
-
-        <p><label for="metadata_subject">Repository subjects</label>
-        <input type="text" name="metadata_subject" value="{{metadata.record.subject.term}}" class="ac"></p>
-
+        <p><label for="register__metadata__record__content_type">Repository content <span style="color:red;">(s) *</span></label>
+        <input type="text" name="register__metadata__record__content_type" value="{{', '.join(metadata.record.content_type)}}" class="ac"></p>
+        
+        <p><label for="register__metadata__record__certification">Repository certification <span style="color:red;">(s) *</span></label>
+        <input type="text" name="register__metadata__record__certification" value="{{', '.join(metadata.record.certification)}}" class="ac"></p>
+        
+        <p><label for="register__metadata__record__subject__term">Repository subject <span style="color:red;">(s) *</span></label>
+        <input type="text" name="register__metadata__record__subject__term" value="{{', '.join(metadata.record.subject.term)}}" class="ac"></p>
+        
     </div>
 
 </div>
 
+</div>
+
 {% endif %}
+
+<!-- add templates in here for non-default metadata that can be looped to -->
 
 {% endfor %}
 
@@ -154,7 +169,7 @@ label{
     <div class="span6">
 
         <p><label for="org_name">Name</label>
-        <input type="text" name="org_name" value="{{org.details.name}}" class="ac finder"></p>
+        <input type="text" name="org_name" value="{{org.details.name}}" class="acs"></p>
 
         <p><label for="org_acronym">Acronym</label>
         <input type="text" name="org_acronym" value="{{org.details.acronym}}"></p>
@@ -177,12 +192,12 @@ label{
 
         <p><label for="org_url">URL</label>
         <input type="text" name="org_url" value="{{org.details.url}}"></p>
-
+<!--
         <p><label for="org_country">Country</label>
         <input type="text" name="org_country" value="{{org.details.country}}"></p>
-
+-->
         <p><label for="org_country_code">Country Code</label>
-        <input type="text" name="org_country_code" value="{{org.details.country_code}}"></p>
+        <input type="text" name="org_country_code" value="{{org.details.country_code}}" class="acs"></p>
     
         <p><label for="org_lat">Lat / lon</label>
         <input type="text" name="org_lat" value="{{org.details.lat}}" style="width:98px;">
@@ -566,7 +581,7 @@ Or click the button to the left to delete this record. WANRING: Cannot be undone
 jQuery(document).ready(function($) {
 
     // start with a detect by URL
-    {% if not record.detectdone %}
+    {% if not detectdone %}
     $('#form').hide();
     $('#sumeta').hide();
     $('#detect').show();
@@ -580,28 +595,6 @@ jQuery(document).ready(function($) {
         changeYear: true
     }
     $('.datepicker').datepicker(opts);
-
-    // set suggester values
-    var dropdowns = {{ dropdowns|tojson|safe }};
-    $('.ac').each(function(i) {
-        var type = $(this).attr('name');
-        if ( type == "org_country" ) { type == "metadata_country"; }
-        if ( type == "org_country_code" ) { type == "metadata_country_code"; }
-        if ( type == "integration_software" ) { type == "software_name"; }
-        if ( type in dropdowns ) {
-            var d = dropdowns[type];
-            $(this).autocomplete({
-                "source": d,
-                "minLength": 0,
-                "select": function() {
-                    if ( $(this).hasClass('finder') ) {
-                        // add an if this has finder class then trigger a search for 
-                        //supporting data, e.g. find an org on org name, contact on contact name, etc
-                    }
-                }
-            });
-        }
-    });
     
     // function of things to do whenever a row is appended
     var preprow = function(row) {
@@ -680,6 +673,96 @@ jQuery(document).ready(function($) {
     }
     $('.addsection').bind('click',addsection);
     
+    
+    var ac_url = '/stream/record/';
+    $( ".ac" ).autocomplete({
+      source: function( request, response ) {
+        var terms = request.term.split( /,\s*/ );
+        var t = $.trim(terms[terms.length-1]);
+        $.ajax({
+          url: ac_url + $(this.element).attr('name').replace(/__/g,'.') + '?q=' + t,
+          cache:false,
+          async:false,
+          dataType: "json",
+          type: 'GET',
+          contentType: 'application/json',
+          success: function( data ) {
+            var res = [];
+            for ( var r in data ) {
+              if ( data[r].toLowerCase().indexOf(t.toLowerCase()) >= 0 ) {
+                var tr = data[r];
+                if ( tr.indexOf(',') >= 0 ) {
+                  tr = '"' + tr + '"';
+                }
+                res.push(tr);
+              }
+            }
+            response( res );
+          }
+        });
+      },
+      select: function( event, ui ) {
+          var terms = this.value.split( /,\s*/ );
+          terms.pop();
+          terms.push( ui.item.value );
+          terms.push( "" );
+          this.value = terms.join( ", " );
+          return false;
+      },
+      minLength: 0
+    });
+
+    $( ".acs" ).autocomplete({
+      source: function( request, response ) {
+        $.ajax({
+          url: ac_url + $(this.element).attr('name').replace(/__/g,'.') + '?q=' + request.term,
+          cache:false,
+          async:false,
+          dataType: "json",
+          type: 'GET',
+          contentType: 'application/json',
+          success: function( data ) {
+            var res = [];
+            for ( var r in data ) {
+              if ( data[r].toLowerCase().indexOf(request.term.toLowerCase()) >= 0 ) {
+                var tr = data[r];
+                if ( tr.indexOf(',') >= 0 ) {
+                  tr = '"' + tr + '"';
+                }
+                res.push(tr);
+              }
+            }
+            response( res );
+          }
+        });
+      },
+      minLength: 0
+    });
+
+
+    var dupwarning = function(did) {
+        if ( did !== false ) {
+            $('#dupid').attr("href",'/repository/' + did);
+            $('#dupwarning').show();
+        }
+    }
+    {% if duplicate and ( not record.id and detectdone ) %}
+    dupwarning("{{duplicate}}");
+    {% endif %}
+
+    var dupcheck = function(event) {
+        $.ajax({
+          url: '/duplicate?url=' + $(this).val(),
+          cache:false,
+          async:false,
+          dataType: "json",
+          type: 'GET',
+          contentType: 'application/json',
+          success: dupwarning
+        });
+    }
+    $('#url').bind('keyup',dupcheck);
+
 })
 
 </script>

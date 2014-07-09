@@ -11,7 +11,8 @@ from portality import settings, searchurl
 from portality.oarr import OARRClient
 
 from portality.view.stream import blueprint as stream
-
+from portality.view.duplicate import blueprint as duplicate
+from portality.view.duplicate import duplicate as rawduplicate
 from portality.view.admin import blueprint as admin
 from portality.view.account import blueprint as account
 
@@ -47,7 +48,7 @@ def set_current_context():
 
 app.register_blueprint(admin, url_prefix='/admin')
 app.register_blueprint(account, url_prefix='/account')
-
+app.register_blueprint(admin, url_prefix='/duplicate')
 app.register_blueprint(stream, url_prefix='/stream')
 
 @app.route("/")
@@ -87,8 +88,11 @@ def autodetect():
     return render_template("autodetect.html")
 
 
-@app.route("/contribute", methods=['GET','POST'])
+@app.route("/contribute", methods=["GET","POST"])
 def contribute():
+
+    detectdone = False
+    dup = False
 
     if request.method == 'GET':
     
@@ -104,21 +108,23 @@ def contribute():
                             record['register']['metadata'][0]['record'][k] = v
                 except:
                     record = util.defaultrecord
+
+                # check if there is already a record with this url
+                dup = rawduplicate(request.values['url'],raw=True)
+                
             else:
                 record = util.defaultrecord
-            record["detectdone"] = True
+            detectdone = True
         else:
             # otherwise set a default initial object
             record = util.defaultrecord
 
-        print record
-
         if util.request_wants_json():
-            resp = make_response( json.dumps({"record":record,"dropdowns":util.dropdowns}) )
+            resp = make_response( json.dumps({"record":record}) )
             resp.mimetype = "application/json"
             return resp
         else:
-            return render_template("contribute.html", dropdowns=util.dropdowns, record=record)
+            return render_template("contribute.html", record=record, detectdone=detectdone, duplicate=dup)
 
     elif request.method == 'POST':
         base = app.config.get("OARR_API_BASE_URL")

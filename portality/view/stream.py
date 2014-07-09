@@ -49,7 +49,14 @@ def stream(index='record',key='register.metadata.record.subject.term',size=1000,
         'size': 0,
         'facets':{}
     }
-    if q != "*": qry['query'] = {"query_string": {"query": q}}
+    if q != "*": 
+        qry['query'] = {
+            "query_string": {
+                "query": q,
+                'fields': keys,
+                'use_dis_max': True
+            }
+        }
     for ky in keys:
         ks = ky.replace('.exact','')
         qry['facets'][ks] = {"terms":{"field":ks+app.config['FACET_FIELD'],"order":order, "size":size}}
@@ -59,7 +66,7 @@ def stream(index='record',key='register.metadata.record.subject.term',size=1000,
         abort(500)
     client = OARRClient(base)
     try:
-        r = client.query(qry).json()
+        r = client.query(qry)
     except:
         r = {}
     
