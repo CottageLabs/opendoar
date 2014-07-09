@@ -160,7 +160,7 @@ def repository(repo_id):
     else:
         try:
             record = client.get_record(repo_id)
-            return render_template("repository.html", repo=record, searchurl=searchurl)
+            return render_template("repository.html", repo=record, searchurl=searchurl, search_similar=True)
         except:
             abort(404)
 
