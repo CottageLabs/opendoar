@@ -55,13 +55,15 @@ def index():
     # get recently created not in opendoar and not yet viewed
     qr['filter'] = {
         "script" : {
-            "script" : "doc['created_date'].value == doc['last_updated'].value"
+            "script" : "unviewed"
+            #"script" : "doc['created_date'].value == doc['last_updated'].value"
         }
     }
     res = client.query(qr)
-    print json.dumps(res,indent=4)
-    stats['unviewed'] = res['hits']['total']
-
+    try:
+        stats['unviewed'] = res['hits']['total']
+    except:
+        stats['unviewed'] = 100000
     return render_template('admin/index.html', stats=stats)
 
 
