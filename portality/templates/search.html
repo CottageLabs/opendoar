@@ -16,7 +16,6 @@ jQuery(document).ready(function($) {
     var record_resdisplay = []
     
     var record_facets = [
-        {'field': 'admin.opendoar.in_opendoar.exact', 'display': 'In OpenDOAR?'},
         {'field': 'register.operational_status.exact', 'display': 'Operational Status'},
 
         {'field': 'register.metadata.record.country.exact', 'display': 'Country'},
@@ -50,6 +49,12 @@ jQuery(document).ready(function($) {
         {'display':'Repository Name','field':'register.metadata.record.name'},
         {'display':'Organisation','field':'register.organisation.details.name'}
     ]
+
+    var predefined_filters = {
+        "in_opendoar" : {
+            "term" : {"admin.opendoar.in_opendoar" : true}
+        }
+    }
 
     function discoveryRecordView(index) {
         var options = $("#facetview").facetview.options
@@ -168,7 +173,8 @@ jQuery(document).ready(function($) {
         post_search_callback: postSearch,
         buildrecord: discoveryRecordView,
         search_sortby: sortby,
-        searchbox_fieldselect: searchfield
+        searchbox_fieldselect: searchfield,
+        predefined_filters: predefined_filters
     };
 
     $('#facetview').facetview(opts);
