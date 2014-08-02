@@ -2,7 +2,7 @@
 {% set reg = repo.register %}
 
 <div class="row-fluid">
-    <div class="span{% if search_similar %}9{% else %}12{% endif %}">
+    <div class="span9">
 
         <h1 style="padding-bottom: 15px">{{metadata.name}}{% if metadata.acronym %} ({{metadata.acronym}}){% endif %}</h1>
 
@@ -112,9 +112,15 @@
 
     </div>
 
-    {% if search_similar %}
-        {% include "_search_similar.html" %}
-    {% endif %}
+    <div class="span3">
+        <div class="well" style="background-color:#c9d2d4;">
+            <p>Is this your repository? Do you want to update the information shown here?
+            If so, <a href="/contribute?updaterequest={{repo.raw.id}}">use our contribution form</a> to submit an update request.</p>
+        </div>
+        {% if search_similar %}
+            {% include "_search_similar.html" %}
+        {% endif %}
+    </div>
 
 </div>
 

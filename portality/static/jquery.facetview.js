@@ -268,6 +268,10 @@ as per an elasticsearch query for appending to the bool must.
 If these filters should be applied at the nested level, then prefix the name with the relevant nesting prefix. 
 e.g. if the nested object is called stats, call the filter stats.MYFILTER.
 
+predefined_should
+------------------
+As above for should
+
 paging
 ------
 An object defining the paging settings:
@@ -496,6 +500,7 @@ is missing.
             "q":"",
             "sort":[],
             "predefined_filters":{},
+            "predefined_should":{},
             "paging":{
                 "from":0,
                 "size":10
@@ -1215,12 +1220,24 @@ is missing.
             for (var item in options.predefined_filters) {
                 // FIXME: this may overwrite existing bool option
                 !bool ? bool = {'must': [] } : "";
+                !bool.must ? bool.must = [] : "";
                 var pobj = options.predefined_filters[item];
                 var parts = item.split('.');
                 if ( options.nested.indexOf(parts[0]) != -1 ) {
                     !nested ? nested = {"nested":{"_scope":parts[0],"path":parts[0],"query":{"bool":{"must":[pobj]}}}} : nested.nested.query.bool.must.push(pobj);
                 } else {
                     bool['must'].push(pobj);
+                }
+            }
+            for (var item in options.predefined_should) {
+                !bool ? bool = {'should': [] } : "";
+                !bool.should ? bool.should = [] : "";
+                var pobj = options.predefined_should[item];
+                var parts = item.split('.');
+                if ( options.nested.indexOf(parts[0]) != -1 ) {
+                    !nested ? nested = {"nested":{"_scope":parts[0],"path":parts[0],"query":{"bool":{"should":[pobj]}}}} : nested.nested.query.bool.should.push(pobj);
+                } else {
+                    bool['should'].push(pobj);
                 }
             }
             if (bool) {

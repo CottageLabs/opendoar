@@ -1,6 +1,8 @@
 import requests, json, pycountry
 from copy import deepcopy
 from datetime import datetime
+from csv import reader
+from datetime import datetime
 
 class OARRClientException(Exception):
     pass
@@ -10,6 +12,7 @@ class OARRClient(object):
         self.base_url = base_url
         if not self.base_url.endswith("/"):
             self.base_url += "/"
+        self.api_key = api_key
     
     def get_record(self, record_id):
         try:
@@ -19,29 +22,30 @@ class OARRClient(object):
             return None
 
     def save_record(self, record={}, record_id=""):
-        if "id" in record and record_id == "":
-            record_id = record["id"]
         if not self.api_key:
             return False
         else:
             try:
-                addr = self.base_url + "/record/" + record_id + '?api_key=' + self.api_key
+                if "id" in record and record_id == "": record_id = record["id"]
+                if "admin" not in record: record["admin"] = {}
+                if "opendoar" not in record["admin"]: record["admin"]["opendoar"] = {}
+                record["admin"]["opendoar"]["last_saved"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+                addr = self.base_url + "record/" + record_id + '?api_key=' + self.api_key
                 resp = requests.post(addr, data=json.dumps(record))
                 if resp.json()["success"]:
                     if record_id == "": record_id = resp.json()["id"]
                     return record_id
                 else:
                     return False
-
             except:
                 return False
 
     def delete_record(self, record_id):
-        addr = self.base_url + "/record/" + record_id + '?api_key=' + self.api_key
+        addr = self.base_url + "record/" + record_id + '?api_key=' + self.api_key
         resp = requests.delete(addr)
         return True
 
-    def prep_record(record,request):
+    def prep_record(self,record,request):
         return _prep_record(record,request)
 
     def get_org(self, org):
@@ -525,34 +529,214 @@ class Org(object):
 
 
 def _prep_record(record,request):
-    print json.dumps(record,indent=4)
-    print json.dumps(request.values,indent=4)
+    if "register" not in record: record["register"] = {}
+    if "admin" not in record: record["admin"] = {}
+    if "opendoar" not in record['admin']: record["admin"]["opendoar"] = {}
 
-    # remember to strip trailing ", " from multi select fields, and deal with values in "" too
+    if 'admin__opendoar__in_opendoar' in request.form.keys() and request.form['admin__opendoar__in_opendoar'] == "on":
+        record['admin']['opendoar']['in_opendoar'] = True
+    else:
+        record['admin']['opendoar']['in_opendoar'] = False
 
-    for key in request.form.keys():
-        if not key.startswith("blah_") and not key.startswith("blah_") and key not in ["blah", "submit", "detectdone"]: # list keys that are not lists of things or otherwise special
-            val = request.form[key]
-            if val == "on": # this may be useful for checkbox issues
-                rec[key] = True
-            elif val == "off":
-                rec[key] = False
-            elif key in ['blah']: # list keys that should have windows chars taken out of them
-                rec[key] = util.dewindows(val)
-            else:
-                rec[key] = val
-
-    # then go through each key set by the first key in the set (capture tabular form fields)
-    for k,v in enumerate(request.form.getlist('blah_title')):
+    record["register"]["metadata"] = []
+    for k,v in enumerate(request.form.getlist('register__metadata__lang')):
         if v is not None and len(v) > 0 and v != " ":
             try:
-                rec["blah"].append({
-                    "title":v,
-                    'brief_blah': util.dewindows(request.form.getlist('blah_brief_blah')[k]) # dewindows it if necessary                        
+                lists = {
+                    "register__metadata__record__language": [],
+                    "register__metadata__record__repository_type": [],
+                    "register__metadata__record__content_type": [],
+                    "register__metadata__record__certification": [],
+                    "register__metadata__record__subject__term": []
+                }
+                for n in lists.keys():
+                    nk = request.form.getlist(n)[k]
+                    if ',' in nk:
+                        nkl = reader(nk)
+                    else:
+                        nkl = [nk]
+                    for vr in nkl:
+                        val = vr.strip(" ")
+                        if len(val) > 0: lists[n].append(val)
+                try:
+                    lc = []
+                    for l in lists["register__metadata__record__language"]:
+                        lc.append(pycountry.languages.get(name=l)).alpha2
+                except:
+                    lc = []
+                co = request.form.getlist("register__metadata__record__country")[k]
+                try:
+                    cc = pycountry.countries.get(name=co).alpha2
+                except:
+                    cc = ""
+                if request.form.getlist("register__metadata__default")[k] == "on":
+                    df = True
+                else:
+                    df = False
+                record["register"]["metadata"].append({
+                    "lang": v,
+                    "default": df,
+                    "record": {
+                        "url": request.form.getlist("register__metadata__record__url")[k],
+                        "name": request.form.getlist("register__metadata__record__name")[k],
+                        "acronym": request.form.getlist("register__metadata__record__acronym")[k],
+                        "established_date": request.form.getlist("register__metadata__record__established_date")[k],
+                        "twitter": request.form.getlist("register__metadata__record__twitter")[k],
+                        "country": co,
+                        "country_code": cc,
+                        "continent": request.form.getlist("register__metadata__record__continent")[k],
+                        "continent_code": request.form.getlist("register__metadata__record__continent_code")[k],
+                        "description": request.form.getlist("register__metadata__record__description")[k],
+                        "language": lists['register__metadata__record__language'],
+                        "language_code": lc,
+                        "repository_type": lists['register__metadata__record__repository_type'],
+                        "content_type": lists['register__metadata__record__content_type'],
+                        "certification": lists['register__metadata__record__certification'], 
+                        "subject": lists['register__metadata__record__subject__term']
+                    }
                 })
             except:
                 pass
-    
-    return rec
 
+    record["register"]["organisation"] = []
+    for k,v in enumerate(request.form.getlist('register__organisation__details__name')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                roles = []
+                nk = request.form.getlist("register__organisation__role")[k]
+                if ',' in nk:
+                    nkl = reader(nk)
+                else:
+                    nkl = [nk]
+                for vr in nkl:
+                    val = vr.strip(" ")
+                    if len(val) > 0: roles.append(val)
+                co = request.form.getlist("register__organisation__details__country")[k]
+                try:
+                    cc = pycountry.countries.get(name=co).alpha2
+                except:
+                    cc = ""
+                record["register"]["organisation"].append({
+                    "details": {
+                        "name": v,
+                        "acronym": request.form.getlist("register__organisation__details__acronym")[k],
+                        "country": co,
+                        "country": cc,
+                        "lat": request.form.getlist("register__organisation__details__lat")[k],
+                        "lon": request.form.getlist("register__organisation__details__lon")[k],
+                        "url": request.form.getlist("register__organisation__details__url")[k],
+                        "unit": util.dewindows(request.form.getlist("register__organisation__details__unit")[k]),
+                        "unit_acronym": request.form.getlist("register__organisation__details__unit_acronym")[k],
+                        "unit_url": request.form.getlist("register__organisation__details__unit_url")[k]
+                    },
+                    "role": roles
+                })
+            except:
+                pass
+
+    record["register"]["contact"] = []
+    for k,v in enumerate(request.form.getlist('register__contact__details__email')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                roles = []
+                nk = request.form.getlist("register__contact__role")[k]
+                if ',' in nk:
+                    nkl = reader(nk)
+                else:
+                    nkl = [nk]
+                for vr in nkl:
+                    val = vr.strip(" ")
+                    if len(val) > 0: roles.append(val)
+                record["register"]["contact"].append({
+                    "details": {
+                        "email": v,
+                        "name": request.form.getlist("register__contact__details__name")[k],
+                        "job_title": request.form.getlist("register__contact__details__job_title")[k],
+                        "phone": request.form.getlist("register__contact__details__phone")[k],
+                        "fax": request.form.getlist("register__contact__details__fax")[k],
+                        "address": request.form.getlist("register__contact__details__address")[k],
+                        "lat": request.form.getlist("register__contact__details__lat")[k],
+                        "lon": request.form.getlist("register__contact__details__lon")[k]
+                    },
+                    "role": roles
+                })
+            except:
+                pass
+
+    record["register"]["policy"] = []
+    for k,v in enumerate(request.form.getlist('register__policy__policy_type')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                terms = []
+                nk = request.form.getlist("register__policy_terms")[k]
+                if ',' in nk:
+                    nkl = reader(nk)
+                else:
+                    nkl = [nk]
+                for vr in nkl:
+                    val = vr.strip(" ")
+                    if len(val) > 0: terms.append(val)
+                record["register"]["policy"].append({
+                    "terms": terms,
+                    "policy_type": v
+                })
+            except:
+                pass
+
+    record["register"]["api"] = []
+    for k,v in enumerate(request.form.getlist('register__api__base_url')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                lists = {
+                    "register__api__metadata_formats": [],
+                    "register__api__accepts": [],
+                    "register__api__accept_packaging": []
+                }
+                for n in lists.keys():
+                    nk = request.form.getlist(n)[k]
+                    if ',' in nk:
+                        nkl = reader(nk)
+                    else:
+                        nkl = [nk]
+                    for vr in nkl:
+                        val = vr.strip(" ")
+                        if len(val) > 0: lists[n].append(val)
+                record["register"]["api"].append({
+                    "base_url": v,
+                    "api_type": request.form.getlist("register__api__api_type")[k],
+                    "version": request.form.getlist("register__api__version")[k],
+                    "metadata_formats": lists["register__api__metadata_formats"],
+                    "accepts": lists["register__api__accepts"],
+                    "accept_packaging": lists["register__api__accept_packaging"]
+                })
+            except:
+                pass
+
+    record["register"]["software"] = []
+    for k,v in enumerate(request.form.getlist('register__software__name')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                record["register"]["software"].append({
+                    "name": v,
+                    "version": request.form.getlist("register__software__version")[k],
+                    "url": request.form.getlist("register__software__url")[k]
+                })
+            except:
+                pass
+
+    record["register"]["integration"] = []
+    for k,v in enumerate(request.form.getlist('register__integration__integrated_with')):
+        if v is not None and len(v) > 0 and v != " ":
+            try:
+                record["register"]["integration"].append({
+                    "with": v,
+                    "nature": request.form.getlist("register__integration__nature")[k],
+                    "url": request.form.getlist("register__integration__url")[k],
+                    "software": request.form.getlist("register__integration__software")[k],
+                    "version": request.form.getlist("register__integration__version")[k],
+                })
+            except:
+                pass
+
+    return record
 

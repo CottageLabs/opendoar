@@ -27,6 +27,13 @@
               <ul class="nav pull-right">
                 {% if current_user.is_super %}
                 <li{% if request.path.startswith("/admin") %} class="active"{% endif %}><a href="/admin">Admin</a></li>
+                {% if editable %}
+                {% if request.path == "/" %}
+                <li><a href="/index/edit">Edit</a></li>
+                {% else %}
+                <li><a href="edit">Edit</a></li>
+                {% endif %}
+                {% endif %}
                 {% endif %}
                 <li{% if request.path == "/tools" %} class="active"{% endif %}><a href="/tools">Tools</a></li>
                 <li{% if request.path == "/community" %} class="active"{% endif %}><a href="/community">Community</a></li>
@@ -46,7 +53,7 @@
     <div class="container" style="margin-top:5px;">
         <div class="alert-messages">
         {% with messages = get_flashed_messages(with_categories=True) %}
-        {%if messages %}
+        {% if messages %}
           {% for category, message in messages %}
             <div class="alert alert-{{category}} fade in" data-alert="alert">
               <a class="close" data-dismiss="alert" href="#">&times;</a>

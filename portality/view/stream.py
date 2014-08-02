@@ -4,7 +4,7 @@ autocompletes and things like that on your front end. Just access indextype/key,
 and use the usual ES params for paging and querying. Returns back a list of values.
 '''
 
-import json
+import json, pycountry
 
 from flask import Blueprint, request, abort, make_response
 
@@ -82,6 +82,24 @@ def stream(index='record',key='register.metadata.record.subject.term',size=1000,
                 res = res + [i['term'] for i in r.get('facets',{}).get(ks,{}).get("terms",[])]
     except:
         pass
+
+    qc = q.replace('*','').replace('~','')
+    if "register.metadata.record.country" in keys or "register.organisation.details.country" in keys:
+        additional = [i.name for i in pycountry.countries]
+    elif "register.metadata.record.language" in keys:
+        additional = [i.name for i in pycountry.languages]
+    elif "register.metadata.lang" in keys:
+        additional = []
+        for i in pycountry.languages:
+            try:
+                additional.append(i.alpha2)
+            except:
+                pass
+    else:
+        additional = []
+    for val in additional:
+        if (qc.lower() in val.lower() or len(qc) == 0) and val not in res:
+            res.append(val)
 
     if raw:
         return res

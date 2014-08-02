@@ -15,6 +15,7 @@ from portality.view.duplicate import blueprint as duplicate
 from portality.view.duplicate import duplicate as rawduplicate
 from portality.view.admin import blueprint as admin
 from portality.view.account import blueprint as account
+from portality.view.pagemanager import blueprint as pagemanager
 
 from portality.autodiscovery import autodiscovery
 
@@ -50,6 +51,8 @@ app.register_blueprint(admin, url_prefix='/admin')
 app.register_blueprint(account, url_prefix='/account')
 app.register_blueprint(admin, url_prefix='/duplicate')
 app.register_blueprint(stream, url_prefix='/stream')
+#app.register_blueprint(pagemanager)
+
 
 @app.route("/")
 def root():
@@ -126,8 +129,21 @@ def contribute():
 
     if request.method == 'GET':
     
+        # check to see if this is an update
+        if 'updaterequest' in request.values:
+            # get record from OARR
+            try:
+                base = app.config.get("OARR_API_BASE_URL")
+                if base is None: abort(500)
+                client = OARRClient(base)
+                record = client.get_record(request.values["updaterequest"]).raw
+                record["admin"]["opendoar"]["updaterequest"] = request.values["updaterequest"]
+                detectdone = True
+            except:
+                abort(404)
+        
         # check for a url request param
-        if 'url' in request.values:
+        elif 'url' in request.values:
             # if there is one, then try to set the initial object
             if len(request.values['url']) != 0:
                 try:
@@ -162,8 +178,8 @@ def contribute():
         if base is None or apikey is None: abort(500)
         client = OARRClient(base, apikey)
         record = client.prep_record(util.defaultrecord,request)
-        #client.save_record(record)
-        flash('Thanks for your contribution - your record will be processed soon', 'success')
+        client.save_record(record)
+        flash('Thank you very much for your submission. Your request will be processed as soon as possible, and usually within three working days.', 'success')
         return redirect('/')
     
 

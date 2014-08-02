@@ -53,12 +53,12 @@ jQuery(document).ready(function($) {
 
     $('#facetview').facetview(opts);
 
-    var controls = '<div class="hero-unit" id="controls" style="position:fixed;margin-top:10px;">';
-    controls += '<p>There are {{stats.out}} records not in OpenDoar. {% if stats.out != 0 %}View: <input type="checkbox" id="show_not_in">{% endif %}</p>';
-    controls += '<p>Of which {{stats.unviewed}} await initial review. {% if stats.unviewed != 0 %}View: <input type="checkbox" id="show_unviewed">{% endif %}</p>';
-    controls += '<p><br><a class="btn" style="width:150px;" href="/admin/record/new">Create new record</a><br>';
-    controls += '<a class="btn" style="width:150px;" href="/account">Manage accounts</a> ';
-    controls += '<a class="btn disabled" style="width:150px;" href="#">Manage pages</a></p>'
+    var controls = '<div class="well" id="controls" style="position:fixed;margin-top:10px;">';
+    controls += '<p>There are {{stats.out}} records not in OpenDOAR. {% if stats.out != 0 %}View: <input type="checkbox" id="show_not_in" class="checkers">{% endif %}</p>';
+    controls += '<p>There are {{stats.unviewed}} in OpenDOAR requiring review. {% if stats.unviewed != 0 %}View: <input type="checkbox" class="checkers" id="show_unviewed">{% endif %}</p>';
+    controls += '<p>There are {{stats.updaterequest}} update requests. {% if stats.updaterequest != 0 %}View: <input type="checkbox" class="checkers" id="show_updaterequest">{% endif %}</p>';
+    controls += '<p><br><a class="btn" style="width:150px;" href="/admin/record/new">Create new record</a> ';
+    controls += '<a class="btn" style="width:150px;" href="/account">Manage accounts</a></p>';
     controls += '</div>';
 
     $('#facetview_rightcol').siblings('.span3').removeClass('span3').addClass('span4').prepend(controls);
@@ -71,27 +71,40 @@ jQuery(document).ready(function($) {
     $('.facetview_orderby').css({"width":"200px"});
     $('#controls').prepend('<p>Welcome to admin. Search for records here, <br>or view by task, or choose management tasks. <br>Click record names on the right to edit.</p>');
 
-    var show_not_in = function(event) {
+    var filteroptions = function(event) {
         event.preventDefault();
-        if ( $(this).is(':checked') ) {
-            $('#facetview').facetview.options.predefined_filters.notin = {"term": {"admin.opendoar.in_opendoar":false}}
-        } else if ( $('#facetview').facetview.options.predefined_filters.hasOwnProperty("notin") ) {
-            delete $('#facetview').facetview.options.predefined_filters.notin;
+        $('#facetview').facetview.options.predefined_filters = {};
+        $('#facetview').facetview.options.predefined_should = {};
+        var thisone = $(this).attr('id');
+        $('.checkers').each(function() {
+            if ( $(this).attr('id') != thisone ) {
+                $(this).prop('checked',false);
+            }
+        });
+        if ( $("#show_not_in").is(':checked') ) {
+            $('#facetview').facetview.options.predefined_should.notin = {"term": {"admin.opendoar.in_opendoar":false}}
+            $('#facetview').facetview.options.predefined_should.missing = {"missing": {"field": "admin.opendoar.in_opendoar"}};
         }
-        $('.facetview_freetext').trigger('keyup');
-    }
-    $("#show_not_in").bind('change',show_not_in);
-
-    var show_unviewed = function(event) {
-        event.preventDefault();
-        if ( $(this).is(':checked') ) {
+        if ( $("#show_unviewed").is(':checked') ) {
+            $('#facetview').facetview.options.predefined_filters.in = {"term": {"admin.opendoar.in_opendoar":true}}
             $('#facetview').facetview.options.predefined_filters.notviewed = {"script": { "script" : "unviewed"}}
-        } else if ( $('#facetview').facetview.options.predefined_filters.hasOwnProperty("notviewed") ) {
-            delete $('#facetview').facetview.options.predefined_filters.notviewed;
+        }
+        if ( $("#show_updaterequest").is(':checked') ) {
+            $('#facetview').facetview.options.predefined_filters.updaterequest = {
+                "constant_score": {
+                    "filter": {
+                        "exists": {
+                            "field": "admin.opendoar.updaterequest"
+                        }
+                    }
+                }
+            }
         }
         $('.facetview_freetext').trigger('keyup');
     }
-    $("#show_unviewed").bind('change',show_unviewed);
+    $("#show_not_in").bind('change',filteroptions);
+    $("#show_unviewed").bind('change',filteroptions);
+    $("#show_updaterequest").bind('change',filteroptions);
 
 });
 

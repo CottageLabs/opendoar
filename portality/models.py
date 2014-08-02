@@ -1,11 +1,50 @@
 from portality.authorise import Authorise
 from portality import dao
 from portality.core import app
-import uuid
+import uuid, esprit
 from datetime import datetime, timedelta
 
 from werkzeug import generate_password_hash, check_password_hash
 from flask.ext.login import UserMixin
+
+
+# a page manager object, with a couple of extra methods
+class Pages(esprit.dao.DomainObject):
+    __type__ = 'pages'
+    __conn__ = esprit.raw.Connection(app.config['ELASTIC_SEARCH_HOST'], app.config['ELASTIC_SEARCH_DB'])
+
+    @classmethod
+    def pull_by_url(cls,url):
+        res = cls.query(q={"query":{"term":{'url.exact':url}}})
+        if res.get('hits',{}).get('total',0) == 1:
+            return cls(**res['hits']['hits'][0]['_source'])
+        else:
+            return None
+
+    def update_from_form(self, request):
+        newdata = request.json if request.json else request.values
+        for k, v in newdata.items():
+            if k == 'tags':
+                tags = []
+                for tag in v.split(','):
+                    if len(tag) > 0: tags.append(tag)
+                self.data[k] = tags
+            elif k in ['editable','accessible','visible','comments']:
+                if v == "on":
+                    self.data[k] = True
+                else:
+                    self.data[k] = False
+            elif k not in ['submit']:
+                self.data[k] = v
+        if not self.data['url'].startswith('/'):
+            self.data['url'] = '/' + self.data['url']
+        if 'title' not in self.data or self.data['title'] == "":
+            self.data['title'] = 'untitled'
+
+    def save_from_form(self, request):
+        self.update_from_form(request)
+        self.save()
+
 
 class Account(dao.AccountDAO, UserMixin):
     @classmethod

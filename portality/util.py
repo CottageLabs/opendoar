@@ -166,6 +166,10 @@ def dmerge(a, b):
 
 
 defaultrecord = {
+    "admin": {
+        "opendoar": {
+        }
+    },
     "register" : {
         "operational_status" : "",
         "metadata" : [

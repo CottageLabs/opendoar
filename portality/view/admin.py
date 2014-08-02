@@ -33,12 +33,20 @@ def index():
     qr = {
         "query":{
             "bool":{
-                "must":[
+                "should":[
                     {
                         "term": {
                             "admin.opendoar.in_opendoar":False
                         }
+                    },
+                    {
+                        "constant_score": {
+                            "filter": {
+                                "missing": {"field": "admin.opendoar.in_opendoar"}
+                            }
+                        }
                     }
+
                 ]
             }
         },
@@ -52,18 +60,47 @@ def index():
     res = client.query(qr)
     stats['out'] = res['hits']['total']
     
-    # get recently created not in opendoar and not yet viewed
+    # get recently edited in opendoar and not since saved
+    qr['query']['bool']['must'] = [{'term': {'admin.opendoar.in_opendoar': True}}]
+    del qr['query']['bool']['should']
     qr['filter'] = {
         "script" : {
             "script" : "unviewed"
-            #"script" : "doc['created_date'].value == doc['last_updated'].value"
+            #"script" : "doc['last_updated'].value > doc['admin.opendoar.last_saved'].value"
         }
     }
     res = client.query(qr)
     try:
         stats['unviewed'] = res['hits']['total']
     except:
-        stats['unviewed'] = 100000
+        stats['unviewed'] = 'MISSING SCRIPT?'
+
+    # get update requests
+    qr = {
+        "query":{
+            "bool":{
+                "must":[
+                    {
+                        "constant_score": {
+                            "filter": {
+                                "exists": {
+                                    "field": "admin.opendoar.updaterequest"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "sort": [{"last_updated":{"order":"desc"}}],
+        "size":0
+    }
+    res = client.query(qr)
+    try:
+        stats['updaterequest'] = res['hits']['total']
+    except:
+        stats['updaterequest'] = 'MISSING SCRIPT?'
+
     return render_template('admin/index.html', stats=stats)
 
 
@@ -110,7 +147,7 @@ def record(uuid=None):
         else:
             # get record from OARR
             try:
-                record = client.get_record(uuid).raw
+                record = client.get_record(uuid.replace('.json','')).raw
                 detectdone = True
 
                 # check if there is already a record with this url
@@ -129,35 +166,68 @@ def record(uuid=None):
     elif ( request.method == 'POST' and request.values.get('submit','') == "Delete" ) or request.method == 'DELETE':
         record = client.get_record(uuid)
         if record is None: abort(404)
-        #client.delete_record(uuid)
+        client.delete_record(uuid)
         time.sleep(1)
-        flash("Record not deleted - there is no delete functionality yet")
+        flash("Record delete")
         return redirect(url_for('.index'))
 
     elif request.method == 'POST':
         if uuid == 'new':
             # save the new record to OARR
             record = client.prep_record(util.defaultrecord,request)
-            #client.save_record(record)
+            saved = client.save_record(record)
 
-            flash("New record created", "success")
-            return redirect(url_for('.index'))
+            if saved:
+                flash("New record created", "success")
+                return redirect(url_for('.index'))
+            else:
+                flash("Sorry, the attempt to create a new record was unsuccessful", "error")
+                return redirect("/admin/record/new")
         else:
             rec = client.get_record(uuid)
             if rec is None: abort(404)
 
-            # do whatever needs done here to update the record from the form input
-            record = client.prep_record(rec.raw,request)
+            # if this is an update acceptance, do the update
+            if "updaterequest" in rec.raw.get("admin",{}).get("opendoar",{}):
+                # get the original record, prep it with the update, delete the update request record
+                forupdate = client.get_record(rec.raw["admin"]["opendoar"]["updaterequest"])
+                if forupdate is None:
+                    flash("Sorry, an original record cannot be found to correspond with this update request.", "error")
+                    return redirect('/admin/record/' + uuid)
+                else:
+                    record = client.prep_record(forupdate.raw,request)
+                    try:
+                        del record["admin"]["opendoar"]["updaterequest"]
+                        saved = client.save_record(record)
+                        if saved:
+                            client.delete_record(uuid)
+                            time.sleep(1)
+                            flash("This original record has been successfully updated, and the update request record has been deleted.", "success")
+                            return redirect('/admin/record/' + str(record["id"]))
+                        else:
+                            flash("Sorry, there was an error. Your changes have not been saved. Please try again.", "error")
+                            return redirect('/admin/record/' + uuid)
+                    except:
+                        flash("Sorry, there was an error. Your changes have not been saved. Please try again.", "error")
+                        return redirect('/admin/record/' + uuid)
 
-            # save the new record to OARR
-            #client.save_record(record)
-
-            detectdone = True
-            flash("Record has been updated", "success")
-            return render_template(
-                'contribute.html', 
-                record=record,
-                detectdone=detectdone,
-                duplicate=dup
-            )
+            # otherwise save the record changes to OARR
+            else:
+                # do whatever needs done here to update the record from the form input
+                record = client.prep_record(rec.raw,request)
+                saved = client.save_record(record)
+    
+                if saved:
+                    detectdone = True
+                    time.sleep(1)
+                    flash("Record has been updated", "success")
+                    return render_template(
+                        'contribute.html', 
+                        record=record,
+                        detectdone=detectdone,
+                        duplicate=dup
+                    )
+                else:
+                    flash("Sorry, there was an error. Your changes have not been saved. Please try again.", "error")
+                    return redirect('/admin/record/' + uuid)
                 
