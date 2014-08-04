@@ -613,10 +613,18 @@ jQuery(document).ready(function($) {
                         if ( v instanceof(Array) ) {
                             var sv = [];
                             for ( var n = 0; n < v.length; n++ ) {
-                                if ( v[n].indexOf(',') != -1 ) {
-                                    sv.push('"' + v[n] + '"');
+                                if ( v[n] instanceof(Object) ) {
+                                    var vls = v[n]["term"];
+                                    vls === undefined ? vls = v[n]["prefix"] : false;
+                                    // TODO: this catches subject__term and metadata_formats__prefix
+                                    // but may have to do something more with them
                                 } else {
-                                    sv.push(v[n]);
+                                    var vls = v[n];
+                                }
+                                if ( vls.indexOf(',') != -1 ) {
+                                    sv.push('"' + vls + '"');
+                                } else {
+                                    sv.push(vls);
                                 }
                             }
                             v = sv.join(', ');
