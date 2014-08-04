@@ -62,6 +62,7 @@ def index():
     
     # get recently edited in opendoar and not since saved
     qr['query']['bool']['must'] = [{'term': {'admin.opendoar.in_opendoar': True}}]
+    qr['query']['bool']['must'] = [{'constant_score': {'filter': {'exists': {'field': 'admin.opendoar.last_saved'}}}}]
     del qr['query']['bool']['should']
     qr['filter'] = {
         "script" : {

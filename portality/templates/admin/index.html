@@ -87,6 +87,7 @@ jQuery(document).ready(function($) {
         }
         if ( $("#show_unviewed").is(':checked') ) {
             $('#facetview').facetview.options.predefined_filters.in = {"term": {"admin.opendoar.in_opendoar":true}}
+            $('#facetview').facetview.options.predefined_filters.saved = {'constant_score': {'filter': {'exists': {'field': 'admin.opendoar.last_saved'}}}}
             $('#facetview').facetview.options.predefined_filters.notviewed = {"script": { "script" : "unviewed"}}
         }
         if ( $("#show_updaterequest").is(':checked') ) {
