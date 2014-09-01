@@ -62,3 +62,21 @@ def discover(url, raise_registry_file_error=True):
                 log.info(e.message)
 
     return r
+
+def enhance(register):
+    # first determine which detectors are required to enhance this register object
+    runqueue = []
+    for klazz in detectors.GENERAL:
+        detector = klazz()
+        if detector.required(register):
+            runqueue.append(detector)
+
+    # now run them
+    info = detectors.Info()
+    for detector in runqueue:
+        if detector.detectable(register):
+            log.info(register.repo_url + " - " + detector.name())
+            try:
+                detector.detect(register, info)
+            except Exception as e:
+                log.info(e.message)

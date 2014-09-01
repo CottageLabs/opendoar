@@ -253,6 +253,10 @@ class Register(object):
             obj["url"] = url
         self.raw["register"]["software"].append(obj)
 
+    @property
+    def organisation(self):
+        return self.raw.get("register", {}).get("organisation", [])
+
     def add_organisation_object(self, org_obj):
         """
         org obj needs to conform to the correct structure.  Do we
@@ -264,6 +268,10 @@ class Register(object):
         if "organisation" not in self.raw["register"]:
             self.raw["register"]["organisation"] = []
         self.raw["register"]["organisation"].append(org_obj)
+
+    @property
+    def contact(self):
+        return self.raw.get("register", {}).get("contact", [])
 
     def add_contact_object(self, contact_obj):
         """

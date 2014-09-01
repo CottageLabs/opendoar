@@ -18,14 +18,6 @@ log = logging.getLogger(__name__)
 ## utilities
 
 class WhoIsWrapper(object):
-    """
-Registrant Phone:+49.17012345678
-Registrant Phone Ext:
-Registrant Fax:
-Registrant Fax Ext:
-Registrant Email:jung.uwe@gmail.com
-"""
-
     fields = {
         "org_name" : ["Registrant Organization", "Admin Organization", "Registered For", "Domain Owner", "Tech Organization", "Registered By"],
         "domain" : ["Domain", "Domain Name"],
@@ -182,6 +174,8 @@ class Detector(object):
         return "Abstract Detector"
     def detectable(self, register):
         return False
+    def required(self, register):
+        return False
     def detect(self, register, info):
         pass
 
@@ -223,6 +217,10 @@ class OperationalStatus(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if the operational_status field is not set
+        return register.operational_status is None
 
     def detect(self, register, info):
         """
@@ -285,6 +283,10 @@ class Country(Detector):
     def detectable(self, register):
         return register.repo_url is not None
 
+    def required(self, register):
+        # of no country_code nor country is set
+        return register.country_code is None and register.country is None
+
     def detect(self, register, info):
         # our first best bet is to get the cctld off the url
         url = register.repo_url
@@ -332,6 +334,10 @@ class Continent(Detector):
     def detectable(self, register):
         return register.country_code is not None
 
+    def required(self, register):
+        # if the continent and continent code are not set
+        return register.continent is None and register.continent_code is None
+
     def detect(self, register, info):
         code = register.country_code
         continent_code = transformations.cca_to_ctca2(code)
@@ -345,6 +351,12 @@ class Language(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None or register.country_code is not None
+
+    def required(self, register):
+        # if the language code and language are not set
+        lang = register.language is None or len(register.language) == 0
+        code = register.language_code is None or len(register.language_code) == 0
+        return lang and code
 
     def detect(self, register, info):
         # get the repo page (from cache or from the url)
@@ -458,6 +470,10 @@ class RepositoryType(Detector):
     def detectable(self, register):
         return register.repo_url is not None
 
+    def required(self, register):
+        # if the repository type is not set
+        return register.repository_type is None
+
     def detect(self, register, info):
         url = register.repo_url
         parsed = urlparse(url)
@@ -504,6 +520,10 @@ class Software(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if there is no software in the register
+        return register.software is None or len(register.software) == 0
 
     def detect(self, register, info):
         # define the order we will run our identify functions in
@@ -689,6 +709,10 @@ class Organisation(Detector):
     def detectable(self, register):
         return register.repo_url is not None
 
+    def required(self, register):
+        # if there is no organisation in the record
+        return register.organisation is None or len(register.organisation) == 0
+
     def detect(self, register, info):
         # extract the host name from the url
         url = register.repo_url
@@ -750,6 +774,14 @@ class Feed(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if one of rss or atom is not set
+        rss = register.get_api("rss")
+        atom = register.get_api("atom")
+        hasrss = rss is None or len(rss) == 0
+        hasatom = atom is None or len(atom) == 0
+        return not (hasrss and hasatom) # if it doesn't have both try again
 
     def detect(self, register, info):
         soup = info.soup(register.repo_url)
@@ -823,6 +855,11 @@ class OAI_PMH(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if an oai pmh endpoint is not set
+        pmh = register.get_api("oai-pmh")
+        return pmh is None or len(pmh) == 0
 
     def detect(self, register, info):
         oai = None
@@ -902,6 +939,11 @@ class Sword(Detector):
     def detectable(self, register):
         return register.repo_url is not None
 
+    def required(self, register):
+        # if a sword endpoint is not provided
+        sw = register.get_api("sword")
+        return sw is None or len(sw) == 0
+
     def detect(self, register, info):
         # first check standard sword auto-discovery
         # <html:link rel="sword" href="[Service Document URL]"/> <!-- probably v1 -->
@@ -979,6 +1021,11 @@ class OpenSearch(Detector):
     def detectable(self, register):
         return register.repo_url is not None
 
+    def required(self, register):
+        # if an opensearch directive is not provided
+        opens = register.get_api("opensearch")
+        return opens is None or len(opens) == 0
+
     def detect(self, register, info):
         # <link type="application/opensearchdescription+xml" rel="search" href="http://www.repository.cam.ac.uk:80/open-search/description.xml" title="DSpace" />
         soup = info.soup(register.repo_url)
@@ -1004,6 +1051,10 @@ class Title(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if the repo name is not set
+        return not register.repo_name
 
     def detect(self, register, info):
         # get it from oai Identify
@@ -1056,6 +1107,10 @@ class Description(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if no description is set
+        return not register.description
 
     def detect(self, register, info):
         atom_desc = ""
@@ -1139,6 +1194,10 @@ class Twitter(Detector):
     def detectable(self, register):
         return register.repo_url is not None
 
+    def required(self, register):
+        # if a twitter handle is not set
+        return not register.twitter
+
     def detect(self, register, info):
         # twitter url looks like this: https://twitter.com/CamPuce
         soup = info.soup(register.repo_url)
@@ -1164,6 +1223,10 @@ class TechnicalContact(Detector):
 
     def detectable(self, register):
         return register.repo_url is not None
+
+    def required(self, register):
+        # if there is no contact in the record
+        return register.contact is None or len(register.contact) == 0
 
     def detect(self, register, info):
         # extract the host name from the url
