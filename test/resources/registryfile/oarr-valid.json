@@ -18,13 +18,7 @@
                     "language_code" : ["en", "fr"],
                     "name" : "Cottage Labs",
                     "url" : "http://cottagelabs.com",
-                    "subject" : [
-                        {
-                            "scheme" : "CL",
-                            "term" : "programming",
-                            "code" : "P"
-                        }
-                    ],
+                    "subject" : ["programming"],
                     "repository_type" : ["Institutional", "Commercial"],
                     "certification" : ["RIOXX", "DINI"],
                     "content_type" : ["Blog posts", "Research Papers"]

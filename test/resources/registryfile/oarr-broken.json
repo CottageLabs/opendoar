@@ -29,13 +29,7 @@
                     "established_date" : "thursday",
                     "language_code" : ["welsh", "franglais"],
                     "name" : "Cottage Labs",
-                    "subject" : [
-                        {
-                            "scheme" : "CL",
-                            "term" : "programming",
-                            "code" : "P"
-                        }
-                    ],
+                    "subject" : ["programming"],
                     "repository_type" : ["Institutional", "Commercial"],
                     "certification" : ["RIOXX", "DINI"],
                     "content_type" : ["Blog posts", "Research Papers"]

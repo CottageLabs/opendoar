@@ -204,11 +204,10 @@ def repository(repo_id):
         except:
             abort(404)
     else:
-        try:
-            record = client.get_record(repo_id)
-            return render_template("repository.html", repo=record, searchurl=searchurl, search_similar=True)
-        except:
+        record = client.get_record(repo_id)
+        if record is None:
             abort(404)
+        return render_template("repository.html", repo=record, searchurl=searchurl, search_similar=True)
 
 
 @app.route("/organisation/<org>")

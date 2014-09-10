@@ -30,7 +30,7 @@ def validate(obj, schema):
                 # validate the entries as fields
                 for e in v:
                     if type(e) != str and type(e) != unicode and type(e) != int and type(e) != float:
-                        raise ObjectSchemaValidationError("list in object contains " + str(type(e)) + " but expected string, unicode or a number")
+                        raise ObjectSchemaValidationError("list in object contains " + str(type(e)) + " but expected string, unicode or a number in " + k)
             else:
                 # validate each entry against the schema
                 for e in v:

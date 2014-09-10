@@ -54,13 +54,7 @@ be able to manage your repository's presence in the registry without manually en
                         "language_code" : [# languages of content found in repo (iso-639-1) #],
                         "name" : "# name of repository #",
                         "url" : "# url for repository home page #",
-                        "subject" : [
-                            {
-                                "scheme" : "# classification scheme #",
-                                "term" : "# classification term #",
-                                "code" : "# classification code #"
-                            }
-                        ],
+                        "subject" : ["# list of subject classification terms for the repository #"],
                         "repository_type" : ["# list of vocabulary terms for the repository #"],
                         "certification" : ["# list of certifications held by this repository #"],
                         "content_type" : ["# list of vocabulary terms for the content in this repository #"]
@@ -260,13 +254,7 @@ be able to manage your repository's presence in the registry without manually en
             "language_code" : [# languages of content found in repo (iso-639-1) #],
             "name" : "# name of repository #",
             "url" : "# url for repository home page #",
-            "subject" : [
-                {
-                    "scheme" : "# classification scheme #",
-                    "term" : "# classification term #",
-                    "code" : "# classification code #"
-                }
-            ],
+            "subject" : ["# list of subject classification terms for the repository #"],
             "repository_type" : [# list of vocabulary terms for the repository #],
             "certification" : [# list of certifications held by this repository #],
             "content_type" : [# list of vocabulary terms for the content in this repository #]
@@ -281,16 +269,10 @@ be able to manage your repository's presence in the registry without manually en
 
         <p>It is RECOMMENDED that where possible and relevant you re-use classification terms that are already in existance</p>
 
-        <p>Subject classifications MUST specify a <code>term</code> and MAY specify a <code>scheme</code> and a <code>code</code> if desired.</p>
-
         <p>For example, to specify several classifications, you could use:</p>
 
 <pre>
-    "subject" : [
-        {"term" : "Architecture" },
-        {"term" : "Civil Engineering" },
-        {"term" : "Technology" }
-    ]
+    "subject" : ["Architecture", "Civil Engineering", "Technology"]
 </pre>
 
         <h3>Repository Certification</h3>

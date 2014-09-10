@@ -22,9 +22,7 @@
             {% endif %}
         {% endfor %}
         {% for s in metadata.subject %}
-            {% if s.term %}
-            <li>covers <a href="{{searchurl.subject(s.term)}}">{{s.term}}</a></li>
-            {% endif %}
+            <li>covers <a href="{{searchurl.subject(s)}}">{{s}}</a></li>
         {% endfor %}
         {% if metadata.country %}
             <li>in <a href="{{searchurl.country(metadata.country)}}">{{metadata.country}}</a></li>

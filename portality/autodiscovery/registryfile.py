@@ -39,12 +39,7 @@ class RegistryFile(object):
                 "object_entries" : {
                     "record" : {
                         "fields" : ["country_code", "twitter", "acronym", "description", "established_date", "name", "url"],
-                        "lists" : ["language_code", "subject", "repository_type", "certification", "content_type"],
-                        "list_entries" : {
-                            "subject" : {
-                                "fields" : ["scheme", "term", "code"]
-                            }
-                        }
+                        "lists" : ["language_code", "subject", "repository_type", "certification", "content_type"]
                     }
                 }
             },

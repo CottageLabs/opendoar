@@ -146,7 +146,7 @@
         <strong>Subject classifications</strong>
         <ul>
             {% for s in metadata.subject %}
-            <li>{% if s.scheme %}[{{s.scheme}}] {% endif %}{% if s.term %}{{s.term}}{% endif %}{% if s.code %} ({{s.code}}){% endif %}</li>
+                <li>{{ s }}</li>
             {% endfor %}
             {% if metadata.subject|length == 0 %}
                 This repository has not registered any subject classifications
