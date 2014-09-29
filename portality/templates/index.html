@@ -59,8 +59,8 @@
         <li{% if request.path == "/#getinvolved" %} class="active"{% endif %}><a href="/#search">Search</a></li>
         <li{% if request.path == "/#suggest" %} class="active"{% endif %}><a href="/#suggest">Suggest</a></li>
         <li{% if request.path == "/#statistics" %} class="active"{% endif %}><a href="/#statistics">Statistics</a></li>
-        <li{% if request.path == "/#api" %} class="active"{% endif %}><a href="/#api">API</a></li>
         <li{% if request.path == "/#help" %} class="active"{% endif %}><a href="/#help">Help & Feedback</a></li>
+        <li{% if request.path == "/#api" %} class="active"{% endif %}><a href="/#api">API</a></li>
       </ul>
     </div>
   </div>
@@ -88,14 +88,14 @@
 
 
 <a name="about"> </a>
-<div style="padding-top:40px;padding-bottom:60px;z-index:1000;position:relative;background-color:#eee;">
+<div style="padding-top:40px;padding-bottom:30px;z-index:1000;position:relative;background-color:#eee;">
     <div class="container">    
         <div class="row">
-            <div class="col-md-3" style="border-right:2px solid #999;">
+            <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
                 <h1>ABOUT</h1>
             </div>
             <div class="col-md-9">
-                <p>OpenDOAR is an authoritative global directory of academic open access repositories.
+                <p style="padding-top:10px;text-align:justify;">OpenDOAR is an authoritative global directory of academic open access repositories.
                 Each repository has been visited by OpenDOAR staff to check that the information 
                 recorded here is accurate.</p>
             </div>
@@ -123,16 +123,21 @@
 <div style="background-color:#eee;padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;">
     <div class="container">
         <div class="row">
-            <div class="col-md-3" style="padding-top:15px;padding-bottom:20px;">
+            <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
                 <h1>SUGGEST</h1>
             </div>
             <div class="col-md-9">
+                <select id="suggestwhat" style="background-color:none;border:1px solid #ccc;font-size:1.6em;margin-top:32px;">
+                    <option value="addition">An addition to OpenDOAR</option>
+                    <option value="detect">A repository to auto-detect</option>
+                    <option value="registry">A registry file to examine</option>
+                </select>
             </div>
         </div>
 
         <div class="row">
-            <div class="col-md-4">
-                <div class="well" style="background-color:white;min-height:450px;">
+            <div class="col-md-12 suggestchoices" id="suggestaddition">
+                <div class="well" style="background-color:white;">
                     <h3>An addition</h3>
                     <form action="/contribute" method="GET">
                     <p><input type="text" class="form-control" name="url"></p>
@@ -143,8 +148,8 @@
                     form to complete and submit.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="well" style="background-color:white;min-height:450px;">
+            <div class="col-md-12 suggestchoices" id="suggestdetect" style="display:none;">
+                <div class="well" style="background-color:white;">
                     <h3>Auto detect</h3>
                     <form method="POST" action="/detect">
                     <p><input type="text" class="form-control"></p>
@@ -156,8 +161,8 @@
                     repository URL in the box above.</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="well" style="background-color:white;min-height:450px;">
+            <div class="col-md-12 suggestchoices" id="suggestregistry" style="display:none;">
+                <div class="well" style="background-color:white;">
                     <h3>Registry file</h3>
                     <p>The registry file is a JSON-formatted document which your repository can 
                     make available which will allow OpenDOAR to create and update information 
@@ -165,8 +170,8 @@
                     <p>By maintaining this file you will be able to manage your repository's 
                     presence in the registry without manually entering data into the OpenDOAR 
                     system.</p>
-                    <p><a class="btn btn-primary btn-xs" href="/registryfile">Learn more</a> or 
-                    <a class="btn btn-primary btn-xs" href="/registryfile/validate">Validate your file</a></p>
+                    <p><a class="btn btn-primary" href="/registryfile">Learn more</a> or 
+                    <a class="btn btn-primary" href="/registryfile/validate">Validate your file</a></p>
                 </div>
             </div>
         </div>
@@ -261,6 +266,13 @@
 
 <script>
 jQuery(document).ready(function() {
+
+    var suggestwhat = function() {
+        var tp = $(this).val();
+        $('.suggestchoices').hide();
+        $('#suggest' + tp).fadeIn('slow');
+    }
+    $('#suggestwhat').bind('change',suggestwhat);
 
     function discoveryRecordView(record) {
         var result = '<tr><td>';
@@ -374,8 +386,6 @@ jQuery(document).ready(function() {
         ui += '<div class="row graphview_searcharea">';
         ui += '<div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">';
         ui += '<h1 id="firstsearch" class="searchcontrols searchresults">SEARCH</h1>';
-        ui += '<h1 class="searchcontrols searchstats">STATISTICS</h1>';
-        ui += '<h1 class="searchcontrols searchmap">MAP</h1>';
         ui += '<select class="graphview_suggest searchcontrols searchresults searchstats searchmap" style="border:none;background:none;color:#666;">';
         ui += '<option style="color:' + options.fill("records") + ';" data-value="records">suggest:</option>';
         for ( var key in options.defaultquery.facets ) {
@@ -433,7 +443,7 @@ jQuery(document).ready(function() {
             <option value="">Preservation policy grades</option>-->\
         </select> \
         as chart type:\
-        <select id="charttype" class="form-control" style="width:100px;display:inline;">\
+        <select id="charttype" class="form-control" style="width:150px;display:inline;">\
             <option value="bar">Bar chart</option>\
             <option value="pie">Pie chart</option>\
         </select> \
