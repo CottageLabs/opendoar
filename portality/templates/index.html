@@ -59,7 +59,6 @@
         <li{% if request.path == "/#getinvolved" %} class="active"{% endif %}><a href="/#search">Search</a></li>
         <li{% if request.path == "/#suggest" %} class="active"{% endif %}><a href="/#suggest">Suggest</a></li>
         <li{% if request.path == "/#statistics" %} class="active"{% endif %}><a href="/#statistics">Statistics</a></li>
-        <li{% if request.path == "/#map" %} class="active"{% endif %}><a href="/#map">Map</a></li>
         <li{% if request.path == "/#api" %} class="active"{% endif %}><a href="/#api">API</a></li>
         <li{% if request.path == "/#help" %} class="active"{% endif %}><a href="/#help">Help & Feedback</a></li>
       </ul>
@@ -82,16 +81,25 @@
 
 
 
-<div id="mapspace"></div>
+<div id="mapspace" class="searchcontrols searchmap"></div>
 
 
 
-<a name="map"> </a>
-<a name="search"> </a>
-<a name="statistics"> </a>
-<div id="searchstrap" style="padding-top:25px;padding-bottom:20px;position:relative;z-index:1000;margin-bottom:0px;">
-    <div class="container">
-        <div id="searchresults"></div>
+
+
+<a name="about"> </a>
+<div style="padding-top:40px;padding-bottom:60px;z-index:1000;position:relative;background-color:#eee;">
+    <div class="container">    
+        <div class="row">
+            <div class="col-md-3" style="border-right:2px solid #999;">
+                <h1>ABOUT</h1>
+            </div>
+            <div class="col-md-9">
+                <p>OpenDOAR is an authoritative global directory of academic open access repositories.
+                Each repository has been visited by OpenDOAR staff to check that the information 
+                recorded here is accurate.</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -99,26 +107,14 @@
 
 
 
-<a name="about"> </a>
-<div style="border-top:1px solid #ddd;padding-top:40px;padding-bottom:60px;z-index:1000;position:relative;">
-    <div class="container">    
-        <div class="row">
-            <div class="col-md-6">
-                <p>OpenDOAR is an authoritative global directory of academic open access repositories.
-                Each repository has been visited by OpenDOAR staff to check that the information 
-                recorded here is accurate.</p>
-        </div>
-            <div class="col-md-3">
-            </div>
-            <div class="col-md-3">
-                <p><a href="/#search">Search</a> our directory
-                <br><a href="/#suggest">Suggest</a> a contribution
-                <br>View our <a href="/#statistics">statistics</a> 
-                <br><a id="showsearchmap" href="/#searchmap">Map</a> the repositories
-                <br>Access our <a href="/#api">API</a></p>
-            </div>
-        </div>
+<a name="search"> </a>
+<div id="searchstrap" style="padding-top:25px;padding-bottom:20px;position:relative;z-index:1000;margin-bottom:0px;">
+    <div class="container">
+        <div id="searchresults"></div>
+    </div>
 </div>
+
+
 
 
 
@@ -169,8 +165,8 @@
                     <p>By maintaining this file you will be able to manage your repository's 
                     presence in the registry without manually entering data into the OpenDOAR 
                     system.</p>
-                    <p><a class="btn btn-primary" href="/registryfile">Learn more</a>&nbsp; or &nbsp;
-                    <a class="btn btn-primary" href="/registryfile/validate">Validate your file</a></p>
+                    <p><a class="btn btn-primary btn-xs" href="/registryfile">Learn more</a> or 
+                    <a class="btn btn-primary btn-xs" href="/registryfile/validate">Validate your file</a></p>
                 </div>
             </div>
         </div>
@@ -180,31 +176,45 @@
 
 
 
-
-<a name="help"> </a>
-<div style="padding-top:20px;padding-bottom:60px;z-index:1000;position:relative;">
+<a name="statistics"> </a>
+<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;">
     <div class="container">
         <div class="row">
-            <h3>Get help & give us feedback</h3>
-            <p style="background-color:white">You can contact us at <a href="mailto:opendoar@sherpa.ac.uk">opendoar@sherpa.ac.uk</a></p>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12">
-                <p style="background-color:white">Stuff here about availability hours, maybe list other docs etc.</p>
+            <div class="col-md-3" style="padding-top:15px;padding-bottom:20px;">
+                <h1>STATISTICS</h1>
+            </div>
+            <div class="col-md-9">
             </div>
         </div>
-
-        <a name="api"> </a>
         
         <div class="row">
             <div class="col-md-12">
-                <h3>The OARR API</h3>
-                <p style="background-color:white">Contact us to learn more about the OARR API and how your institution can use it to submit data
-                to our repository.</p>
+                <p>stats going back here</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<a name="help"> </a>
+<div style="background-color:#eee;padding-top:20px;padding-bottom:60px;z-index:1000;position:relative;">
+    <div class="container">        
+        <div class="row">
+            <div class="col-md-12">
+                <h1>HELP & FEEDBACK</h1>
+                <h3>Get help & give us feedback</h3>
+                <p>You can contact us at <a href="mailto:opendoar@sherpa.ac.uk">opendoar@sherpa.ac.uk</a></p>
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-md-12">
+                <p>Stuff here about availability hours, maybe list other docs etc.</p>
+            </div>
+        </div>
+        
     </div>
 </div>
 
@@ -212,24 +222,37 @@
 
 
 
-    
-<footer style="background-color:#222;padding-top:80px;padding-bottom:100px;color:white;font-size:0.9em;z-index:1000;margin-bottom:0px;position:absolute;bottom:-450px;height:450px;left:0;width:100%;">
+<a name="api"> </a>
+<div style="padding-top:20px;padding-bottom:60px;z-index:1000;position:relative;">
     <div class="container">
-        <p>&copy; 2014 Cottage Labs LLP, University of Nottingham</p>
-        <p>Except where otherwise noted, content on this site is licensed under a <a rel="license" target="_blank" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 License</a></p>
+        <div class="row">
+            <div class="col-md-12">
+                <h1>The API</h1>
+                <p>The OpenDOAR API is available for direct querying and further interaction. To learn more, read the 
+                documentation on the API code repository.</p>                
+                <p>Or feel free to contact us to learn more about the API and how your institution can use it to interact with or submit data
+                to OpenDOAR.</p>
+                <p><a class="btn btn-info" href="http://github.com/CottageLabs/OARR">Read the documentation</a> or 
+                <a class="btn btn-info" href="http://oarr.ooz.cottagelabs.com">Access the API</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div style="background-color:#222;padding-top:80px;padding-bottom:100px;color:white;font-size:0.9em;z-index:1000;position:relative;">
+    <div class="container">
         <p>This service is running at <a href="http://cottagelabs.com">Cottage Labs</a>. 
             <a href="mailto:us@cottagelabs.com">Contact us</a> if you have technical issues.</p>
 
         <p class="pull-right" style="text-align:right;padding-top:40px;">
-            <a href="http://cottagelabs.com"><img src="/static/cottage_hill_bubble_small.jpg" style="width:45px;margin-right:30px;padding:2px;background-color:transparent;"></a>
-            <a href="http://jisc.ac.uk"><img src="/static/jisc.png" style="width:90px;margin-right:30px;padding:2px;background-color:transparent;"></a>
-            <a href="http://crc.nottingham.ac.uk"><img src="/static/crc.png" style="width:170px;margin-right:30px;padding:2px;background-color:transparent;"></a>
-            <a href="http://creativecommons.org/licenses/by/3.0/"><img src="/static/cc.png" style="width:140px;padding:2px;background-color:transparent;"></a><br><br>
-            <a href="#" alt="back to top of page" title="back to top of page"> ^^^ </a>
+            <a href="http://jisc.ac.uk"><img src="/static/jisc-logo.png" style="width:90px;padding:2px;background-color:transparent;"></a>
+            <br><br><br><br><a href="#" alt="back to top of page" title="back to top of page"> back to top ^^^ </a>
         </p>
 
     </div>
-</footer>
+</div>
 
 
 

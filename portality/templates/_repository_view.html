@@ -60,7 +60,7 @@
                     Publishing content in {{metadata.language|join(", ")}}
                 {% endif %}
 
-                <p style="padding: 10px">{{metadata.description}}</p>
+                <p style="font-size:1em;padding-top:20px;">{{metadata.description}}</p>
             </div>
 
         </div>
@@ -113,9 +113,10 @@
     </div>
 
     <div class="span3">
-        <div class="well" style="background-color:#c9d2d4;">
-            <p>Is this your repository? Do you want to update the information shown here?
-            If so, <a href="/contribute?updaterequest={{repo.raw.id}}">use our contribution form</a> to submit an update request.</p>
+        <div class="well" style="background-color:orange;">
+            <p style="font-size:1em;">Is this your repository?<br>Do you want to update this record?
+            <br>If so, please submit an update request.</p>
+            <p><a class="btn btn-info" href="/contribute?updaterequest={{repo.raw.id}}" style="width:90%;">Update this record</a></p>
         </div>
         {% if search_similar %}
             {% include "_search_similar.html" %}
