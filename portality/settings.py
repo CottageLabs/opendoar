@@ -16,7 +16,7 @@ ADMINS = ["emanuil@cottagelabs.com", "mark@cottagelabs.com"]
 SUPPRESS_ERROR_EMAILS = False  # should be set to False in production and True in staging
 
 # service info
-SERVICE_NAME = "OpenDOAR"
+SERVICE_NAME = "Opendoar"
 SERVICE_TAGLINE = ""
 HOST = "0.0.0.0"
 DEBUG = True

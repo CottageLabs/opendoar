@@ -52,168 +52,168 @@ jQuery(document).ready(function($) {
 
 
 
-// the default query
-var query = {
-    "query": {
-        "match_all": {}
-    },
-    "size":0,
-    "facets":{
-    }
-}
-
-// and a place to store the query responses
-queryresponse = undefined;
-formatteddata = undefined;
-charttype = "pie";
-facettype = "register.metadata.record.continent.exact";
-sizer = 50;
-
-// format the returned query into data
-var formatdata = function() {
-    formatteddata = queryresponse.facets[facettype].terms;
-}
-
-// define what to do when response received
-var handleresults = function(data) {
-    queryresponse = data;
-    formatdata();
-    
-    $('#loadingstatus').html("");
-    $("#charts").html("<svg></svg>");
-    if ( charttype == "bar" ) {
-        drawbar();
-    } else {
-        drawpie();
-    }
-}
-
-// and the function that executes queries
-var executequery = function() {
-    // TODO: update the query by reading boxes from the page
-    $('#loadingstatus').html('loading');
-    // add facet requests to the query if tickboxes selected
-    sizer = parseInt($('#sizer').val());
-    charttype = $('#charttype').val();
-    facettype = $('#facettype').val() + ".exact";
-    query.facets = {};
-    query.facets[facettype] = {
-        "terms": {
-            "field":facettype,
-            "size":sizer
+    // the default query
+    var query = {
+        "query": {
+            "match_all": {}
+        },
+        "size":0,
+        "facets":{
         }
-    };
-    $.ajax({
-        type: 'GET',
-        url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(query),
-        dataType: 'JSONP',
-        success: handleresults
-    });
-}
-executequery(); // run once at page load to populate all points on map
-$('#facettype').bind('click',executequery);
-$('#charttype').bind('click',executequery);
-$('#sizer').bind('keyup',executequery);
-
-
-
-var drawpie = function() {
-
-    $(selector).css("height","1000px")
-
-    var data = formatteddata;
-    var label_field = "term";
-    var value_field = "count";
-    var selector = "#charts svg";
-    var name = "";
-    
-    var datums = []
-    var pie = {"key" : name, "values" : []}
-    
-    for (var i = 0; i < data.length; i++) {
-        var helping = {}
-        helping["label"] = data[i][label_field]
-        helping["value"] = data[i][value_field]
-        pie.values.push(helping)
     }
-    datums.push(pie)
+    
+    // and a place to store the query responses
+    queryresponse = undefined;
+    formatteddata = undefined;
+    charttype = "pie";
+    facettype = "register.metadata.record.continent.exact";
+    sizer = 50;
+    
+    // format the returned query into data
+    var formatdata = function() {
+        formatteddata = queryresponse.facets[facettype].terms;
+    }
+    
+    // define what to do when response received
+    var handleresults = function(data) {
+        queryresponse = data;
+        formatdata();
         
-    // generate the pie
-    nv.addGraph(function() {
-        var chart = nv.models.pieChart()
-            .x(function(d) { return d.label })
-            .y(function(d) { return d.value })
-            .showLabels(true)
-            .labelThreshold(.05)
-            .donut(true);
-
-        d3.select(selector)
-            .datum(datums)
-            .transition().duration(500)
-            .call(chart);
-
-        return chart;
-    });
-    
-    //$(selector).css("height","100%")
-    
-}
-
-
-
-
-var drawbar = function() {
-
-    $(selector).css("height","2000px")
-
-    var data = formatteddata;
-    var limit = data.length
-    var label_field = "term"
-    var value_field = "count"
-    var name = "Repositories"
-    var selector = "#charts svg"
-    var colour = "#53afdf"
-    
-    var datums = []
-    var bars = {"key" : name, "color" : colour, "values" : []}
-    
-    for (var i = 0; i < data.length && i < limit; i++) {
-        var point = {}
-        point["label"] = data[i][label_field]
-        point["value"] = data[i][value_field]
-        bars.values.push(point)
+        $('#loadingstatus').html("");
+        $("#charts").html("<svg></svg>");
+        if ( charttype == "bar" ) {
+            drawbar();
+        } else {
+            drawpie();
+        }
     }
-    datums.push(bars)
     
-    var height = (28 * limit) + 42 + 43
-    $(selector).css("height", height + "px")
+    // and the function that executes queries
+    var executequery = function() {
+        // TODO: update the query by reading boxes from the page
+        $('#loadingstatus').html('loading');
+        // add facet requests to the query if tickboxes selected
+        sizer = parseInt($('#sizer').val());
+        charttype = $('#charttype').val();
+        facettype = $('#facettype').val() + ".exact";
+        query.facets = {};
+        query.facets[facettype] = {
+            "terms": {
+                "field":facettype,
+                "size":sizer
+            }
+        };
+        $.ajax({
+            type: 'GET',
+            url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(query),
+            dataType: 'JSONP',
+            success: handleresults
+        });
+    }
+    executequery(); // run once at page load to populate all points on map
+    $('#facettype').bind('click',executequery);
+    $('#charttype').bind('click',executequery);
+    $('#sizer').bind('keyup',executequery);
     
-    // generate the graph
-    nv.addGraph(function() {
-        var chart = nv.models.multiBarHorizontalChart()
-          .x(function(d) { return d.label })
-          .y(function(d) { return d.value })
-          .margin({top: 30, right: 40, bottom: 50, left: 175})
-          .showValues(false)
-          .tooltips(true)
-          .showControls(false);
-
-        chart.yAxis
-          .tickFormat(d3.format(',.0f'));
-
-        d3.select(selector)
-          .datum(datums)
-          .transition().duration(500)
-          .call(chart);
-
-        nv.utils.windowResize(chart.update);
-
-        return chart;
-    });
-
-    $(selector).css("height","100%")
-
-}
+    
+    
+    var drawpie = function() {
+    
+        $(selector).css("height","1000px")
+    
+        var data = formatteddata;
+        var label_field = "term";
+        var value_field = "count";
+        var selector = "#charts svg";
+        var name = "";
+        
+        var datums = []
+        var pie = {"key" : name, "values" : []}
+        
+        for (var i = 0; i < data.length; i++) {
+            var helping = {}
+            helping["label"] = data[i][label_field]
+            helping["value"] = data[i][value_field]
+            pie.values.push(helping)
+        }
+        datums.push(pie)
+            
+        // generate the pie
+        nv.addGraph(function() {
+            var chart = nv.models.pieChart()
+                .x(function(d) { return d.label })
+                .y(function(d) { return d.value })
+                .showLabels(true)
+                .labelThreshold(.05)
+                .donut(true);
+    
+            d3.select(selector)
+                .datum(datums)
+                .transition().duration(500)
+                .call(chart);
+    
+            return chart;
+        });
+        
+        //$(selector).css("height","100%")
+        
+    }
+    
+    
+    
+    
+    var drawbar = function() {
+    
+        $(selector).css("height","2000px")
+    
+        var data = formatteddata;
+        var limit = data.length
+        var label_field = "term"
+        var value_field = "count"
+        var name = "Repositories"
+        var selector = "#charts svg"
+        var colour = "#53afdf"
+        
+        var datums = []
+        var bars = {"key" : name, "color" : colour, "values" : []}
+        
+        for (var i = 0; i < data.length && i < limit; i++) {
+            var point = {}
+            point["label"] = data[i][label_field]
+            point["value"] = data[i][value_field]
+            bars.values.push(point)
+        }
+        datums.push(bars)
+        
+        var height = (28 * limit) + 42 + 43
+        $(selector).css("height", height + "px")
+        
+        // generate the graph
+        nv.addGraph(function() {
+            var chart = nv.models.multiBarHorizontalChart()
+              .x(function(d) { return d.label })
+              .y(function(d) { return d.value })
+              .margin({top: 30, right: 40, bottom: 50, left: 175})
+              .showValues(false)
+              .tooltips(true)
+              .showControls(false);
+    
+            chart.yAxis
+              .tickFormat(d3.format(',.0f'));
+    
+            d3.select(selector)
+              .datum(datums)
+              .transition().duration(500)
+              .call(chart);
+    
+            nv.utils.windowResize(chart.update);
+    
+            return chart;
+        });
+    
+        $(selector).css("height","100%")
+    
+    }
 
 
 

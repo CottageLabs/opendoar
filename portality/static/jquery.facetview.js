@@ -755,12 +755,16 @@ is missing.
                         <tr><td><a class="facetview_filtershow" title="filter by {{FILTER_DISPLAY}}" rel="{{FILTER_NAME}}" \
                         style="color:#333; font-weight:bold;" href=""><i class="icon-plus"></i> {{FILTER_DISPLAY}} \
                         </a> \
-                        <div class="btn-group facetview_filteroptions" style="display:none; margin-top:5px;"> \
-                            <a class="btn btn-small facetview_learnmore" title="click to view search help information" href="#"><b>?</b></a> \
-                            <a class="btn btn-small facetview_morefacetvals" title="filter list size" rel="{{FACET_IDX}}" href="{{FILTER_EXACT}}">{{FILTER_HOWMANY}}</a> \
-                            <a class="btn btn-small facetview_sort {{FILTER_SORTTERM}}" title="filter value order" href="{{FILTER_EXACT}}">{{FILTER_SORTCONTENT}}</a> \
-                            <a class="btn btn-small facetview_or" title="select another option from this filter" rel="AND" href="{{FILTER_EXACT}}" style="color:#aaa;">OR</a> \
-                            ';
+                        <div class="btn-group facetview_filteroptions" style="display:none; margin-top:5px;">';
+                    if ( true ) {
+                        _filterTmpl += '<a class="btn btn-small facetview_morefacetvals" title="filter list size" rel="{{FACET_IDX}}" href="{{FILTER_EXACT}}">{{FILTER_HOWMANY}}</a>';
+                    }
+                    if ( true ) {
+                        _filterTmpl += '<a class="btn btn-small facetview_sort {{FILTER_SORTTERM}}" title="filter value order" href="{{FILTER_EXACT}}">{{FILTER_SORTCONTENT}}</a>';
+                    }
+                    if ( true ) {
+                        _filterTmpl += '<a class="btn btn-small facetview_or" title="select another option from this filter" rel="AND" href="{{FILTER_EXACT}}" style="color:#aaa;">OR</a>';
+                    }
                     if ( options.enable_rangeselect ) {
                         _filterTmpl += '<a class="btn btn-small facetview_facetrange" title="make a range selection on this filter" rel="{{FACET_IDX}}" href="{{FILTER_EXACT}}" style="color:#aaa;">range</a>';
                     }
@@ -1504,7 +1508,7 @@ is missing.
         thehelp += '<p><a class="facetview_learnmore label" href="#">close the help</a></p></div>';
         
         // the facet view object to be appended to the page
-        var thefacetview = '<div id="facetview"><div class="row-fluid">';
+        var thefacetview = '<div id="facetview"><div class="row">';
         if ( options.facets.length > 0 ) {
             thefacetview += '<div class="span3"><div id="facetview_filters" style="padding-top:45px;"></div></div>';
             thefacetview += '<div class="span9" id="facetview_rightcol">';

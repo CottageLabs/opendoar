@@ -58,7 +58,7 @@ def index():
     
     # get number not in_opendoar
     res = client.query(qr)
-    stats['out'] = res['hits']['total']
+    stats['out'] = res.get('hits',{}).get('total',0)
     
     # get recently edited in opendoar and not since saved
     qr['query']['bool']['must'] = [{'term': {'admin.opendoar.in_opendoar': True}}]
@@ -97,10 +97,30 @@ def index():
         "size":0
     }
     res = client.query(qr)
-    try:
-        stats['updaterequest'] = res['hits']['total']
-    except:
-        stats['updaterequest'] = 'MISSING SCRIPT?'
+    stats['updaterequest'] = res.get('hits',{}).get('total',0)
+
+    # get new contributions
+    qr = {
+        "query":{
+            "bool":{
+                "must":[
+                    {
+                        "constant_score": {
+                            "filter": {
+                                "exists": {
+                                    "field": "admin.opendoar.newcontribution"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "sort": [{"last_updated":{"order":"desc"}}],
+        "size":0
+    }
+    res = client.query(qr)
+    stats['newcontribution'] = res.get('hits',{}).get('total',0)
 
     return render_template('admin/index.html', stats=stats)
 
@@ -188,6 +208,10 @@ def record(uuid=None):
             rec = client.get_record(uuid)
             if rec is None: abort(404)
 
+            # remove any newcontribution tag on first save via admin
+            if "newcontribution" in  rec.raw.get("admin",{}).get("opendoar",{}):
+                del rec.raw['admin']['opendoar']['newcontribution']
+            
             # if this is an update acceptance, do the update
             if "updaterequest" in rec.raw.get("admin",{}).get("opendoar",{}):
                 # get the original record, prep it with the update, delete the update request record
