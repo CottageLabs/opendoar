@@ -803,7 +803,7 @@ if (!Array.prototype.indexOf) {
         defaults.uibindings = function() {
             // attach select2 functionality to the query string input
             $('.query_string', obj).select2({
-                "formatNoMatches": function() { return "type search terms and click enter to search, choose a suggestion type to get search term hints";},
+                "formatNoMatches": function() { return "type search terms, or choose a filter type then select a value to filter by, and hit enter to submit";},
                 "tags": function(q) {
                     var field = options.suggest;
                     var qry = {

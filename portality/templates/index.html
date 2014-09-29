@@ -184,17 +184,42 @@
 <a name="statistics"> </a>
 <div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;">
     <div class="container">
-        <div class="row">
+        <div class="row" style="margin-bottom:0px;padding-bottom:0px;">
             <div class="col-md-3" style="padding-top:15px;padding-bottom:20px;">
                 <h1>STATISTICS</h1>
             </div>
             <div class="col-md-9">
+                <p style="margin-top:40px;">
+                Show top <input type="text" id="sizer" value="30" style="display:inline;width:50px;" class="form-control"> of
+                stat type:
+                <select id="facettype" class="form-control" style="width:150px;display:inline;">
+                    <option value="register.metadata.record.country">Country</option>
+                    <option value="register.metadata.record.continent">Continent</option>
+                    <option value="register.software.name">Software used</option>
+                    <option value="register.metadata.record.repository_type">Repository type</option>
+                    <option value="register.operational_status">Operational status</option>
+                    <option value="register.metadata.record.content_type">Content type</option>
+                    <option value="register.metadata.record.language">Language</option>
+                    <option value="register.metadata.record.subject">Subjects</option>
+                    <!--<option value="">Metadata re-use policy grades</option>
+                    <option value="">Full-text re-use policy grades</option>
+                    <option value="">Content policy grades</option>
+                    <option value="">Submission policy grades</option>
+                    <option value="">Preservation policy grades</option>-->
+                </select> 
+                as chart type:
+                <select id="charttype" class="form-control" style="width:150px;display:inline;">
+                    <option value="pie">Pie chart</option>
+                    <option value="bar">Bar chart</option>
+                </select>
+                </p>
+
             </div>
         </div>
         
-        <div class="row">
+        <div class="row" style="padding-top:0px;margin-top:0px;">
             <div class="col-md-12">
-                <p>stats going back here</p>
+                <div id="charts" style="height:400px;"><svg></svg></div>
             </div>
         </div>
     </div>
@@ -387,7 +412,7 @@ jQuery(document).ready(function() {
         ui += '<div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">';
         ui += '<h1 id="firstsearch" class="searchcontrols searchresults">SEARCH</h1>';
         ui += '<select class="graphview_suggest searchcontrols searchresults searchstats searchmap" style="border:none;background:none;color:#666;">';
-        ui += '<option style="color:' + options.fill("records") + ';" data-value="records">suggest:</option>';
+        ui += '<option style="color:' + options.fill("records") + ';" data-value="records">filter by:</option>';
         for ( var key in options.defaultquery.facets ) {
             var obj = options.defaultquery.facets[key];
             if ( key != "range" && obj.term.suggest ) { // TODO: change this in case it is not a term facet?
@@ -413,9 +438,6 @@ jQuery(document).ready(function() {
             <span class="graphview_total searchcontrols searchresults searchstats searchmap" style="font-size:16px;font-weight:bold;color:#999;"></span></div>';
         
         ui += '<div class="searchcontrols searchmap searchresults searchstats" style="float:right;display:inline;">';
-        ui += ' results <input type="radio" name="searchresulttype" class="searchresulttype" value="results" checked="checked">';
-        ui += ' stats <input type="radio" name="searchresulttype" class="searchresulttype" value="stats">';
-        ui += ' map <input type="radio" name="searchresulttype" class="searchresulttype" value="map">';
         ui += ' <a class="close" href="/" style="font-size:1.4em;padding-left:20px;" alt="close the search" title="close the search">&times;</a>';
         ui += '</div>';
 
@@ -423,36 +445,8 @@ jQuery(document).ready(function() {
 
         ui += '<div><input type="text" class="form-control query_string" style="width:97%;" data-option="query.bool.must.query_string.query"></div>';
 
-        ui += '<p style="padding-top:5px;" class="searchcontrols searchstats"> \
-        Show top <input type="text" id="sizer" value="10" style="display:inline;width:50px;" class="form-control"> of \
-        stat type:\
-        <select id="facettype" class="form-control" style="width:150px;display:inline;">\
-            <option value=""></option>\
-            <option value="register.metadata.record.continent">Continent</option>\
-            <option value="register.metadata.record.country">Country</option>\
-            <option value="register.software.name">Software used</option>\
-            <option value="register.metadata.record.repository_type">Repository type</option>\
-            <option value="register.operational_status">Operational status</option>\
-            <option value="register.metadata.record.content_type">Content type</option>\
-            <option value="register.metadata.record.language">Language</option>\
-            <option value="register.metadata.record.subject">Subjects</option>\
-            <!--<option value="">Metadata re-use policy grades</option>\
-            <option value="">Full-text re-use policy grades</option>\
-            <option value="">Content policy grades</option>\
-            <option value="">Submission policy grades</option>\
-            <option value="">Preservation policy grades</option>-->\
-        </select> \
-        as chart type:\
-        <select id="charttype" class="form-control" style="width:150px;display:inline;">\
-            <option value="bar">Bar chart</option>\
-            <option value="pie">Pie chart</option>\
-        </select> \
-        </p>';
-
         ui += '</div>';
         ui += '</div>'; // closes searcharea
-
-        ui += '<div class="row searchcontrols searchstats"><div id="charts" style="height:400px;"><svg></svg></div></div>';
 
         ui += '<div class="graphview_panel searchcontrols searchresults"></div>';
 
@@ -497,8 +491,7 @@ jQuery(document).ready(function() {
             }
         },
         showresults: cshowresults,
-        uitemplate: cuitemplate,
-        searchonload: false
+        uitemplate: cuitemplate
     });
     
     window.scrollTo(0,0);
@@ -560,11 +553,11 @@ jQuery(document).ready(function() {
     
     // and the function that executes queries
     var chartquery = function() {
-        if ( currentsearchtype == 'stats' ) {
-            var thechartquery = $.fn.graphview.options.query();
-        } else {
-            var thechartquery = {"query": {"match_all": {}}};
-        }
+        //if ( currentsearchtype == 'stats' ) {
+        //    var thechartquery = $.fn.graphview.options.query();
+        //} else {
+        var thechartquery = {"query": {"match_all": {}}};
+        //}
         thechartquery.size = 0;
         thechartquery.facets = {}
         $('#loadingstatus').html('loading');
@@ -595,10 +588,10 @@ jQuery(document).ready(function() {
             success: handleresults
         });
     }
+    chartquery();
     $('#facettype').bind('change',chartquery);
     $('#charttype').bind('change',chartquery);
     $('#sizer').bind('keyup',chartquery);
-    $('#charts').hide();
     
     var drawpie = function() {
     
