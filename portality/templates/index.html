@@ -92,7 +92,7 @@
                 <h1>ABOUT</h1>
             </div>
             <div class="col-md-9">
-                <p style="padding-top:10px;text-align:justify;">OpenDOAR is an authoritative global directory of academic open access repositories.
+                <p style="padding-top:30px;">OpenDOAR is an authoritative global directory of academic open access repositories.
                 Each repository has been visited by OpenDOAR staff to check that the information 
                 recorded here is accurate.</p>
             </div>
@@ -123,43 +123,16 @@
             <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
                 <h1>SUGGEST</h1>
             </div>
-            <div class="col-md-9">
-                <select id="suggestwhat" style="background-color:none;border:1px solid #ccc;font-size:1.3em;margin-top:35px;width:100%;">
+            <div class="col-md-9" style="padding-top:35px;">
+                <form action="/contribute" method="GET">
+                <select id="suggestwhat" style="background-color:none;border:1px solid #ccc;width:250px;display:inline;" class="form-control">
                     <option value="addition">An addition to OpenDOAR</option>
-                    <option value="detect">A repository to auto-detect</option>
                     <option value="registry">A registry file to examine</option>
                 </select>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-12 suggestchoices" id="suggestaddition">
-                <div class="well" style="background-color:white;">
-                    <h3>An addition</h3>
-                    <form action="/contribute" method="GET">
-                    <p><input type="text" class="form-control" name="url"></p>
-                    <p><input type="submit" class="btn btn-info" style="width:100%;" value="Start making a contribution"></p>
-                    </form>
-                    <p>To suggest an addition to OpenDOAR please enter the repository URL
-                    in the box above. Then we'll give you a partially populated contribution 
-                    form to complete and submit.</p>
-                </div>
-            </div>
-            <div class="col-md-12 suggestchoices" id="suggestdetect" style="display:none;">
-                <div class="well" style="background-color:white;">
-                    <h3>Auto detect</h3>
-                    <form method="POST" action="/detect">
-                    <p><input type="text" class="form-control"></p>
-                    <p><input type="submit" class="btn btn-info" style="width:100%;" value="View the auto detect"></p>
-                    </form>
-                    <p>Or if you'd just like to see what we can detect about your repository 
-                    and how that default information would look as a record in OpenDOAR, then 
-                    try out our repository metadata autodetection capability by providing your 
-                    repository URL in the box above.</p>
-                </div>
-            </div>
-            <div class="col-md-12 suggestchoices" id="suggestregistry" style="display:none;">
-                <div class="well" style="background-color:white;">
+                <input type="text" class="form-control" name="url" style="width:487px;display:inline;" placeholder="http:// your repository URL here">
+                <input type="submit" class="btn btn-info" style="width:100px;display:inline;height:34px;margin-top:-2px;" value="Submit">
+                </form>
+                <div id="suggestregistry" class="well suggestchoices" style="background-color:white;display:none;margin-top:10px;">
                     <h3>Registry file</h3>
                     <p>The registry file is a JSON-formatted document which your repository can 
                     make available which will allow OpenDOAR to create and update information 
@@ -245,7 +218,7 @@
 
 
 <a name="api"> </a>
-<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;">
+<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative; ">
     <div class="container">
         <div class="row">
             <div class="col-md-3" style="padding-top:10px;padding-bottom:15px;border-right:2px solid #999;">
