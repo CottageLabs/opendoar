@@ -40,7 +40,7 @@
 <style>
 </style>
 
-<div class="navbar navbar-inverse navbar-fixed-top">
+<div class="navbar navbar-inverse navbar-fixed-top" style="height:80px;padding-top:15px;">
   <div class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -52,7 +52,7 @@
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li style="padding-top:15px;padding-right:68px;color:orange;font-size:0.9em;">BETA</li>
-        <li{% if request.path == "/#about" %} class="active"{% endif %} class="active"><a href="/#about">About</a></li>
+        <li{% if request.path == "/#about" %} class="active"{% endif %}><a href="/#about">About</a></li>
         <li{% if request.path == "/#getinvolved" %} class="active"{% endif %}><a href="/#search">Search</a></li>
         <li{% if request.path == "/#suggest" %} class="active"{% endif %}><a href="/#suggest">Suggest</a></li>
         <li{% if request.path == "/#statistics" %} class="active"{% endif %}><a href="/#statistics">Statistics</a></li>
@@ -85,7 +85,7 @@
 
 
 <a name="about"> </a>
-<div style="padding-top:20px;padding-bottom:30px;z-index:1000;position:relative;background-color:#eee;border-bottom:1px dashed #999;">
+<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;background-color:#eee;border-bottom:1px dashed #999;">
     <div class="container">    
         <div class="row">
             <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
@@ -123,7 +123,7 @@
             <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
                 <h1>SUGGEST</h1>
             </div>
-            <div class="col-md-9" style="padding-top:35px;">
+            <div class="col-md-9" style="padding-top:30px;">
                 <form action="/contribute" method="GET">
                 <select id="suggestwhat" style="background-color:none;border:1px solid #ccc;width:250px;display:inline;" class="form-control">
                     <option value="addition">An addition to OpenDOAR</option>
@@ -159,7 +159,7 @@
                 <h1>STATISTICS</h1>
             </div>
             <div class="col-md-9">
-                <p style="margin-top:40px;">
+                <p style="margin-top:30px;">
                 Show top <input type="text" id="sizer" value="30" style="display:inline;width:50px;" class="form-control"> of
                 stat type:
                 <select id="facettype" class="form-control" style="width:150px;display:inline;">
