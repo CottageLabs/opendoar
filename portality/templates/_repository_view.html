@@ -21,7 +21,7 @@
                 {% if metadata.twitter %}
                     - <a href="http://twitter.com/{{metadata.twitter}}">{{metadata.twitter}}</a>
                 {% endif %}
-                <br>
+                <br><br>
 
                 {% if metadata.repository_type and metadata.repository_type|length != 0 %}
                     {% for t in metadata.repository_type %}
@@ -114,9 +114,8 @@
 
     <div class="span3">
         <div class="well" style="background-color:orange;">
-            <p style="font-size:1em;">Is this your repository?<br>Do you want to update this record?
-            <br>If so, please submit an update request.</p>
-            <p><a class="btn btn-info" href="/contribute?updaterequest={{repo.raw.id}}" style="width:90%;">Update this record</a></p>
+            <p style="font-size:1em;">Spotted any errors?<br>Help us stay up to date:</p>
+            <p><a class="btn btn-info" href="/contribute?updaterequest={{repo.raw.id}}" style="width:90%;">Suggest an update for this record</a></p>
         </div>
         {% if search_similar %}
             {% include "_search_similar.html" %}
