@@ -416,7 +416,7 @@ jQuery(document).ready(function() {
         for ( var key in options.defaultquery.facets ) {
             var obj = options.defaultquery.facets[key];
             if ( key != "range" && obj.term.suggest ) { // TODO: change this in case it is not a term facet?
-                ui += '<option data-value="' + obj.term.field + '" style="color:' + options.fill(obj.term.field) + ';">suggest ' + key + '</option>';
+                ui += '<option data-value="' + obj.term.field + '">' + key + '</option>';
                 ui += ', ';
             }
         }
@@ -470,7 +470,7 @@ jQuery(document).ready(function() {
                 }
             },
             "from":0,
-            "size":25,
+            "size":10,
             "facets":{
                 "Operational status": {"term":{"field":"register.operational_status.exact","suggest":true}},
                 "Country": {"term":{"field":"register.metadata.record.country.exact","suggest":true}},
@@ -497,7 +497,7 @@ jQuery(document).ready(function() {
     window.scrollTo(0,0);
     $('.searchcontrols').hide();
     $('#firstsearch').show();
-    $('.select2-input').bind('focus',function() {$('.searchresults').show('slow'); $('#searchstrap').css({'padding-bottom':'2000px'}); });
+    $('.select2-input').bind('focus',function() {$('.searchresults').show('slow'); $('#searchstrap'); });
     
     var currentsearchtype = 'results';
     var searchresulttype = function() {
