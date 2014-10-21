@@ -1069,8 +1069,8 @@ is missing.
                     <a alt="next" title="next" class="facetview_increment" style="color:#333;float:right;padding:0 20px 20px 40px;" href="{{to}}">&gt;</a> \
                 </div>';
             } else {
-                var metaTmpl = '<div class="pagination"> \
-                    <ul> \
+                var metaTmpl = '<div> \
+                    <ul class="pagination"> \
                         <li class="prev"><a class="facetview_decrement" href="{{from}}">&laquo; back</a></li> \
                         <li class="active"><a>{{from}} &ndash; {{to}} of {{total}}</a></li> \
                         <li class="next"><a class="facetview_increment" href="{{to}}">next &raquo;</a></li> \
@@ -1510,24 +1510,18 @@ is missing.
         // the facet view object to be appended to the page
         var thefacetview = '<div id="facetview"><div class="row">';
         if ( options.facets.length > 0 ) {
-            thefacetview += '<div class="span3"><div id="facetview_filters" style="padding-top:45px;"></div></div>';
-            thefacetview += '<div class="span9" id="facetview_rightcol">';
+            thefacetview += '<div class="col-md-3"><div id="facetview_filters" style="padding-top:45px;"></div></div>';
+            thefacetview += '<div class="col-md-9" id="facetview_rightcol">';
         } else {
-            thefacetview += '<div class="span12" id="facetview_rightcol">';
+            thefacetview += '<div class="col-md-12" id="facetview_rightcol">';
         }
         thefacetview += '<div class="facetview_search_options_container">';
-        thefacetview += '<div class="btn-group" style="display:inline-block; margin-right:5px;"> \
-            <a class="btn btn-small facetview_startagain" title="clear all search settings and start again" href=""><i class="icon-remove"></i></a> \
+        thefacetview += '<div style="display:inline-block; margin-right:5px;"> \
             <a class="btn btn-small facetview_howmany" title="change result set size" href="#">{{HOW_MANY}}</a>';
-        if ( options.search_sortby.length > 0 ) {
-            thefacetview += '<a class="btn btn-small facetview_order" title="current order descending. Click to change to ascending" \
-                href="desc"><i class="icon-arrow-down"></i></a>';
-        }
-        thefacetview += '<a class="btn btn-small facetview_learnmore" title="click to view search help information" href="#"><b>?</b></a>'
         thefacetview += '</div>';
         if ( options.search_sortby.length > 0 ) { // bit of a pain, but this is the required button ordering
             thefacetview += '<select class="facetview_orderby" style="border-radius:5px; \
-                -moz-border-radius:5px; -webkit-border-radius:5px; width:100px; background:#eee; margin:0 5px 21px 0;"> \
+                -moz-border-radius:5px; -webkit-border-radius:5px; width:100px; background:#eee; margin:0 5px 21px 0; width:100px;"> \
                 <option value="">order by ... relevance</option>';
             for ( var each = 0; each < options.search_sortby.length; each++ ) {
                 var obj = options.search_sortby[each];
@@ -1547,15 +1541,15 @@ is missing.
         };
         if ( options.searchbox_fieldselect.length > 0 ) {
             thefacetview += '<select class="facetview_searchfield" style="border-radius:5px 0px 0px 5px; \
-                -moz-border-radius:5px 0px 0px 5px; -webkit-border-radius:5px 0px 0px 5px; width:100px; margin:0 -2px 21px 0; background:' + options.searchbox_shade + ';">';
-            thefacetview += '<option value="">search all</option>';
+                -moz-border-radius:5px 0px 0px 5px; -webkit-border-radius:5px 0px 0px 5px; width:100px; margin:0 5px 21px 0; width:100px; background:' + options.searchbox_shade + ';">';
+            thefacetview += '<option value="">search ...</option>';
             for ( var each = 0; each < options.searchbox_fieldselect.length; each++ ) {
                 var obj = options.searchbox_fieldselect[each];
                 thefacetview += '<option value="' + obj['field'] + '">' + obj['display'] + '</option>';
             };
             thefacetview += '</select>';
         };
-        thefacetview += '<input type="text" class="facetview_freetext span4" style="display:inline-block; margin:0 0 21px 0; background:' + options.searchbox_shade + ';" name="q" \
+        thefacetview += '<input type="text" class="facetview_freetext form-control" style="display:inline-block; width:400px; height:23px; margin:0 0 21px 0; background:' + options.searchbox_shade + ';" name="q" \
             value="" placeholder="search term" />';
         if ( options.sharesave_link ) {
             thefacetview += '<a class="btn facetview_sharesave" title="share or save this search" style="margin:0 0 21px 5px;" href=""><i class="icon-share-alt"></i></a>';
