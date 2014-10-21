@@ -120,7 +120,7 @@ jQuery(document).ready(function($) {
         result += "Hosted by <em>" + orgs + "</em> based on <em>" + software + "</em><br>"
         result += repo_type + " | " + repo_country + " | " + repo_langs + " | " + repo_content_types + "<br>"
 
-        descblock = "<div class='row-fluid'><div class='span12'><div style='padding: 10px'>" + repo_desc.substring(0, DESC_LEN)
+        descblock = "<div class='row'><div class='col-md-12'><div style='padding: 10px'>" + repo_desc.substring(0, DESC_LEN)
         if (repo_desc.length > DESC_LEN) {
             descblock += "<span id='" + record.id + "_short' class='short_desc'>...(<a href='#' class='more_desc' data-id='" + record.id + "'>more</a>)</span>"
             descblock += "<span id='" + record.id + "_long' class='long_desc'>" + repo_desc.substring(DESC_LEN) + " (<a href='#' class='less_desc' data-id='" + record.id + "'>less</a>)</span>"

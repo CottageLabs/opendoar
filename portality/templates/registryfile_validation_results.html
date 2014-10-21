@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="hero-unit odh">
+<div class="jumbotron odh">
     <h1>
         Registry File Validation<br>
         <small>Results</small>
@@ -12,14 +12,14 @@
 
 {% if exception %}
 
-        <div class="row-fluid"><div class="span12">
+        <div class="row"><div class="col-md-12">
         <h2>We attempted to validate the following registry file data</h2>
 <pre>
 {{exception.obj_as_json()}}
 </pre>
         </div></div>
 
-        <div class="row-fluid"><div class="span12">
+        <div class="row"><div class="col-md-12">
         <h2>The following errors were encountered when validating your registry file</h2>
 
         <table class="table table-striped">

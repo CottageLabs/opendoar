@@ -35,10 +35,8 @@
     <script type="text/javascript" src="/static/nvd3/nv.d3.js"></script>
     
 </head>
-<body>
 
-<style>
-</style>
+<body data-spy="scroll" data-target="#scrollnav">
 
 <div class="navbar navbar-inverse navbar-fixed-top" style="height:80px;padding-top:15px;">
   <div class="container">
@@ -47,17 +45,19 @@
         <span class="sr-only">Toggle navigation</span>
         <span class="glyphicon glyphicon-list"></span>
       </button>
-      <a class="navbar-brand" href="/" style="color:#fff;">{{ app.config['SERVICE_NAME'] }}</a>
+      <a class="navbar-brand" href="/" style="margin-top:-30px;"><img src="/static/OpenDOAR-Logo-for-OARR.png"></a>
     </div>
-    <div class="navbar-collapse collapse">
+    <div id="scrollnav" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li style="padding-top:15px;padding-right:68px;color:orange;font-size:0.9em;">BETA</li>
-        <li{% if request.path == "/#about" %} class="active"{% endif %}><a href="/#about">About</a></li>
-        <li{% if request.path == "/#getinvolved" %} class="active"{% endif %}><a href="/#search">Search</a></li>
-        <li{% if request.path == "/#suggest" %} class="active"{% endif %}><a href="/#suggest">Suggest</a></li>
-        <li{% if request.path == "/#statistics" %} class="active"{% endif %}><a href="/#statistics">Statistics</a></li>
-        <li{% if request.path == "/#help" %} class="active"{% endif %}><a href="/#help">Help & Feedback</a></li>
-        <li{% if request.path == "/#api" %} class="active"{% endif %}><a href="/#api">API</a></li>
+        <li class="active"><a href="#about">About</a></li>
+        <li><a href="#search">Search</a></li>
+        <li><a href="#suggest">Suggest</a></li>
+        <li><a href="#statistics">Statistics</a></li>
+        <li><a href="#help">Help & Feedback</a></li>
+        <li><a href="#api">API</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><img style="padding-top:10px;height:35px;" src="/static/BetaRelease.png"></li>
       </ul>
     </div>
   </div>
@@ -84,7 +84,7 @@
 
 
 
-<a name="about"> </a>
+<a class="anchor" id="about"> </a>
 <div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;background-color:#eee;border-bottom:1px dashed #999;">
     <div class="container">    
         <div class="row">
@@ -104,7 +104,7 @@
 
 
 
-<a name="search"> </a>
+<a class="anchor" id="search"> </a>
 <div id="searchstrap" style="padding-top:20px;padding-bottom:20px;position:relative;z-index:1000;margin-bottom:0px;border-bottom:1px dashed #999;">
     <div class="container">
         <div id="searchresults"></div>
@@ -116,7 +116,7 @@
 
 
 
-<a name="suggest"> </a>
+<a class="anchor" id="suggest"> </a>
 <div style="background-color:#eee;padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;border-bottom:1px dashed #999;">
     <div class="container">
         <div class="row">
@@ -151,7 +151,7 @@
 
 
 
-<a name="statistics"> </a>
+<a class="anchor" id="statistics"> </a>
 <div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;border-bottom:1px dashed #999;">
     <div class="container">
         <div class="row" style="margin-bottom:0px;padding-bottom:5px;">
@@ -198,7 +198,7 @@
 
 
 
-<a name="help"> </a>
+<a class="anchor" id="help"> </a>
 <div style="background-color:#eee;padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;border-bottom:1px dashed #999;">
     <div class="container">        
         <div class="row">
@@ -217,7 +217,7 @@
 
 
 
-<a name="api"> </a>
+<a class="anchor" id="api"> </a>
 <div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative; ">
     <div class="container">
         <div class="row">
@@ -559,15 +559,15 @@ jQuery(document).ready(function() {
     $('#sizer').bind('keyup',chartquery);
     
     var drawpie = function() {
-    
-        $(selector).css("height","1000px")
-    
+        
         var data = formatteddata;
         var label_field = "term";
         var value_field = "count";
         var selector = "#charts svg";
         var name = "";
-        
+
+        $(selector).css("height","1000px")
+
         var datums = []
         var pie = {"key" : name, "values" : []}
         

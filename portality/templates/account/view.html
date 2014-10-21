@@ -4,8 +4,8 @@
 
 {% if current_user.id == account.id or current_user.is_super %}
 
-    <div class="row-fluid">
-        <div class="span12">
+    <div class="row">
+        <div class="col-md-12">
             {% if current_user.id != account.id %}
                 <div class="alert alert-danger"><strong>NOTE</strong> you are editing a user account that is not your own.  Be careful!</div>
             {% endif %}
@@ -13,8 +13,8 @@
         </div>
     </div>
 
-    <div class="row-fluid">
-        <div class="span6">
+    <div class="row">
+        <div class="col-md-6">
             <div style="border: 1px solid #cccccc; padding: 10px; margin: 10px">
                 <h4>Update your email address</h4>
                 <form action="" method="POST">
@@ -41,7 +41,7 @@
             </div>
         </div>
         
-        <div class="span6">
+        <div class="col-md-6">
             <div style="border: 1px solid #cccccc; padding: 10px; margin: 10px">
                 <h4>Change your password</h4>
                 <form action="" method="POST">
@@ -67,13 +67,13 @@
     
 {% else %}
 
-    <div class="row-fluid">
-        <div class="span6">
-            <div class="hero-unit">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="jumbotron">
                 <h2>{{ account.id }}</h2>
             </div>
         </div>
-        <div class="span6">
+        <div class="col-md-6">
             <p>You are not logged in as this user. Use the <a href="/account/login">login page</a> if you want to change this</p>
         </div>
     </div>

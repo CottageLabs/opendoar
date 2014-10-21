@@ -4,9 +4,9 @@
 
     
 
-<div class="row-fluid" style="margin-bottom: 20px">
+<div class="row" style="margin-bottom: 20px">
 
-    <div class="span4">
+    <div class="col-md-4">
         <h1>{{org.name}}</h1>
 
         <p><a href="{{org.url}}">{{org.url}}</a></p>
@@ -18,7 +18,7 @@
         {% endfor %}
     </div>
 
-    <div class="span8">
+    <div class="col-md-8">
         <h2>Repositories</h2>
         {% for repo in org.repos %}
             <p>

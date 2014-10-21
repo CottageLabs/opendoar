@@ -1,8 +1,8 @@
 {% set metadata = repo.get_metadata("en") %}
 {% set reg = repo.register %}
 
-<div class="row-fluid">
-    <div class="span9">
+<div class="row">
+    <div class="col-md-9">
 
         <h1 style="padding-bottom: 15px">{{metadata.name}}{% if metadata.acronym %} ({{metadata.acronym}}){% endif %}</h1>
 
@@ -14,9 +14,9 @@
         <div class="alert alert-success">This repository replaces <a href="/repository/{{repo.id_part(reg.replaces)}}">{{reg.replaces}}</a></div>
         {% endif %}
 
-        <div class="row-fluid" style="margin-bottom: 10px">
+        <div class="row" style="margin-bottom: 10px">
 
-            <div class="span12">
+            <div class="col-md-12">
                 <a href="{{metadata.url}}">{{metadata.url}}</a> ({{reg.operational_status}})
                 {% if metadata.twitter %}
                     - <a href="http://twitter.com/{{metadata.twitter}}">{{metadata.twitter}}</a>
@@ -66,9 +66,9 @@
         </div>
 
         <h3 style="padding-bottom: 10px">Organisations responsible for this repository</h3>
-        <div class="row-fluid" style="margin-bottom: 30px">
+        <div class="row" style="margin-bottom: 30px">
             {% for org in reg.organisation %}
-            <div class="span4">
+            <div class="col-md-4">
                 {% if org.role and org.role|length != 0 %}<strong>{{org.role|join(", ")}}</strong><br>{% endif %}
                 <strong><a href="/organisation/{{org.details.name}}">{{org.details.name}}</a>
                     {% if org.details.acronym %} ({{org.details.acronym}}){% endif %}</strong>
@@ -94,10 +94,10 @@
         </div>
 
         <h3 style="padding-bottom: 10px">Contacts for this repository</h3>
-        <div class="row-fluid" style="margin-bottom: 30px">
+        <div class="row" style="margin-bottom: 30px">
             {% for con in reg.contact %}
-                <div class="span4">
-                    <strong>{% if con.details.name %}{{con.details.name}}{% else %}name unknown{% endif %} {% if con.role %} - {{con.role|join(", ")}} {% endif %}</strong><br>
+                <div class="col-md-4">
+                    <strong>{% if con.details.name %}{{con.details.name}}{% endif %} {% if con.role %} - {{con.role|join(", ")}} {% endif %}</strong><br>
                     {% if con.details.job_title %}Job Title: {{con.details.job_title}}<br> {% endif %}
                     {% if con.details.email %}<a href="mailto:{{con.details.email}}">{{con.details.email}}</a><br>{% endif %}
                     {% if con.details.address %}{{con.details.address}}<br>{% endif %}
@@ -112,7 +112,7 @@
 
     </div>
 
-    <div class="span3">
+    <div class="col-md-3">
         <div class="well" style="background-color:orange;">
             <p style="font-size:1em;">Spotted any errors?<br>Help us stay up to date:</p>
             <p><a class="btn btn-info" href="/contribute?updaterequest={{repo.raw.id}}" style="width:90%;">Suggest an update for this record</a></p>
@@ -126,8 +126,8 @@
 
 <h3 style="padding-bottom: 10px">Details</h3>
 
-<div class="row-fluid" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
-    <div class="span4">
+<div class="row" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
+    <div class="col-md-4">
         <div style="padding: 10px">
         <strong>Repository content types</strong>
         <ul>
@@ -141,7 +141,7 @@
         </div>
     </div>
 
-    <div class="span4">
+    <div class="col-md-4">
         <div style="padding: 10px">
         <strong>Subject classifications</strong>
         <ul>
@@ -155,7 +155,7 @@
         </div>
     </div>
 
-    <div class="span4">
+    <div class="col-md-4">
         <div style="padding: 10px">
         <strong>Certifications</strong>
         <ul>
@@ -172,10 +172,10 @@
 
 <h3 style="padding-bottom: 10px">Technology</h3>
 
-<div class="row-fluid" style="margin-bottom: 30px">
-    <div class="span12">
-        <div class="row-fluid" style="margin-bottom: 15px">
-            <div class="span4">
+<div class="row" style="margin-bottom: 30px">
+    <div class="col-md-12">
+        <div class="row" style="margin-bottom: 15px">
+            <div class="col-md-4">
                 <strong>Built with</strong>
                 {% if reg.software and reg.software|length != 0 %}
                     {% for s in reg.software %}
@@ -183,7 +183,7 @@
                     {% endfor %}
                 {% endif %}
             </div>
-            <div class="span8">
+            <div class="col-md-8">
                 <strong>Integrated with</strong>
                 {% if not reg.integration or reg.integration|length == 0 %}
                     <br>This repository is not integrated with any other systems
@@ -202,10 +202,10 @@
             </div>
         </div>
 
-        <div class="row-fluid">
+        <div class="row">
 
             {% for api in reg.api %}
-                <div class="span4" style="margin-bottom: 20px">
+                <div class="col-md-4" style="margin-bottom: 20px">
                 {% if api.api_type == "oai-pmh" %}
                     <strong>OAI-PMH</strong><br>
                     {% if api.base_url %}<a href="{{api.base_url}}">{{api.base_url}}</a><br>{% endif %}
@@ -235,7 +235,7 @@
             {% endfor %}
 
             {% if reg.api|length == 0 %}
-                <div class="span12">This repository has not registered support for any APIs</div>
+                <div class="col-md-12">This repository has not registered support for any APIs</div>
             {% endif %}
         </div>
     </div>
@@ -247,15 +247,15 @@
 {% for p in reg.policy %}
     {% if loop.index % 2 != 0 %}
         {% if loop.first %}
-            <div class="row-fluid" style="border-top: 1px solid #cccccc">
+            <div class="row" style="border-top: 1px solid #cccccc">
         {% elif loop.last %}
-            <div class="row-fluid" style="border-top: 1px dashed #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
+            <div class="row" style="border-top: 1px dashed #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
         {% else %}
-            <div class="row-fluid" style="border-top: 1px dashed #cccccc">
+            <div class="row" style="border-top: 1px dashed #cccccc">
         {% endif %}
-        <div class="span6">
+        <div class="col-md-6">
     {% else %}
-        <div class="span6">
+        <div class="col-md-6">
     {% endif %}
 
     <div style="padding: 10px">
@@ -281,13 +281,13 @@
 {% endfor %}
 
 {% if reg.policy|length == 0 %}
-    <div class="row-fluid" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
+    <div class="row" style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; margin-bottom: 30px">
         This repository has no policies registered
     </div>
 {% endif %}
 
-<div class="row-fluid">
-    <div class="span12">
+<div class="row">
+    <div class="col-md-12">
         Record created on <em>{{repo.get_created_date("%Y-%m-%d at %H:%M")}}</em> and last updated on <em>{{repo.get_last_updated("%Y-%m-%d at %H:%M")}}</em>
     </div>
 </div>

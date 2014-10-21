@@ -5,59 +5,51 @@
 
 <body>
 
-    <!-- NAVBAR
-    ================================================== -->
-    <div class="navbar-wrapper">
-      <!-- Wrap the .navbar in .container to center it within the absolutely positioned parent. -->
-
-      <div class="navbar navbar-fixed-top">
-        <div class="navbar-inner">
-          <div class="container">
-            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="brand" href="/">{{app.config['SERVICE_NAME']}}</a>
-            <div class="nav-collapse collapse">
-              <ul class="nav">
-                <li{% if request.path == "/#about" %} class="active"{% endif %} class="active"><a href="/#about">About</a></li>
-                <li{% if request.path == "/#getinvolved" %} class="active"{% endif %}><a href="/#search">Search</a></li>
-                <li{% if request.path == "/#suggest" %} class="active"{% endif %}><a href="/#suggest">Suggest</a></li>
-                <li{% if request.path == "/#statistics" %} class="active"{% endif %}><a href="/#statistics">Statistics</a></li>
-                <li{% if request.path == "/#api" %} class="active"{% endif %}><a href="/#api">API</a></li>
-                <li{% if request.path == "/#help" %} class="active"{% endif %}><a href="/#help">Help & Feedback</a></li>
-                {% if current_user.is_super %}
-                <li{% if request.path.startswith("/admin") %} class="active"{% endif %}><a href="/admin">Admin</a></li>
-                {% endif %}
-              </ul>
-
-            </div><!--/.nav-collapse -->
-          </div><!-- /.navbar-inner -->
-        </div><!-- /.navbar -->
-
-      </div> <!-- /.container -->
-    </div><!-- /.navbar-wrapper -->
-
-    <div class="container" style="margin-top:5px;">
-        <div class="alert-messages">
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-          {% for category, message in messages %}
-            <div class="alert alert-{{category}} fade in" data-alert="alert">
-              <a class="close" data-dismiss="alert" href="#">&times;</a>
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
-        {% endwith %}
-        </div>
+<div class="navbar navbar-inverse navbar-fixed-top" style="height:80px;padding-top:15px;">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="glyphicon glyphicon-list"></span>
+      </button>
+      <a class="navbar-brand" href="/" style="margin-top:-30px;"><img src="/static/OpenDOAR-Logo-for-OARR.png"></a>
     </div>
+    <div class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#search">Search</a></li>
+        <li><a href="/#suggest">Suggest</a></li>
+        <li><a href="/#statistics">Statistics</a></li>
+        <li><a href="/#help">Help & Feedback</a></li>
+        <li><a href="/#api">API</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><img style="padding-top:10px;height:35px;" src="/static/BetaRelease.png"></li>
+      </ul>
+    </div>
+  </div>
+</div>
 
-    <div class="container content">
-      {% block content %}{% endblock %}
-    </div> <!-- /content -->
 
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{category}} fade in" data-alert="alert" style="position:fixed;top:50px;left:0px;width:100%;z-index:1001;padding:0;">
+    <div class="container" style="padding-top:5px;padding-bottom:5px;">
+        <a class="close" data-dismiss="alert" href="#" style="font-size:1.4em;">&times;</a>
+        {{ message }}
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+
+
+<div class="container content">
+  {% block content %}{% endblock %}
+</div> <!-- /content -->
 
 
 <div style="background-color:#222;padding-top:40px;padding-bottom:10px;color:white;font-size:0.9em;z-index:1000;position:relative;">
@@ -75,13 +67,12 @@
 
 
 
-    {% include '_js_includes.html' %}
-    
-    {% block extra_js_bottom %}
-      
-    {% endblock extra_js_bottom %}
+{% include '_js_includes.html' %}
 
-</div> <!-- /container -->
+{% block extra_js_bottom %}
+  
+{% endblock extra_js_bottom %}
+
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
