@@ -28,14 +28,19 @@ def configure_app(app):
 
 def initialise_index(app):
     mappings = app.config["MAPPINGS"]
-    conn = esprit.raw.Connection(app.config['ELASTIC_SEARCH_HOST'], app.config['ELASTIC_SEARCH_DB'])
-    if not esprit.raw.index_exists(conn):
-        print "Creating Index; host:" + str(conn.host) + " port:" + str(conn.port) + " db:" + str(conn.index)
-        esprit.raw.create_index(conn)
+    i = str(app.config['ELASTIC_SEARCH_HOST']).rstrip('/')
+    i += '/' + app.config['ELASTIC_SEARCH_DB']
     for key, mapping in mappings.iteritems():
-        if not esprit.raw.has_mapping(conn, key):
-            r = esprit.raw.put_mapping(conn, key, mapping)
+        # im = i + '/' + key + '/_mapping'  # es 0.x
+        im = i + "/_mapping/" + key         # es 1.x
+        typeurl = i + "/" + key
+        # exists = requests.get(im)         # es 0.x
+        exists = requests.head(typeurl)     # es 1.x
+        if exists.status_code != 200:
+            ri = requests.post(i)
+            r = requests.put(im, json.dumps(mapping))
             print key, r.status_code
+    
     i = str(app.config['ELASTIC_SEARCH_HOST']).rstrip('/')
     i += '/' + app.config['ELASTIC_SEARCH_DB']
     if app.config.get('SUPER_USER_ROLE'):
