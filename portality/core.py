@@ -40,7 +40,7 @@ def initialise_index(app):
             ri = requests.post(i)
             r = requests.put(im, json.dumps(mapping))
             print key, r.status_code
-    
+
     i = str(app.config['ELASTIC_SEARCH_HOST']).rstrip('/')
     i += '/' + app.config['ELASTIC_SEARCH_DB']
     if app.config.get('SUPER_USER_ROLE'):
