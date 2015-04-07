@@ -49,7 +49,7 @@ def set_current_context():
 
 app.register_blueprint(admin, url_prefix='/admin')
 app.register_blueprint(account, url_prefix='/account')
-app.register_blueprint(admin, url_prefix='/duplicate')
+app.register_blueprint(duplicate, url_prefix='/duplicate')
 app.register_blueprint(stream, url_prefix='/stream')
 #app.register_blueprint(pagemanager)
 
@@ -137,6 +137,7 @@ def contribute():
                 if base is None: abort(500)
                 client = OARRClient(base)
                 record = client.get_record(request.values["updaterequest"]).raw
+                if "opendoar" not in record["admin"]: record["admin"]["opendoar"] = {}
                 record["admin"]["opendoar"]["updaterequest"] = request.values["updaterequest"]
                 detectdone = True
             except:
@@ -164,7 +165,7 @@ def contribute():
         else:
             # otherwise set a default initial object
             record = util.defaultrecord
-
+            
         if util.request_wants_json():
             resp = make_response( json.dumps({"record":record}) )
             resp.mimetype = "application/json"
@@ -178,9 +179,14 @@ def contribute():
         if base is None or apikey is None: abort(500)
         client = OARRClient(base, apikey)
         record = client.prep_record(util.defaultrecord,request)
-        client.save_record(record)
-        flash('Thank you very much for your submission. Your request will be processed as soon as possible, and usually within three working days.', 'success')
-        return redirect('/')
+        if 'updaterequest' not in record['admin']['opendoar']: record['admin']['opendoar']['newcontribution'] = True
+        saved = client.save_record(record)
+        if saved:
+            flash('Thank you very much for your submission. Your request will be processed as soon as possible, and usually within three working days.', 'success')
+            return redirect('/')
+        else:
+            flash('Sorry, there was a problem saving your submission. Please try again.', 'error')
+            return redirect('/contribute')
     
 
 @app.route("/about")

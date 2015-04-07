@@ -1,66 +1,879 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
 
-{% block content %}
+<head>
+    <meta charset="utf-8">
+    <title>OpenDOAR - Directory of Open Access Repositories</title>
+    <meta name="description" content="Directory of Open Access Repositories">
+    <meta name="author" content="Cottage Labs">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-<div class="hero-unit odh" style="background-color:#53afdf;">
-    <h1>OpenDOAR <small>for exploring the world of repositories</small></h1>
-</div>
+    <link href="{{ url_for('static', filename='images/favicon.ico') }}" rel="icon" type="image/x-icon" />
 
-<div class="row-fluid">
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
 
-    <div class="span2">
-        <div class="well" style="background-color:transparent;border-color:#53afdf;">
-            <p><a href="/search"><img src="/static/search.png" style="width:100%;"></a></p>
-            <h2 style="text-align:center;"><a href="/search" style="color:#53afdf;">search</a></h2>
-        </div>
-    </div>
-
-    <div class="span2">
-        <div class="well" style="background-color:transparent;border-color:#53afdf;">
-            <p><a href="/map"><img src="/static/map.png" style="width:100%;"></a></p>
-            <h2 style="text-align:center;"><a href="/map" style="color:#53afdf;">map</a></h2>
-        </div>
-    </div>
-
-    <div class="span2">
-        <div class="well" style="background-color:transparent;border-color:#53afdf;">
-            <p><a href="/stats"><img src="/static/statistics.png" style="width:100%;"></a></p>
-            <h2 style="text-align:center;"><a href="/stats" style="color:#53afdf;">stats</a></h2>
-        </div>
-    </div>
-
-    <div class="span2">
-        <div class="well" style="background-color:transparent;border-color:#53afdf;">
-            <p><a href="/contribute"><img src="/static/suggest.png" style="width:100%;"></a></p>
-            <h2 style="text-align:center;"><a href="/contribute" style="color:#53afdf;">contribute</a></h2>
-        </div>
-    </div>
-
-    <div class="span2">
-        <div class="well" style="background-color:transparent;border-color:#53afdf;">
-            <p><a href="/community"><img src="/static/community.png" style="width:100%;"></a></p>
-            <h2 style="text-align:center;"><a href="/community" style="color:#53afdf;">community</a></h2>
-        </div>
-    </div>
-
-    <div class="span2">
-        <div class="well" style="background-color:transparent;border-color:#53afdf;">
-            <p><a href="/tools"><img src="/static/tools.png" style="width:100%;"></a></p>
-            <h2 style="text-align:center;"><a href="/tools" style="color:#53afdf;">tools</a></h2>
-        </div>
-    </div>
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap-3.1.1/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='opendoar.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/select2-release-3.2/select2.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/select2-release-3.2/select2-bootstrap.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='nvd3/nv.d3.css')}}">
     
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/jquery-1.7.1.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/jquery-ui-1.8.18.custom/jquery-ui-1.8.18.custom.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/bootstrap/js/bootstrap.min.js')}}"></script>                
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.linkify-1.0-min.js')}}"></script>      
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/select2-release-3.2/select2.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.graphview.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='map/d3.v3.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='map/topojson.v1.min.js')}}"></script>
+    <!--<script src="/static/nvd3/d3.v2.min.js"></script>-->
+    <script type="text/javascript" src="/static/nvd3/fisheye.js"></script>
+    <script type="text/javascript" src="/static/nvd3/nv.d3.js"></script>
+    
+</head>
+
+<body data-spy="scroll" data-target="#scrollnav">
+
+<div class="navbar navbar-inverse navbar-fixed-top" style="height:80px;padding-top:15px;">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="glyphicon glyphicon-list"></span>
+      </button>
+      <a class="navbar-brand" href="/" style="margin-top:-30px;"><img src="/static/OpenDOAR-Logo-for-OARR.png"></a>
+    </div>
+    <div id="scrollnav" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#about">About</a></li>
+        <li><a href="#search">Search</a></li>
+        <li><a href="#suggest">Suggest</a></li>
+        <li><a href="#statistics">Statistics</a></li>
+        <li><a href="#help">Help & Feedback</a></li>
+        <li><a href="#api">API</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><img style="padding-top:10px;height:35px;" src="/static/BetaRelease.png"></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{category}} fade in" data-alert="alert" style="position:fixed;top:50px;left:0px;width:100%;z-index:1001;padding:0;">
+    <div class="container" style="padding-top:5px;padding-bottom:5px;">
+        <a class="close" data-dismiss="alert" href="#" style="font-size:1.4em;">&times;</a>
+        {{ message }}
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+
+<div id="mapspace" class="searchcontrols searchmap"></div>
+
+
+
+
+
+<a class="anchor" id="about"> </a>
+<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;background-color:#eee;border-bottom:1px dashed #999;">
+    <div class="container">    
+        <div class="row">
+            <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
+                <h1>ABOUT</h1>
+            </div>
+            <div class="col-md-9">
+                <p style="padding-top:30px;">OpenDOAR is an authoritative global directory of academic open access repositories.
+                Each repository has been visited by OpenDOAR staff to check that the information 
+                recorded here is accurate.</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 
-{% endblock %}
 
-{% block extra_js_bottom %}
+
+
+<a class="anchor" id="search"> </a>
+<div id="searchstrap" style="padding-top:20px;padding-bottom:20px;position:relative;z-index:1000;margin-bottom:0px;border-bottom:1px dashed #999;">
+    <div class="container">
+        <div id="searchresults"></div>
+    </div>
+</div>
+
+
+
+
+
+
+<a class="anchor" id="suggest"> </a>
+<div style="background-color:#eee;padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;border-bottom:1px dashed #999;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">
+                <h1>SUGGEST</h1>
+            </div>
+            <div class="col-md-9" style="padding-top:30px;">
+                <form action="/contribute" method="GET">
+                <select id="suggestwhat" style="background-color:none;border:1px solid #ccc;width:250px;display:inline;" class="form-control">
+                    <option value="addition">An addition to OpenDOAR</option>
+                    <option value="registry">A registry file to examine</option>
+                </select>
+                <input type="text" class="form-control" name="url" style="width:487px;display:inline;" placeholder="http:// your repository URL here">
+                <input type="submit" class="btn btn-info" style="width:100px;display:inline;height:34px;margin-top:-2px;" value="Submit">
+                </form>
+                <div id="suggestregistry" class="well suggestchoices" style="background-color:white;display:none;margin-top:10px;">
+                    <h3>Registry file</h3>
+                    <p>The registry file is a JSON-formatted document which your repository can 
+                    make available which will allow OpenDOAR to create and update information 
+                    about your repository automatically in the registry.</p>
+                    <p>By maintaining this file you will be able to manage your repository's 
+                    presence in the registry without manually entering data into the OpenDOAR 
+                    system.</p>
+                    <p><a class="btn btn-info" href="/registryfile">Learn more</a> or 
+                    <a class="btn btn-info" href="/registryfile/validate">Validate your file</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<a class="anchor" id="statistics"> </a>
+<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;border-bottom:1px dashed #999;">
+    <div class="container">
+        <div class="row" style="margin-bottom:0px;padding-bottom:5px;">
+            <div class="col-md-3" style="padding-top:15px;padding-bottom:20px;border-right:2px solid #999;">
+                <h1>STATISTICS</h1>
+            </div>
+            <div class="col-md-9">
+                <p style="margin-top:30px;">
+                Show top <input type="text" id="sizer" value="30" style="display:inline;width:50px;" class="form-control"> of
+                stat type:
+                <select id="facettype" class="form-control" style="width:150px;display:inline;">
+                    <option value="register.metadata.record.country">Country</option>
+                    <option value="register.metadata.record.continent">Continent</option>
+                    <option value="register.software.name">Software used</option>
+                    <option value="register.metadata.record.repository_type">Repository type</option>
+                    <option value="register.operational_status">Operational status</option>
+                    <option value="register.metadata.record.content_type">Content type</option>
+                    <option value="register.metadata.record.language">Language</option>
+                    <option value="register.metadata.record.subject">Subjects</option>
+                    <!--<option value="">Metadata re-use policy grades</option>
+                    <option value="">Full-text re-use policy grades</option>
+                    <option value="">Content policy grades</option>
+                    <option value="">Submission policy grades</option>
+                    <option value="">Preservation policy grades</option>-->
+                </select> 
+                as chart type:
+                <select id="charttype" class="form-control" style="width:150px;display:inline;">
+                    <option value="pie">Pie chart</option>
+                    <option value="bar">Bar chart</option>
+                </select>
+                </p>
+
+            </div>
+        </div>
+        
+        <div class="row" style="padding-top:0px;margin-top:0px;">
+            <div class="col-md-12">
+                <div id="charts" style="height:400px;"><svg></svg></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<a class="anchor" id="help"> </a>
+<div style="background-color:#eee;padding-top:20px;padding-bottom:20px;z-index:1000;position:relative;border-bottom:1px dashed #999;">
+    <div class="container">        
+        <div class="row">
+            <div class="col-md-3" style="padding-top:10px;padding-bottom:15px;border-right:2px solid #999;">
+                <h1>HELP & FEEDBACK</h1>
+            </div>
+            <div class="col-md-9" style="padding-top:20px;">
+                <h3>Get help and give us feedback</h3>
+                <p>You can contact us at <a href="mailto:opendoar@sherpa.ac.uk">opendoar@sherpa.ac.uk</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<a class="anchor" id="api"> </a>
+<div style="padding-top:20px;padding-bottom:20px;z-index:1000;position:relative; ">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3" style="padding-top:10px;padding-bottom:15px;border-right:2px solid #999;">
+                <h1>THE API</h1>
+            </div>
+            <div class="col-md-9">
+                <p>The API is available for direct querying and further interaction. 
+                To learn how your institution can use it to interact with or submit data
+                to OpenDOAR, read the documentation or access the API.</p>
+                <p><a class="btn btn-info" href="http://github.com/CottageLabs/OARR">Read the documentation</a> or 
+                <a class="btn btn-info" href="http://oarr.ooz.cottagelabs.com">Access the API</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div style="background-color:#222;padding-top:40px;padding-bottom:10px;color:white;font-size:0.9em;z-index:1000;position:relative;">
+    <div class="container">
+        <p>This service is running at <a href="http://cottagelabs.com">Cottage Labs</a>. 
+            Please <a href="mailto:us@cottagelabs.com">contact us</a> if you have technical issues.</p>
+
+        <p class="pull-right" style="text-align:right;padding-top:0px;">
+            <a href="http://jisc.ac.uk"><img src="/static/jisc-logo.png" style="width:90px;padding:2px;background-color:transparent;"></a>
+        </p>
+
+    </div>
+</div>
+
+
+
+
+
+
 <script>
 jQuery(document).ready(function() {
-    $('.navbar-wrapper').hide();
+
+    var suggestwhat = function() {
+        var tp = $(this).val();
+        $('.suggestchoices').hide();
+        $('#suggest' + tp).fadeIn('slow');
+    }
+    $('#suggestwhat').bind('change',suggestwhat);
+
+    function discoveryRecordView(record) {
+        var result = '<tr><td>';
+        
+        // get all of the bits out of the object that we want to display
+        var metadata = record.register.metadata[0]
+        if (!metadata) {
+            metadata = {}
+        }
+        
+        var repo_name = metadata.record.name
+        var repo_url = metadata.record.url
+        var repo_desc = metadata.record.description
+        var repo_langs = metadata.record.language ? metadata.record.language.join(", ") : ""
+        var repo_content_types = metadata.record.content_type ? metadata.record.content_type.join(", ") : ""
+        var repo_type = metadata.record.repository_type ? metadata.record.repository_type.join(", ") : ""
+        var repo_country = metadata.record.country ? metadata.record.country : ""
+        
+        var operational_status = record.register.operational_status
+        var software = record.register.software ? record.register.software[0].name : ""
+        
+        var apis = []
+        if (record.register.api) {
+            for (var i = 0; i < record.register.api.length; i++) {
+                apis.push(record.register.api[i].api_type)
+            }
+        }
+        apis = apis.join(", ")
+        
+        var orgs = []
+        if (record.register.organisation) {
+            for (var i = 0; i < record.register.organisation.length; i++) {
+                var orgn = record.register.organisation[i].details.name
+                orgs.push('<a target="_blank" href="/organisation/' + orgn + '">' + orgn + '</a>')
+            }
+        }
+        orgs = orgs.join(", ")
+        
+        var policies = []
+        if (record.register.policy) {
+            for (var i = 0; i < record.register.policy.length; i++) {
+                policies.push(record.register.policy[i].policy_type)
+            }
+        }
+        policies = policies.join(", ")
+
+        var subjects = []
+        if (metadata.record.subject) {
+            for (var i = 0; i < metadata.record.subject.length; i++) {
+                var term = metadata.record.subject[i].term
+                subjects.push(term)
+            }
+        }
+        subjects = subjects.join(", ")
+
+        result += "<strong><a target='_blank' href='/repository/" + record.id + "'>" + repo_name + "</a></strong><br>"
+        result += "<a target='_blank' href='" + repo_url + "'>" + repo_url + "</a> (" + operational_status + ")<br>"
+        result += "Hosted by <em>" + orgs + "</em> based on <em>" + software + "</em><br>"
+        result += repo_type + " | " + repo_country + " | " + repo_langs + " | " + repo_content_types + "<br>"
+
+        result += "<div class='row-fluid'><div class='span12'><div style='padding: 10px'>" + repo_desc
+        result += "</div></div></div>"
+
+        if (policies) {
+            result += "Policies Defined: " + policies + "<br>"
+        }
+        if (apis) {
+            result += "APIs Supported: " + apis + "<br>"
+        }
+        if (subjects) {
+            result += "Subjects: " + subjects
+        }
+        
+        result += '</td></tr>';
+        return result;
+    }
+
+    function postSearch() {
+        $(".long_desc").hide()
+        $(".more_desc").click(function(event) {
+            event.preventDefault()
+            var rid = $(this).attr("data-id")
+            $('#' + rid + '_short').hide()
+            $('#' + rid + '_long').show()
+        })
+        $(".less_desc").click(function(event) {
+            event.preventDefault()
+            var rid = $(this).attr("data-id")
+            $('#' + rid + '_long').hide()
+            $('#' + rid + '_short').show()
+        })
+    }
+        
+    var cshowresults = function(data) {
+        var restable = '<table id="searchresulttable" class="table table-striped table-bordered" style="background:white;">';
+        for ( var r in data.hits.hits ) {
+            restable += discoveryRecordView(data.hits.hits[r]._source);
+        }
+        restable += '</table>';
+        $('.graphview_panel').html(restable);
+        $('.graphview_total').html(data.hits.total);
+        mapquery($.fn.graphview.options.query());
+        if ( currentsearchtype == 'stats' ) {
+            chartquery();
+        }
+    }
+
+    var cuitemplate = function() {
+        var options = $.fn.graphview.options;
+        var ui = '<div class="graphview">';
+        ui += '<div class="row graphview_searcharea">';
+        ui += '<div class="col-md-3" style="border-right:2px solid #999;padding-top:15px;padding-bottom:20px;">';
+        ui += '<h1 id="firstsearch" class="searchcontrols searchresults">SEARCH</h1>';
+        ui += '<select class="graphview_suggest searchcontrols searchresults searchstats searchmap" style="border:none;background:none;color:#666;">';
+        ui += '<option style="color:' + options.fill("records") + ';" data-value="records">filter by:</option>';
+        for ( var key in options.defaultquery.facets ) {
+            var obj = options.defaultquery.facets[key];
+            if ( key != "range" && obj.term.suggest ) { // TODO: change this in case it is not a term facet?
+                ui += '<option data-value="' + obj.term.field + '">' + key + '</option>';
+                ui += ', ';
+            }
+        }
+        ui += '</select>';
+        ui += '</div>';
+
+        ui += '<div class="col-md-9">';
+
+        ui += '<div style="height:35px;">';
+
+        ui += '<div style="display:inline;"><span class="searchcontrols searchresults searchstats">';
+        ui += '<input class="form-control graphview_from" type="text" value="';
+        ui += options.defaultquery.from;
+        ui += '" style="width:40px;margin:-5px 0 0 0;padding:1px 1px 0 0;color:#666;text-align:center;display:inline;">';
+        ui += ' to ';
+        ui += '<input class="form-control graphview_to" type="text" value="';
+        ui += options.defaultquery.size;
+        ui += '" style="width:40px;margin:-5px 0 0 0;padding:1px 1px 0 0;color:#666;text-align:center;display:inline;"> of </span> \
+            <span class="graphview_total searchcontrols searchresults searchstats searchmap" style="font-size:16px;font-weight:bold;color:#999;"></span></div>';
+        
+        ui += '<div class="searchcontrols searchmap searchresults searchstats" style="float:right;display:inline;">';
+        ui += ' <a class="close" href="/" style="font-size:1.4em;padding-left:20px;" alt="close the search" title="close the search">&times;</a>';
+        ui += '</div>';
+
+        ui += '</div>';
+
+        ui += '<div><input type="text" class="form-control query_string" style="width:97%;" data-option="query.bool.must.query_string.query"></div>';
+
+        ui += '</div>';
+        ui += '</div>'; // closes searcharea
+
+        ui += '<div class="graphview_panel searchcontrols searchresults"></div>';
+
+        ui += '</div>'; // closes graphview
+
+        return ui;
+    }
+
+    $('#searchresults').graphview({
+        "target": "{{app.config['OARR_API_BASE_URL']}}/query",
+        "pushstate": false,
+        "titlefield": "name.exact",
+        "defaultquery": {
+            "query": {
+                "bool": {
+                    "must":[
+                        {
+                            "term" : {"admin.opendoar.in_opendoar" : true}
+                        }
+                    ]
+                }
+            },
+            "from":0,
+            "size":10,
+            "facets":{
+                "Operational status": {"term":{"field":"register.operational_status.exact","suggest":true}},
+                "Country": {"term":{"field":"register.metadata.record.country.exact","suggest":true}},
+                "Continent": {"term":{"field":"register.metadata.record.continent.exact","suggest":true}},
+                "Content language": {"term":{"field":"register.metadata.record.language.exact","suggest":true}},
+                "Content type": {"term":{"field":"register.metadata.record.content_type.exact","suggest":true}},
+                "Repository type": {"term":{"field":"register.metadata.record.repository_type.exact","suggest":true}},
+                //"Certification": {"term":{"field":"register.metadata.record.certification.exact","suggest":true}},
+                "Subject": {"term":{"field":"register.metadata.record.subject.term.exact","suggest":true}},
+                "Host organisation": {"term":{"field":"register.organisation.details.name.exact","suggest":true}},
+                "Software": {"term":{"field":"register.software.name.exact","suggest":true}},
+                "Supported APIs": {"term":{"field":"register.api.api_type.exact","suggest":true}},
+                //"Integration with type": {"term":{"field":"register.integration.integrated_with.exact","suggest":true,"node":true}},
+                //"Integrated with software": {"term":{"field":"register.integration.software.exact","suggest":true,"node":true}},
+                //"Policy grades": {"term":{"field":"register.policy.policy_grade.exact","suggest":true}},
+                "Policy types": {"term":{"field":"register.policy.policy_type.exact","suggest":true}},
+                "Policy terms": {"term":{"field":"register.policy.terms.exact","suggest":true}}
+            }
+        },
+        showresults: cshowresults,
+        uitemplate: cuitemplate
+    });
+    
+    window.scrollTo(0,0);
+    $('.searchcontrols').hide();
+    $('#firstsearch').show();
+    $('.select2-input').bind('focus',function() {$('.searchresults').show('slow'); $('#searchstrap'); });
+    
+    var currentsearchtype = 'results';
+    var searchresulttype = function() {
+        var tp = $(this).attr('value');
+        currentsearchtype = tp;
+        $('.searchcontrols').hide();
+        if ( tp == 'results' ) {
+            $('.searchresults').show();
+        } else if ( tp == 'stats' ) {
+            $('.searchstats').show();
+        } else if ( tp == 'map' ) {
+            $('.searchmap').show();
+        }
+    }
+    $('.searchresulttype').bind('change',searchresulttype);
+
+    var showsearchmap = function() {
+        $('.searchcontrols').hide();
+        $('.searchmap').show();
+        currentsearchtype = 'map';
+    }
+    $('#showsearchmap').bind('click',showsearchmap);
+
+
+
+
+
+    // STUFF FOR THE STATISTICS CHARTS    
+    queryresponse = undefined;
+    formatteddata = undefined;
+    charttype = "pie";
+    facettype = "register.metadata.record.continent.exact";
+    sizer = 10;
+    
+    // format the returned query into data
+    var formatdata = function() {
+        formatteddata = queryresponse.facets[facettype].terms;
+    }
+    
+    // define what to do when response received
+    var handleresults = function(data) {
+        queryresponse = data;
+        formatdata();
+        
+        $('#loadingstatus').html("");
+        $("#charts").html("<svg></svg>");
+        if ( charttype == "bar" ) {
+            drawbar();
+        } else {
+            drawpie();
+        }
+    }
+    
+    // and the function that executes queries
+    var chartquery = function() {
+        //if ( currentsearchtype == 'stats' ) {
+        //    var thechartquery = $.fn.graphview.options.query();
+        //} else {
+        var thechartquery = {"query": {"match_all": {}}};
+        //}
+        thechartquery.size = 0;
+        thechartquery.facets = {}
+        $('#loadingstatus').html('loading');
+        // add facet requests to the query if tickboxes selected
+        sizer = parseInt($('#sizer').val());
+        if ( sizer > 20 ) {
+            var diff = (sizer - 20) * 10;
+            var chartsize = 400 + diff;
+            $('#charts').css('height',chartsize + 'px');
+        } else {
+            $('#charts').css('height','400px');
+        }
+        $('#charts').show();
+        charttype = $('#charttype').val();
+        facettype = $('#facettype').val() + ".exact";
+        facettype == 'register.metadata.record.subject.exact' ? facettype = 'register.metadata.record.subject.term.exact' : false;
+        thechartquery.facets = {};
+        thechartquery.facets[facettype] = {
+            "terms": {
+                "field":facettype,
+                "size":sizer
+            }
+        };
+        $.ajax({
+            type: 'GET',
+            url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(thechartquery),
+            dataType: 'JSONP',
+            success: handleresults
+        });
+    }
+    chartquery();
+    $('#facettype').bind('change',chartquery);
+    $('#charttype').bind('change',chartquery);
+    $('#sizer').bind('keyup',chartquery);
+    
+    var drawpie = function() {
+        
+        var data = formatteddata;
+        var label_field = "term";
+        var value_field = "count";
+        var selector = "#charts svg";
+        var name = "";
+
+        $(selector).css("height","1000px")
+
+        var datums = []
+        var pie = {"key" : name, "values" : []}
+        
+        for (var i = 0; i < data.length; i++) {
+            var helping = {}
+            helping["label"] = data[i][label_field]
+            helping["value"] = data[i][value_field]
+            pie.values.push(helping)
+        }
+        datums.push(pie)
+            
+        // generate the pie
+        nv.addGraph(function() {
+            var chart = nv.models.pieChart()
+                .x(function(d) { return d.label })
+                .y(function(d) { return d.value })
+                .showLabels(true)
+                .labelThreshold(.05)
+                .donut(true);
+    
+            d3.select(selector)
+                .datum(datums)
+                .transition().duration(500)
+                .call(chart);
+    
+            return chart;
+        });
+        
+        //$(selector).css("height","100%")
+        
+    }
+    
+    var drawbar = function() {
+    
+        $(selector).css("height","2000px")
+    
+        var data = formatteddata;
+        var limit = data.length
+        var label_field = "term"
+        var value_field = "count"
+        var name = "Repositories"
+        var selector = "#charts svg"
+        var colour = "#53afdf"
+        
+        var datums = []
+        var bars = {"key" : name, "color" : colour, "values" : []}
+        
+        for (var i = 0; i < data.length && i < limit; i++) {
+            var point = {}
+            point["label"] = data[i][label_field]
+            point["value"] = data[i][value_field]
+            bars.values.push(point)
+        }
+        datums.push(bars)
+        
+        var height = (28 * limit) + 42 + 43
+        $(selector).css("height", height + "px")
+        
+        // generate the graph
+        nv.addGraph(function() {
+            var chart = nv.models.multiBarHorizontalChart()
+              .x(function(d) { return d.label })
+              .y(function(d) { return d.value })
+              .margin({top: 30, right: 40, bottom: 50, left: 175})
+              .showValues(false)
+              .tooltips(true)
+              .showControls(false);
+    
+            chart.yAxis
+              .tickFormat(d3.format(',.0f'));
+    
+            d3.select(selector)
+              .datum(datums)
+              .transition().duration(500)
+              .call(chart);
+    
+            nv.utils.windowResize(chart.update);
+    
+            return chart;
+        });
+    
+        $(selector).css("height","100%")
+    
+    }
+
+
+
+
+
+
+    // stuff for the map
+    mapresponse = undefined;
+    var updatemap = function(data) {
+        mapresponse = data;
+        $('.point').remove();
+        draw(topo);
+    }
+
+    var defaultmapquery = {"query": {"match_all": {} } }    
+    var mapquery = function(qry) {
+        // get the query from the search query but change the size to max and specify required fields
+        qry.size = 5000,
+        qry.fields = [
+            "register.organisation.details.lat",
+            "register.organisation.details.lon"
+        ]
+        $.ajax({
+            type: 'GET',
+            url: 'http://oarr.ooz.cottagelabs.com/query?source=' + JSON.stringify(qry),
+            dataType: 'JSONP',
+            success: updatemap
+        });
+    }
+    mapquery(defaultmapquery);
+    
+    d3.select(window).on("resize", throttle);
+    
+    var zoom = d3.behavior.zoom()
+        .scaleExtent([1, 800])
+        .on("zoom", move);
+    
+    
+    var width = document.getElementById('mapspace').offsetWidth;
+    var height = $(window).height() - 5;
+    
+    var topo,projection,path,svg,g;
+    
+    var tooltip = d3.select("#mapspace").append("div").attr("class", "tooltip hidden");
+    
+    setup(width,height);
+    
+    function setup(width,height){
+      //projection = d3.geo.orthographic()
+      projection = d3.geo.mercator()
+        .translate([(width/2), (height/2)+150])
+        .scale( width / 2 / Math.PI)
+        .center([0, 30 ]);
+    
+      path = d3.geo.path().projection(projection);
+    
+      svg = d3.select("#mapspace").append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .call(zoom)
+          .on("click", click)
+          .append("g");
+    
+      g = svg.append("g");
+    
+    /*  var λ = d3.scale.linear()
+        .domain([0, width])
+        .range([-180, 180]);
+    
+      var φ = d3.scale.linear()
+        .domain([0, height])
+        .range([90, -90]);
+        
+      svg.on("mousemove", function() {
+          var p = d3.mouse(this);
+          projection.rotate([λ(p[0]), φ(p[1])]);
+          svg.selectAll("path").attr("d", path);
+      });*/
+    
+    }
+    
+    d3.json("/static/map/world-topo-min.json", function(error, world) {
+    
+      var countries = topojson.feature(world, world.objects.countries).features;
+    
+      topo = countries;
+      draw(topo);
+    
+    });
+    
+    function draw(topo) {
+    
+    
+      var country = g.selectAll(".country").data(topo);
+    
+      country.enter().insert("path")
+          .attr("class", "country")
+          .attr("d", path)
+          .attr("id", function(d,i) { return d.id; })
+          .attr("title", function(d,i) { return d.properties.name; })
+          .style("fill", '#eee');
+    
+      //offsets for tooltips
+      var offsetL = document.getElementById('mapspace').offsetLeft+20;
+      var offsetT = document.getElementById('mapspace').offsetTop+10;
+    
+      //tooltips
+      country
+        .on("mousemove", function(d,i) {
+    
+          var mouse = d3.mouse(svg.node()).map( function(d) { return parseInt(d); } );
+    
+          tooltip.classed("hidden", false)
+                 .attr("style", "left:"+(mouse[0]+offsetL)+"px;top:"+(mouse[1]+offsetT)+"px")
+                 .html(d.properties.name);
+    
+          })
+          .on("mouseout",  function(d,i) {
+            tooltip.classed("hidden", true);
+          });
+    
+      //add points and repo suggestions
+      if ( mapresponse ) {
+          mapresponse.hits.hits.forEach(function(i){
+              addpoint(
+                i.fields["register.organisation.details.lon"],
+                i.fields["register.organisation.details.lat"]
+              );
+          });
+      }
+    
+    }
+    
+    
+    function redraw() {
+      width = document.getElementById('mapspace').offsetWidth;
+      height = $(window).height() - 5;
+      d3.select('svg').remove();
+      setup(width,height);
+      draw(topo);
+    }
+    
+    
+    function move() {
+    
+      var t = d3.event.translate;
+      var s = d3.event.scale; 
+      zscale = s;
+      var h = height/4;
+    
+    
+      t[0] = Math.min(
+        (width/height)  * (s - 1), 
+        Math.max( width * (1 - s), t[0] )
+      );
+    
+      t[1] = Math.min(
+        h * (s - 1) + h * s, 
+        Math.max(height  * (1 - s) - h * s, t[1])
+      );
+    
+      zoom.translate(t);
+      g.attr("transform", "translate(" + t + ")scale(" + s + ")");
+    
+      //adjust the country hover stroke width and point size based on zoom level
+      d3.selectAll(".country").style("stroke-width", 1 / s);
+      var sz = 1 / (s/2);
+      sz > 1 ? sz = 1 : sz = sz;
+      d3.selectAll(".point").attr("r", sz);
+    
+    }
+    
+    
+    
+    var throttleTimer;
+    function throttle() {
+      window.clearTimeout(throttleTimer);
+        throttleTimer = window.setTimeout(function() {
+          redraw();
+        }, 200);
+    }
+    
+    
+    //geo translation on mouse click in map
+    function click() {
+      var latlon = projection.invert(d3.mouse(this));
+      console.log(latlon);
+    }
+    
+    
+    //function to add points and text to the map (used in plotting capitals)
+    function addpoint(lat,lon) {
+    
+      var gpoint = g.append("g").attr("class", "gpoint");
+      var x = projection([lat,lon])[0];
+      var y = projection([lat,lon])[1];
+    
+      gpoint.append("svg:circle")
+            .attr("cx", x)
+            .attr("cy", y)
+            .attr("class","point")
+            .attr("r", 1);
+        
+    }
+    // end of stuff for map ////////////////////////////////////////////////////////
+
+
+
+
 })
 </script>
-{% endblock %}
 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
+  ga('create', 'UA-55236756-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+</body>
+</html>

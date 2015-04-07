@@ -1,4 +1,4 @@
-import requests, json, pycountry
+import requests, json, pycountry, StringIO
 from copy import deepcopy
 from datetime import datetime
 from csv import reader
@@ -30,7 +30,9 @@ class OARRClient(object):
                 if "admin" not in record: record["admin"] = {}
                 if "opendoar" not in record["admin"]: record["admin"]["opendoar"] = {}
                 record["admin"]["opendoar"]["last_saved"] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-                addr = self.base_url + "record/" + record_id + '?api_key=' + self.api_key
+                addr = self.base_url + "record"
+                if record_id: addr += '/' + record_id
+                addr += '?api_key=' + self.api_key
                 resp = requests.post(addr, data=json.dumps(record))
                 if resp.json()["success"]:
                     if record_id == "": record_id = resp.json()["id"]
@@ -538,15 +540,26 @@ class Org(object):
 
 def _prep_record(record,request):
     if "register" not in record: record["register"] = {}
+    if "metadata" not in record["register"]: record["register"]["metadata"] = []
     if "admin" not in record: record["admin"] = {}
     if "opendoar" not in record['admin']: record["admin"]["opendoar"] = {}
+
+    if 'register__operational_status' in request.form:
+        record['register']['operational_status'] = request.form['register__operational_status']
 
     if 'admin__opendoar__in_opendoar' in request.form.keys() and request.form['admin__opendoar__in_opendoar'] == "on":
         record['admin']['opendoar']['in_opendoar'] = True
     else:
         record['admin']['opendoar']['in_opendoar'] = False
 
-    record["register"]["metadata"] = []
+    if 'admin__opendoar__updaterequest' in request.form.keys():
+        if len(request.form['admin__opendoar__updaterequest']) > 0:
+            record['admin']['opendoar']['updaterequest'] = request.form['admin__opendoar__updaterequest']
+    elif record['admin']['opendoar'].get('updaterequest',False):
+        del record['admin']['opendoar']['updaterequest']
+        
+
+    newmeta = []
     for k,v in enumerate(request.form.getlist('register__metadata__lang')):
         if v is not None and len(v) > 0 and v != " ":
             try:
@@ -560,7 +573,8 @@ def _prep_record(record,request):
                 for n in lists.keys():
                     nk = request.form.getlist(n)[k]
                     if ',' in nk:
-                        nkl = reader(nk)
+                        nklt = reader(StringIO.StringIO(nk))
+                        nkl = nklt.next()
                     else:
                         nkl = [nk]
                     for vr in nkl:
@@ -581,7 +595,7 @@ def _prep_record(record,request):
                     df = True
                 else:
                     df = False
-                record["register"]["metadata"].append({
+                newmeta.append({
                     "lang": v,
                     "default": df,
                     "record": {
@@ -599,12 +613,17 @@ def _prep_record(record,request):
                         "language_code": lc,
                         "repository_type": lists['register__metadata__record__repository_type'],
                         "content_type": lists['register__metadata__record__content_type'],
-                        "certification": lists['register__metadata__record__certification'], 
-                        "subject": lists['register__metadata__record__subject__term']
+                        "certification": lists['register__metadata__record__certification']#, 
+                        #"subject": lists['register__metadata__record__subject__term']
                     }
                 })
             except:
                 pass
+    if len(newmeta) != 0:
+        record["register"]["metadata"] = newmeta
+    else:
+        print newmeta
+
 
     record["register"]["organisation"] = []
     for k,v in enumerate(request.form.getlist('register__organisation__details__name')):
@@ -613,7 +632,8 @@ def _prep_record(record,request):
                 roles = []
                 nk = request.form.getlist("register__organisation__role")[k]
                 if ',' in nk:
-                    nkl = reader(nk)
+                    nklt = reader(StringIO.StringIO(nk))
+                    nkl = nklt.next()
                 else:
                     nkl = [nk]
                 for vr in nkl:
@@ -649,7 +669,8 @@ def _prep_record(record,request):
                 roles = []
                 nk = request.form.getlist("register__contact__role")[k]
                 if ',' in nk:
-                    nkl = reader(nk)
+                    nklt = reader(StringIO.StringIO(nk))
+                    nkl = nklt.next()
                 else:
                     nkl = [nk]
                 for vr in nkl:
@@ -678,7 +699,8 @@ def _prep_record(record,request):
                 terms = []
                 nk = request.form.getlist("register__policy_terms")[k]
                 if ',' in nk:
-                    nkl = reader(nk)
+                    nklt = reader(StringIO.StringIO(nk))
+                    nkl = nklt.next()
                 else:
                     nkl = [nk]
                 for vr in nkl:
@@ -691,34 +713,22 @@ def _prep_record(record,request):
             except:
                 pass
 
-    record["register"]["api"] = []
+    newapilist = []
+    if "api" not in record["register"]: record["register"]["api"] = []
+    oldurllist = [i["base_url"] for i in record["register"]["api"]]
     for k,v in enumerate(request.form.getlist('register__api__base_url')):
-        if v is not None and len(v) > 0 and v != " ":
+        if v is not None and len(v) > 0 and v != " ":            
             try:
-                lists = {
-                    "register__api__metadata_formats": [],
-                    "register__api__accepts": [],
-                    "register__api__accept_packaging": []
-                }
-                for n in lists.keys():
-                    nk = request.form.getlist(n)[k]
-                    if ',' in nk:
-                        nkl = reader(nk)
-                    else:
-                        nkl = [nk]
-                    for vr in nkl:
-                        val = vr.strip(" ")
-                        if len(val) > 0: lists[n].append(val)
-                record["register"]["api"].append({
-                    "base_url": v,
-                    "api_type": request.form.getlist("register__api__api_type")[k],
-                    "version": request.form.getlist("register__api__version")[k],
-                    "metadata_formats": lists["register__api__metadata_formats"],
-                    "accepts": lists["register__api__accepts"],
-                    "accept_packaging": lists["register__api__accept_packaging"]
-                })
+                if v in oldurllist:
+                    newapilist.append(record["register"]["api"][oldurllist.index(v)])
+                else:
+                    record["register"]["api"].append({
+                        "base_url": v,
+                        "api_type": request.form.getlist("register__api__api_type")[k],
+                    })
             except:
                 pass
+    record["register"]["api"] = newapilist
 
     record["register"]["software"] = []
     for k,v in enumerate(request.form.getlist('register__software__name')):

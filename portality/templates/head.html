@@ -1,3 +1,4 @@
+
 <head>
     <meta charset="utf-8">
     <title>OpenDOAR - Directory of Open Access Repositories</title>
@@ -6,37 +7,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <link href="{{ url_for('static', filename='images/favicon.ico') }}" rel="icon" type="image/x-icon" />
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon" />
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
 
-    <!-- this is where we can incorporate any css files -->
-    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/bootstrap/css/bootstrap.min.css')}}">
-    <link rel="stylesheet" href="{{url_for('static', filename='opendoar.css')}}">
-    
-    <!-- get jquery-ui css -->
-    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/jquery-ui-1.8.18.custom/jquery-ui-1.8.18.custom.css')}}">
-    
-    <!-- get facetview css -->
+    <!--<link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/bootstrap/css/bootstrap.min.css')}}">-->
     <link rel="stylesheet" href="/static/facetview.css">
-
-    <!-- get portality css -->
-    <link rel="stylesheet" type="text/css" href="/static/portality/css/portality.css">
-
-    <!-- get the table sorter css -->
     <link rel="stylesheet" type="text/css" href="/static/portality/vendor/tablesorter/css/blue/style.css">
 
-    <!-- get the select2 css -->
-    <link rel="stylesheet" type="text/css" href="/static/portality/vendor/select2-release-3.2/select2.css">
-
-    <!-- nvd3 stuff -->
-    <script src="/static/nvd3/d3.v2.min.js"></script>
+    <link rel="stylesheet" href="{{url_for('static', filename='bootstrap-3.1.1/css/bootstrap.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='opendoar.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/select2-release-3.2/select2.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='portality/vendor/select2-release-3.2/select2-bootstrap.css')}}">
+    <link rel="stylesheet" href="{{url_for('static', filename='nvd3/nv.d3.css')}}">
+    
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/jquery-1.7.1.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/jquery-ui-1.8.18.custom/jquery-ui-1.8.18.custom.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/bootstrap/js/bootstrap.min.js')}}"></script>                
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.linkify-1.0-min.js')}}"></script>      
+    <script type="text/javascript" src="{{url_for('static', filename='portality/vendor/select2-release-3.2/select2.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='jquery.graphview.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='map/d3.v3.min.js')}}"></script>    
+    <script type="text/javascript" src="{{url_for('static', filename='map/topojson.v1.min.js')}}"></script>
+    <!--<script src="/static/nvd3/d3.v2.min.js"></script>-->
     <script type="text/javascript" src="/static/nvd3/fisheye.js"></script>
     <script type="text/javascript" src="/static/nvd3/nv.d3.js"></script>
-    <link rel="stylesheet" href="/static/nvd3/nv.d3.css">
+
+    <!--<script src="/static/nvd3/d3.v2.min.js"></script>-->
+
+    <!--<link href='http://fonts.googleapis.com/css?family=Niconne' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Ek+Mukta:200' rel='stylesheet' type='text/css'>-->
+
 
 </head>
 

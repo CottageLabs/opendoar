@@ -1,57 +1,64 @@
-.navbar-inner {
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: #53afdf;
-  background-image:none;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+html, body{
+    padding:0;
+    margin:0;
+    font-size:1.0em;
+    font-family: Arial, sans-serif;
+    color:#777;
 }
-.navbar .nav > li > a {
-  color: #333;
-  text-decoration: none;
-  text-shadow: none;
+body{
+    margin-top:80px;
+    position:relative;
 }
-.navbar .nav > li > a:hover {
-  background-color: transparent;
-  color: #ffffff;
-  text-decoration: none;
+.row{
+    padding-top:30px;
+    padding-bottom:30px;
 }
-.navbar .nav .active > a, .navbar .nav .active > a:hover {
-  color: #53afdf;
-  text-decoration: none;
-  background-color: white;
+.navbar-brand, .brand{
+    font-size:1.3em;
 }
-
-.odh{
-    background-color:#53afdf;
+.btn{
+    font-size:1em;
 }
-.odh h1{
-    color:white;
+h1{
+    font-size:2.0em;
 }
-.odh h2{
-    color:white;
+a.anchor{
+    display: block; 
+    position: relative; 
+    top: -80px; 
+    visibility: hidden;
 }
-.odh h3{
-    color:white;
+a.anchorl{
+    display: block; 
+    position: relative; 
+    top: -100px; 
+    visibility: hidden;
 }
-.odh small{
-    color:#333;
-    font-size:0.7em;
+li.active{
+    background-color:red;
 }
 
 
 /* MAP STUFF */
+#mapspace{
+    margin:0px;
+    border:none;
+    padding:0px;
+    overflow:hidden;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:1;
+}
 .point{
   cursor: pointer;
 }
 .country{
   stroke: #fff;
   stroke-width: 0.8px;
-  cursor:pointer;
+  /*cursor:pointer;*/
 }
 .country:hover{
   stroke: #333;
@@ -60,16 +67,6 @@
 .text{
   font-size:1px;
   text-transform:capitalize;
-}
-#map {
-  margin:0px;
-  border:none;
-  height:100%;
-  overflow:hidden;
-  background: white;
-}
-.hidden { 
-  display: none; 
 }
 div.tooltip {
   color: #222; 
@@ -80,142 +77,5 @@ div.tooltip {
   box-shadow: 0px 0px 2px 0px #a6a6a6; 
   opacity: 0.9; 
   position: absolute;
-}
-#counter{
-    position:absolute;
-    top:9px;
-    right:41%;
-    font-size:0.9em;
-    color:#999;
-}
-#back{
-    position:absolute;
-    top:-2px;
-    left:-3px;
-    font-size:0.9em;
-}
-#searches{
-    position:absolute;
-    top:-1px;
-    right:0;
-    width:40%;
-    z-index:1000;
-}
-#searchbox{
-    -webkit-border-radius: 0 0 0 5px;
-    -moz-border-radius: 0 0 0 5px;
-    border-radius: 0 0 0 5px;
-    background:transparent;
-}
-#selections{
-    position:absolute;
-    top:40px;
-    right:0;
-    min-width:40%;
-    padding-right:10px;
-    overflow:hidden;
-    z-index:1000;
-}
-#suggestions{
-    position:absolute;
-    top:0;
-    right:0;
-    width:100%;
-    padding-top:80px;
-    padding-right:10px;
-    overflow:hidden;
-    display:none;
-    max-height:98%;
-}
-
-#register_policy_policy_grade_exact{
-    float:right;
-    width:20%;
-    padding:0;
-    margin-right:5px;
-    border-right:1px solid #ccc;
-}
-#register_software_name_exact{
-    float:right;
-    width:9%;
-    padding:0;
-    margin-right:5px;
-    border-right:1px solid #ccc;
-}
-#register_metadata_record_language_exact{
-    float:right;
-    width:3%;
-    padding:0;
-    margin-right:5px;
-    border-right:1px solid #ccc;
-}
-#suggest_operational_content_type{
-    float:right;
-    width:10%;
-    padding:0;
-    margin-right:5px;
-    border-right:1px solid #ccc;
-}
-#register_metadata_record_subject_term_exact{
-    float:right;
-    width:13%;
-    padding:0;
-    margin-right:5px;
-    border-right:1px solid #ccc;
-}
-
-#suggest_repo{
-    float:right;
-    width:39%;
-    padding:0;
-}
-.suggestion{
-    font-size:0.9em;
-    padding:2px;
-    margin:0;
-    -webkit-border-radius: 2px;
-    -moz-border-radius: 2px;
-    border-radius: 2px;
-    display:block;
-    color:#111;
-}
-.suggestion:hover{
-    background:#ddd;
-}
-#selections{
-}
-#welcome{
-    position:absolute;
-    top:80px;
-    right:10%;
-    width:30%;
-}
-#orgpanel{
-    position:absolute;
-    top:80px;
-    right:10%;
-    width:30%;
-}
-#repopanel{
-    position:absolute;
-    top:80px;
-    right:10%;
-    width:30%;
-}
-#options{
-    position:absolute;
-    top:80px;
-    right:10%;
-    width:30%;
-}
-#graphs{
-    position:absolute;
-    bottom:0;
-    left:0;
-    width:100%;
-    height:20px;
-    overflow:hidden;
-    border-top:1px solid #ccc;
-    display:none;
 }
 

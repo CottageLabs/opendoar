@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div id="facetview"></div>
+<div id="facetview" style="margin-top:-50px;"></div>
 
 {% endblock %}
 
@@ -26,7 +26,12 @@ jQuery(document).ready(function($) {
         var result = '<p style="padding:top:10px;padding-left:10px;">';
 
         // get all of the bits out of the object that we want to display
-        result += '<a href="/admin/record/' + record.id + '">' + record.register.metadata[0].record.name + '</a>';
+        if ( record.register.metadata ) {
+            var nm = record.register.metadata[0].record.name;
+        } else {
+            var nm = "UNNAMED REPOSITORY";
+        }
+        result += '<a href="/admin/record/' + record.id + '">' + nm + '</a>';
         
         result += "</p>";
         return result;
@@ -53,23 +58,43 @@ jQuery(document).ready(function($) {
 
     $('#facetview').facetview(opts);
 
-    var controls = '<div class="well" id="controls" style="position:fixed;margin-top:10px;">';
-    controls += '<p>There are {{stats.out}} records not in OpenDOAR. {% if stats.out != 0 %}View: <input type="checkbox" id="show_not_in" class="checkers">{% endif %}</p>';
-    controls += '<p>There are {{stats.unviewed}} in OpenDOAR requiring review. {% if stats.unviewed != 0 %}View: <input type="checkbox" class="checkers" id="show_unviewed">{% endif %}</p>';
-    controls += '<p>There are {{stats.updaterequest}} update requests. {% if stats.updaterequest != 0 %}View: <input type="checkbox" class="checkers" id="show_updaterequest">{% endif %}</p>';
+    var tb = '<div class="alert alert-info">';
+    var td = '<div class="alert alert-success">';
+    
+    var controls = '<div id="controls">';
+    controls += '<h2>TASKS</h2>';
+    controls += '<p>Choose a task filter to view records requiring action.</p>';
+
+    {% if stats.newcontribution != 0 %}controls += td{% else %}controls += tb{% endif %}
+    controls += '<p>There are {{stats.newcontribution}} new contributions. {% if stats.newcontribution != 0 %}';
+    controls += '<br>These require review and can be accepted into OpenDOAR if appropriate, or deleted. ';
+    controls += '<br>VIEW: <input type="checkbox" class="checkers" id="show_newcontribution">{% endif %}</p>' + '</div>';
+
+    {% if stats.updaterequest != 0 %}controls += td{% else %}controls += tb{% endif %}
+    controls += '<p>There are {{stats.updaterequest}} update requests. {% if stats.updaterequest != 0 %}';
+    controls += '<br>These are records already in OpenDOAR for which updates have been proposed, and are awaiting acceptance or rejection of changes. ';
+    controls += '<br>VIEW: <input type="checkbox" class="checkers" id="show_updaterequest">{% endif %}</p>' + '</div>';
+
+    {% if stats.unviewed != 0 %}controls += td{% else %}controls += tb{% endif %}
+    controls += '<p>There are {{stats.unviewed}} in OpenDOAR requiring review. {% if stats.unviewed != 0 %}';
+    controls += '<br>These have been edited via a system other than the OpenDOAR interface since being accepted into OpenDOAR, ';
+    controls += 'so the updated record should be reviewed.';
+    controls += '<br>VIEW: <input type="checkbox" class="checkers" id="show_unviewed">{% endif %}</p>' + '</div>';
+
+    {% if stats.out != 0 %}controls += td{% else %}controls += tb{% endif %}
+    controls += '<p>There are {{stats.out}} records not in OpenDOAR. {% if stats.out != 0 %}';
+    controls += '<br>These records have been submitted by a system other than the OpenDOAR interface, and are available for acceptance into OpenDOAR if so desired. ';
+    controls += '<br>VIEW: <input type="checkbox" id="show_not_in" class="checkers">{% endif %}</p>' + '</div>';
+
     controls += '<p><br><a class="btn" style="width:150px;" href="/admin/record/new">Create new record</a> ';
     controls += '<a class="btn" style="width:150px;" href="/account">Manage accounts</a></p>';
+
     controls += '</div>';
 
-    $('#facetview_rightcol').siblings('.span3').removeClass('span3').addClass('span4').prepend(controls);
-    $('#facetview_rightcol').removeClass('span9').addClass('span7').css({"float":"right","min-height":"600px"});
+    $('#facetview_rightcol').siblings('.col-md-3').removeClass('col-md-3').addClass('col-md-4').prepend(controls);
+    $('#facetview_rightcol').removeClass('col-md-9').addClass('col-md-8').css({"float":"right","min-height":"600px"});
     $('#facetview_filters').hide();
-    $('.facetview_metadata').prependTo('#controls').css({"margin-top":"-20px"});
-    $('.facetview_search_options_container').prependTo('#controls');
-    $('.facetview_freetext').prependTo('#controls');
     $('.facetview_learnmore').hide();
-    $('.facetview_orderby').css({"width":"200px"});
-    $('#controls').prepend('<p>Welcome to admin. Search for records here, <br>or view by task, or choose management tasks. <br>Click record names on the right to edit.</p>');
 
     var filteroptions = function(event) {
         event.preventDefault();
@@ -87,17 +112,20 @@ jQuery(document).ready(function($) {
         }
         if ( $("#show_unviewed").is(':checked') ) {
             $('#facetview').facetview.options.predefined_filters.in = {"term": {"admin.opendoar.in_opendoar":true}}
-            $('#facetview').facetview.options.predefined_filters.saved = {'constant_score': {'filter': {'exists': {'field': 'admin.opendoar.last_saved'}}}}
+            $('#facetview').facetview.options.predefined_filters.saved = {'exists': {'field': 'admin.opendoar.last_saved'}}
             $('#facetview').facetview.options.predefined_filters.notviewed = {"script": { "script" : "unviewed"}}
         }
         if ( $("#show_updaterequest").is(':checked') ) {
             $('#facetview').facetview.options.predefined_filters.updaterequest = {
-                "constant_score": {
-                    "filter": {
-                        "exists": {
-                            "field": "admin.opendoar.updaterequest"
-                        }
-                    }
+                "exists": {
+                    "field": "admin.opendoar.updaterequest"
+                }
+            }
+        }
+        if ( $("#show_newcontribution").is(':checked') ) {
+            $('#facetview').facetview.options.predefined_filters.newcontribution = {
+                "exists": {
+                    "field": "admin.opendoar.newcontribution"
                 }
             }
         }
@@ -106,6 +134,7 @@ jQuery(document).ready(function($) {
     $("#show_not_in").bind('change',filteroptions);
     $("#show_unviewed").bind('change',filteroptions);
     $("#show_updaterequest").bind('change',filteroptions);
+    $("#show_newcontribution").bind('change',filteroptions);
 
 });
 

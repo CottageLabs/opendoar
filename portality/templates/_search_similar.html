@@ -1,6 +1,6 @@
     <div class="well">
-        <strong>search for similar repositories</strong>
-        <ul>
+        <h3>search for similar repositories</h3>
+        <p><ul>
         {% for s in reg.software %}
             {% if s.name %}
             <li>using <a href="{{searchurl.software(s.name)}}">{{s.name}}</a></li>
@@ -30,5 +30,5 @@
         {% if metadata.continent %}
             <li>in <a href="{{searchurl.continent(metadata.continent)}}">{{metadata.continent}}</a></li>
         {% endif %}
-        </ul>
+        </ul></p>
     </div>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="hero-unit odh">
+<div class="jumbotron odh">
     <h1>
         The Registry File<br>
         <small>telling us about your repository</small>
@@ -27,7 +27,7 @@ be able to manage your repository's presence in the registry without manually en
 
 <p>This page outlines the registry file, and goes into detail on how it should be created and populated</p>
 
-        <a name="overview"></a>
+        <a class="anchorl" name="overview"></a>
         <h2>Overview</h2>
 
         <p>Below is the full expression of the registry file, with all available fields shown.  Later sections will go into
@@ -132,7 +132,7 @@ be able to manage your repository's presence in the registry without manually en
     }
 </pre>
 
-        <a name="highlevel"></a>
+        <a class="anchorl" name="highlevel"></a>
         <h2>High-Level Registry File Structure</h2>
 
         <p>The Registry file consists to a small collection of high-level elements which encapsulate all that we need to know about a repository.</p>
@@ -171,7 +171,7 @@ be able to manage your repository's presence in the registry without manually en
     }
 </pre>
 
-        <a name="metadata"></a>
+        <a class="anchorl" name="metadata"></a>
         <h2>Metadata</h2>
 
         <p>The Registry file SHOULD contain one or more metadata records for the repository.  Each metadata record provides
@@ -310,7 +310,7 @@ be able to manage your repository's presence in the registry without manually en
     "content_type" : ["Bibliographic references", "Theses and dissertations"]
 </pre>
 
-        <a name="software"></a>
+        <a class="anchorl" name="software"></a>
         <h2>Software</h2>
 
         <p>The registry file MAY contain one or more records of software that is used to provision the repository</p>
@@ -363,7 +363,7 @@ be able to manage your repository's presence in the registry without manually en
     ]
 </pre>
 
-        <a name="contact"></a>
+        <a class="anchorl" name="contact"></a>
         <h2>Contact</h2>
 
         <p>The registry file MAY contain one or more records for contacts for the repository</p>
@@ -402,7 +402,7 @@ be able to manage your repository's presence in the registry without manually en
     }
 </pre>
 
-        <a name="organisation"></a>
+        <a class="anchorl" name="organisation"></a>
         <h2>Organisation</h2>
 
         <p>The registry file MAY contain one or more records for organisations responsible for the repository</p>
@@ -445,7 +445,7 @@ be able to manage your repository's presence in the registry without manually en
     }
 </pre>
 
-        <a name="policy"></a>
+        <a class="anchorl" name="policy"></a>
         <h2>Policy</h2>
 
         <p><strong>TODO: develop some standard vocabularies for policy terms, so that we can easily search across repositories by them.  Right now there are lots of human readable strings, where we should strive for some standardisation</strong></p>
@@ -478,7 +478,7 @@ be able to manage your repository's presence in the registry without manually en
     }
 </pre>
 
-        <a name="api"></a>
+        <a class="anchorl" name="api"></a>
         <h2>API</h2>
 
         <p>The registry file MAY contain one or more records of APIs the repository provides</p>
@@ -566,7 +566,7 @@ be able to manage your repository's presence in the registry without manually en
 }
 </pre>
 
-        <a name="integration"></a>
+        <a class="anchorl" name="integration"></a>
         <h2>Integration</h2>
 
         <p>The registry file MAY contain one or more records of Integrations with other systems that the repository has.</p>
@@ -594,7 +594,7 @@ be able to manage your repository's presence in the registry without manually en
 }
 </pre>
 
-        <a name="discovery"></a>
+        <a class="anchorl" name="discovery"></a>
         <h2>Discovery</h2>
 
         <p>There are two ways that you can make your registry file discoverable by OpenDOAR</p>
